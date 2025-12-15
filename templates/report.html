@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company_name }} - 新闻摘要报告</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.06);
+            --text-primary: #f5f5f7;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-tertiary: rgba(255, 255, 255, 0.4);
+            --accent-purple: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+            --border-radius: 16px;
+            --border-radius-sm: 8px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* 背景装饰 */
+        .bg-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .bg-decoration::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%);
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        /* 头部 */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            backdrop-filter: blur(20px);
+        }
+
+        .header-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+            background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-meta {
+            color: var(--text-tertiary);
+            font-size: 14px;
+        }
+
+        .header-meta span {
+            margin: 0 8px;
+        }
+
+        /* 玻璃卡片 */
+        .glass-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 28px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            background: var(--glass-hover);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        /* 统计信息 */
+        .stats-bar {
+            display: flex;
+            gap: 24px;
+            padding: 20px 28px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(20px);
+            margin-bottom: 32px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-tertiary);
+            margin-bottom: 20px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--glass-border) 0%, transparent 100%);
+        }
+
+        /* 新闻列表 */
+        .news-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 单条新闻卡片 */
+        .news-card {
+            position: relative;
+        }
+
+        .news-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 28px;
+            width: 4px;
+            height: calc(100% - 56px);
+            background: var(--accent-gradient);
+            border-radius: 2px;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .news-card:hover::before {
+            opacity: 1;
+        }
+
+        .news-card .glass-card {
+            margin-left: 16px;
+            margin-bottom: 0;
+        }
+
+        /* 新闻序号 */
+        .news-index {
+            position: absolute;
+            left: -8px;
+            top: 28px;
+            width: 32px;
+            height: 32px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            z-index: 2;
+        }
+
+        .news-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .news-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .news-title a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .news-title a:hover {
+            color: var(--accent-purple);
+        }
+
+        .news-date {
+            flex-shrink: 0;
+            font-size: 12px;
+            color: var(--text-tertiary);
+            padding: 4px 12px;
+            background: var(--glass-bg);
+            border-radius: 100px;
+            border: 1px solid var(--glass-border);
+        }
+
+        /* AI 摘要区域 */
+        .news-summary-section {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.06) 0%, rgba(59, 130, 246, 0.04) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.12);
+            border-radius: var(--border-radius-sm);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .summary-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent-purple);
+            margin-bottom: 12px;
+        }
+
+        .summary-label svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .news-summary {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* 原文内容区域 */
+        .news-content-section {
+            margin-top: 16px;
+        }
+
+        .content-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-sm);
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            text-align: left;
+        }
+
+        .content-toggle:hover {
+            background: var(--glass-hover);
+            color: var(--text-primary);
+        }
+
+        .content-toggle svg {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.3s;
+        }
+
+        .content-toggle.active svg {
+            transform: rotate(180deg);
+        }
+
+        .news-content {
+            display: none;
+            margin-top: 12px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--glass-border);
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .news-content.show {
+            display: block;
+        }
+
+        /* 滚动条样式 */
+        .news-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .news-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .news-content::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 3px;
+        }
+
+        .news-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 底部链接 */
+        .news-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .news-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--accent-purple);
+            text-decoration: none;
+            transition: gap 0.2s;
+        }
+
+        .news-link:hover {
+            gap: 10px;
+        }
+
+        .news-link svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .news-source {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-tertiary);
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: var(--accent-purple);
+            text-decoration: none;
+        }
+
+        /* 响应式 */
+        @media (max-width: 640px) {
+            .container {
+                padding: 24px 16px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .glass-card {
+                padding: 20px;
+            }
+
+            .stats-bar {
+                flex-wrap: wrap;
+                gap: 16px;
+            }
+
+            .news-header {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .news-card .glass-card {
+                margin-left: 12px;
+            }
+
+            .news-index {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+                left: -6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-decoration"></div>
+
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="header-badge">新闻摘要报告</div>
+            <h1>{{ company_name }}</h1>
+            <div class="header-meta">
+                <span>生成时间: {{ fetch_time }}</span>
+                <span>·</span>
+                <span>共 {{ news_count }} 条新闻</span>
+            </div>
+        </header>
+
+        <!-- 统计信息 -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-value">{{ news_count }}</span>
+                <span class="stat-label">新闻数量</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ time_range }}</span>
+                <span class="stat-label">时间范围</span>
+            </div>
+        </div>
+
+        <!-- 新闻详情列表 -->
+        <section>
+            <div class="section-title">新闻详情</div>
+            <div class="news-list">
+                {% for news in news_list %}
+                <div class="news-card">
+                    <span class="news-index">{{ loop.index }}</span>
+                    <div class="glass-card">
+                        <!-- 标题和日期 -->
+                        <div class="news-header">
+                            <h3 class="news-title">
+                                <a href="{{ news.url }}" target="_blank">{{ news.title }}</a>
+                            </h3>
+                            {% if news.published_date %}
+                            <span class="news-date">{{ news.published_date }}</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- AI 摘要 -->
+                        <div class="news-summary-section">
+                            <div class="summary-label">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2a4 4 0 0 1 4 4v1a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
+                                    <path d="M12 11v4"/>
+                                    <path d="M8 15h8"/>
+                                    <path d="M9 19h6"/>
+                                </svg>
+                                AI 智能摘要
+                            </div>
+                            <p class="news-summary">{{ news.summary }}</p>
+                        </div>
+
+                        <!-- 原文内容（可展开） -->
+                        {% if news.content %}
+                        <div class="news-content-section">
+                            <button class="content-toggle" onclick="toggleContent(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 9l6 6 6-6"/>
+                                </svg>
+                                查看原文内容
+                            </button>
+                            <div class="news-content">{{ news.content }}</div>
+                        </div>
+                        {% endif %}
+
+                        <!-- 底部 -->
+                        <div class="news-footer">
+                            <a href="{{ news.url }}" target="_blank" class="news-link">
+                                阅读原文
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                            <span class="news-source">来源: {{ news.url | truncate(40) }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>由 AI 自动生成 · 数据来源: <a href="https://tavily.com" target="_blank">Tavily</a></p>
+        </footer>
+    </div>
+
+    <script>
+        function toggleContent(btn) {
+            btn.classList.toggle('active');
+            const content = btn.nextElementSibling;
+            content.classList.toggle('show');
+            btn.innerHTML = content.classList.contains('show')
+                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>收起原文内容'
+                : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>查看原文内容';
+        }
+    </script>
+</body>
+</html>

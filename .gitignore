@@ -1,0 +1,109 @@
+# ========================== PyCharm 编辑器相关 ==========================
+# PyCharm 项目配置目录（最核心）
+.idea/
+# 临时文件
+*.iml
+*.iws
+*.ipr
+# 编译生成的文件
+out/
+build/
+# 本地历史记录
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries
+.idea/shelf
+# 代码风格配置（如需共享可移除）
+.idea/codeStyles/
+# 数据库配置（敏感信息）
+.idea/dataSources/
+.idea/dataSources.ids
+.idea/dataSources.xml
+.idea/dataSources.local.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+# 缓存文件
+.idea/caches/
+.idea/log/
+.idea/libraries/
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/copyright/
+.idea/runConfigurations/
+
+# ========================== Python 项目核心忽略项 ==========================
+# 字节码文件（Python 编译产物）
+__pycache__/
+*.py[cod]
+*$py.class
+# Python 2 旧版编译文件
+*.so
+# 分布包/安装包
+*.egg
+*.egg-info/
+dist/
+sdist/
+egg-info/
+.eggs/
+# 虚拟环境（核心！避免提交本地环境）
+venv/
+env/
+ENV/
+.venv/
+.env/
+# pip 缓存
+pip-wheel-metadata/
+# 测试/覆盖率报告
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+# 构建工具产物
+setup.py.log
+# Sphinx 文档构建
+docs/_build/
+# Jupyter Notebook 检查点
+.ipynb_checkpoints/
+# 本地配置文件（敏感/个性化配置）
+local_settings.py
+config/local.py
+.env
+.env.local
+# 日志文件
+*.log
+logs/
+# 临时文件
+*.tmp
+*.temp
+*.swp
+*.swo
+.DS_Store  # Mac 系统文件
+Thumbs.db  # Windows 系统文件
+# 打包工具产物
+*.tar.gz
+*.zip
+# 进程文件
+*.pid
+*.pid.lock
+
+# ========================== 可选忽略项（根据项目需求调整） ==========================
+# 如果使用 pytest
+.pytest_cache/
+# 如果使用 tox
+.tox/
+# 如果使用 docker
+.dockerignore
+# 如果使用 git 子模块
+.gitmodules.local
+# 如果使用 pyenv
+.python-version
+# 如果使用 poetry
+poetry.lock  # 如需共享依赖可移除
+# 如果使用 pipenv
+Pipfile.lock  # 如需共享依赖可移除

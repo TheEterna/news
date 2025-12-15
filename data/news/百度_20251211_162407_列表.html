@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>百度 - 新闻列表</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* 亮色主题 */
+            --bg-primary: #f8f9fc;
+            --bg-secondary: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --glass-hover: rgba(139, 92, 246, 0.04);
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a4a68;
+            --text-tertiary: #8888a0;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+            --border-radius: 16px;
+            --border-radius-sm: 8px;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* 背景装饰 */
+        .bg-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .bg-decoration::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 40%);
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        /* 头部 */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .header-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-meta {
+            color: var(--text-tertiary);
+            font-size: 14px;
+        }
+
+        .header-meta span {
+            margin: 0 8px;
+        }
+
+        /* 统计信息 */
+        .stats-bar {
+            display: flex;
+            gap: 24px;
+            padding: 20px 28px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 32px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* 表格容器 */
+        .table-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        /* 表格样式 */
+        .news-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .news-table thead {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.06) 0%, rgba(59, 130, 246, 0.04) 100%);
+        }
+
+        .news-table th {
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .news-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--glass-border);
+            vertical-align: top;
+        }
+
+        .news-table tbody tr {
+            transition: background 0.2s;
+        }
+
+        .news-table tbody tr:hover {
+            background: var(--glass-hover);
+        }
+
+        .news-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* 序号列 */
+        .col-index {
+            width: 60px;
+            text-align: center;
+        }
+
+        .index-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* 标题列 */
+        .col-title {
+            min-width: 300px;
+        }
+
+        .news-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+
+        .news-title a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .news-title a:hover {
+            color: var(--accent-purple);
+        }
+
+        .news-source {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* 日期列 */
+        .col-date {
+            width: 120px;
+        }
+
+        .date-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* 摘要列 */
+        .col-summary {
+            max-width: 400px;
+        }
+
+        .summary-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* 操作列 */
+        .col-action {
+            width: 100px;
+            text-align: center;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--accent-purple);
+            font-size: 12px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--accent-gradient);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .action-btn svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        /* 详情按钮 */
+        .detail-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.08) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+            color: var(--accent-purple);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .detail-btn:hover {
+            background: var(--accent-gradient);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-tertiary);
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: var(--accent-purple);
+            text-decoration: none;
+        }
+
+        /* 响应式 */
+        @media (max-width: 900px) {
+            .container {
+                padding: 24px 16px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .news-table {
+                min-width: 700px;
+            }
+
+            .stats-bar {
+                flex-wrap: wrap;
+                gap: 16px;
+            }
+        }
+
+        /* 模态框 - 更大更亮 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.4;
+            flex: 1;
+            padding-right: 20px;
+        }
+
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .modal-close:hover {
+            background: var(--accent-gradient);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .modal-section {
+            margin-bottom: 28px;
+        }
+
+        .modal-section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent-purple);
+            margin-bottom: 16px;
+        }
+
+        .modal-section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--accent-gradient);
+            border-radius: 2px;
+        }
+
+        .modal-summary {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.9;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.06) 0%, rgba(59, 130, 246, 0.04) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.12);
+            border-radius: var(--border-radius-sm);
+        }
+
+        .modal-content-text {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.9;
+            padding: 24px;
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--glass-border);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* 滚动条样式 */
+        .modal-content-text::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-content-text::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .modal-content-text::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 3px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .modal-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 24px;
+            background: var(--accent-gradient);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .modal-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-decoration"></div>
+
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="header-badge">新闻列表</div>
+            <h1>百度</h1>
+            <div class="header-meta">
+                <span>生成时间: 2025-12-11 16:24:07</span>
+                <span>·</span>
+                <span>共 9 条新闻</span>
+            </div>
+        </header>
+
+        <!-- 统计信息 -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-value">9</span>
+                <span class="stat-label">新闻数量</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">近一周</span>
+                <span class="stat-label">时间范围</span>
+            </div>
+        </div>
+
+        <!-- 新闻表格 -->
+        <div class="table-container">
+            <table class="news-table">
+                <thead>
+                    <tr>
+                        <th class="col-index">#</th>
+                        <th class="col-title">新闻标题</th>
+                        <th class="col-date">发布日期</th>
+                        <th class="col-summary">AI 摘要</th>
+                        <th class="col-action">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td class="col-index">
+                            <span class="index-badge">1</span>
+                        </td>
+                        <td class="col-title">
+                            <div class="news-title">
+                                <a href="https://www.tradingview.com/news/reuters.com,2025:newsml_L1N3XE010:0-baidu-s-hk-shares-hit-near-4-week-high-on-assessing-unit-spin-off-plan/" target="_blank">Baidu&#39;s HK shares hit near 4-week high on assessing unit spin-off plan - TradingView</a>
+                            </div>
+                            <div class="news-source">https://www.tradingview.com/news/reuters.com,2025:...</div>
+                        </td>
+                        <td class="col-date">
+                            <span class="date-text">Mon, 08 Dec 2025 02:06:00 GMT</span>
+                        </td>
+                        <td class="col-summary">
+                            <div class="summary-text">百度香港股价上涨5.2%至127.9港元，创11月13日以来新高，连续三日上涨并录得自10月27日以来最大单日涨幅；美股同期涨5.9%。公司称正评估将AI芯片子公司昆仑芯分拆并单独在港上市，若推进将需相关监管审批。</div>
+                            <button class="detail-btn" onclick="showDetail(0)">
+                                查看详情
+                            </button>
+                        </td>
+                        <td class="col-action">
+                            <a href="https://www.tradingview.com/news/reuters.com,2025:newsml_L1N3XE010:0-baidu-s-hk-shares-hit-near-4-week-high-on-assessing-unit-spin-off-plan/" target="_blank" class="action-btn">
+                                原文
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="col-index">
+                            <span class="index-badge">2</span>
+                        </td>
+                        <td class="col-title">
+                            <div class="news-title">
+                                <a href="https://www.tradingview.com/news/reuters.com,2025:newsml_L1N3XB049:0-baidu-s-hong-kong-shares-jump-on-report-ai-chip-unit-plans-listing/" target="_blank">Baidu&#39;s Hong Kong shares jump on report AI chip unit plans listing - TradingView</a>
+                            </div>
+                            <div class="news-source">https://www.tradingview.com/news/reuters.com,2025:...</div>
+                        </td>
+                        <td class="col-date">
+                            <span class="date-text">Fri, 05 Dec 2025 05:36:00 GMT</span>
+                        </td>
+                        <td class="col-summary">
+                            <div class="summary-text">因传出百度旗下AI芯片公司昆仑芯计划在香港IPO，百度香港股价大涨7.8%至124.8港元，创11月13日以来新高并连续第二日上涨，为自9月17日以来最大单日涨幅。消息称昆仑芯近期完成融资估值约210亿元人民币，加入中国芯片企业上市潮，继摩尔线程上海上市后。年内百度香港股上涨47.2%，美股上涨40.8%。</div>
+                            <button class="detail-btn" onclick="showDetail(1)">
+                                查看详情
+                            </button>
+                        </td>
+                        <td class="col-action">
+                            <a href="https://www.tradingview.com/news/reuters.com,2025:newsml_L1N3XB049:0-baidu-s-hong-kong-shares-jump-on-report-ai-chip-unit-plans-listing/" target="_blank" class="action-btn">
+                                原文
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="col-index">
+                            <span class="index-badge">3</span>
+                        </td>
+                        <td class="col-title">
+                            <div class="news-title">
+                                <a href="https://www.marketscreener.com/news/microsoft-amazon-unveil-billion-dollar-ai-workforce-investments-in-india-ce7d50dad881f625" target="_blank">Microsoft, Amazon unveil billion-dollar AI, workforce investments in India - marketscreener.com</a>
+                            </div>
+                            <div class="news-source">https://www.marketscreener.com/news/microsoft-amaz...</div>
+                        </td>
+                        <td class="col-date">
+                            <span class="date-text">Wed, 10 Dec 2025 16:32:10 GMT</span>
+                        </td>
+                        <td class="col-summary">
+                            <div class="summary-text">（摘要生成失败）Microsoft, Amazon unveil billion-dollar AI, workforce investments in India - marketscreener.com</div>
+                            <button class="detail-btn" onclick="showDetail(2)">
+                                查看详情
+                            </button>
+                        </td>
+                        <td class="col-action">
+                            <a href="https://www.marketscreener.com/news/microsoft-amazon-unveil-billion-dollar-ai-workforce-investments-in-india-ce7d50dad881f625" target="_blank" class="action-btn">
+                                原文
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="col-index">
+                            <span class="index-badge">4</span>
+                        </td>
+                        <td class="col-title">
+                            <div class="news-title">
+                                <a href="https://news.bloomberglaw.com/ip-law/kaiser-agrees-to-47-5-million-settlement-in-data-sharing-suit" target="_blank">Kaiser Agrees to $47.5 Million Settlement in Data-Sharing Suit - Bloomberg Law News</a>
+                            </div>
+                            <div class="news-source">https://news.bloomberglaw.com/ip-law/kaiser-agrees...</div>
+                        </td>
+                        <td class="col-date">
+                            <span class="date-text">Mon, 08 Dec 2025 19:04:36 GMT</span>
+                        </td>
+                        <td class="col-summary">
+                            <div class="summary-text">（摘要生成失败）Kaiser Agrees to $47.5 Million Settlement in Data-Sharing Suit - Bloomberg Law News</div>
+                            <button class="detail-btn" onclick="showDetail(3)">
+                                查看详情
+                            </button>
+                        </td>
+                        <td class="col-action">
+                            <a href="https://news.bloomberglaw.com/ip-law/kaiser-agrees-to-47-5-million-settlement-in-data-sharing-suit" target="_blank" class="action-btn">
+                                原文
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="col-index">
+                            <span class="index-badge">5</span>
+                        </td>
+                        <td class="col-title">
+                            <div class="news-title">
+                                <a href="https://news.bloomberglaw.com/business-and-practice/states-urge-supreme-court-to-review-nuclear-fuel-storage-case" target="_blank">States Urge Supreme Court to Review Nuclear Fuel Storage Case - Bloomberg Law News</a>
+                            </div>
+                            <div class="news-source">https://news.bloomberglaw.com/business-and-practic...</div>
+                        </td>
+                        <td class="col-date">
+                            <span class="date-text">Thu, 04 Dec 2025 20:23:58 GMT</span>
+                        </td>
+                        <td class="col-summary">
+                            <div class="summary-text">若干州敦促美国最高法院受理一宗关于核燃料集中/临时贮存的案件，指出该案牵涉联邦监管与州主权、环境与安全等重大法律问题。州方称各巡回法院裁决存在分歧，要求最高法院厘清联邦机构（如核监管机构）在许可和推进集中贮存项目上的权力与限制，以及司法审查标准。此案裁</div>
+                            <button class="detail-btn" onclick="showDetail(4)">
+                                查看详情
+                            </button>
+                        </td>
+                        <td class="col-action">
+                            <a href="https://news.bloomberglaw.com/business-and-practice/states-urge-supreme-court-to-review-nuclear-fuel-storage-case" target="_blank" class="action-btn">
+                                原文
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="col-index">
+                            <span class="index-badge">6</span>
+                        </td>
+                        <td class="col-title">
+                            <div class="news-title">
+                                <a href="https://www.androidcentral.com/apps-software/google-drive-update-makes-navigating-pdfs-and-files-effortless" target="_blank">Google Drive’s web file viewer finally gets the glow-up it deserves - Android Central</a>
+                            </div>
+                            <div class="news-source">https://www.androidcentral.com/apps-software/googl...</div>
+                        </td>
+                        <td class="col-date">
+                            <span class="date-text">Mon, 08 Dec 2025 15:11:00 GMT</span>
+                        </td>
+                        <td class="col-summary">
+                            <div class="summary-text">Google Drive 网页版全面升级，淘汰旧的文件查看器，界面更清爽、响应更快，改善了在浏览器中查看和管理文件的体验。PDF 查看获得重大改进：左侧目录和页面缩略图方便快速跳转；视频支持转录关键词搜索，可直接定位语音片段。更新还解决了长期的导航与整理痛点，并可与 Drive 的 Gemini 驱动音频摘要配合</div>
+                            <button class="detail-btn" onclick="showDetail(5)">
+                                查看详情
+                            </button>
+                        </td>
+                        <td class="col-action">
+                            <a href="https://www.androidcentral.com/apps-software/google-drive-update-makes-navigating-pdfs-and-files-effortless" target="_blank" class="action-btn">
+                                原文
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="col-index">
+                            <span class="index-badge">7</span>
+                        </td>
+                        <td class="col-title">
+                            <div class="news-title">
+                                <a href="https://www.forbes.com/sites/zakdoffman/2025/12/08/microsoft-issues-critical-update-for-all-windows-11-users/" target="_blank">Microsoft Issues ‘Critical Update’ For All Windows 11 Users - Forbes</a>
+                            </div>
+                            <div class="news-source">https://www.forbes.com/sites/zakdoffman/2025/12/08...</div>
+                        </td>
+                        <td class="col-date">
+                            <span class="date-text">Mon, 08 Dec 2025 00:00:00 GMT</span>
+                        </td>
+                        <td class="col-summary">
+                            <div class="summary-text">（摘要生成失败）Microsoft Issues ‘Critical Update’ For All Windows 11 Users - Forbes</div>
+                            <button class="detail-btn" onclick="showDetail(6)">
+                                查看详情
+                            </button>
+                        </td>
+                        <td class="col-action">
+                            <a href="https://www.forbes.com/sites/zakdoffman/2025/12/08/microsoft-issues-critical-update-for-all-windows-11-users/" target="_blank" class="action-btn">
+                                原文
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="col-index">
+                            <span class="index-badge">8</span>
+                        </td>
+                        <td class="col-title">
+                            <div class="news-title">
+                                <a href="https://www.newsnationnow.com/health/brooke-rollins-rfk-jr-usda-maha-announcement/" target="_blank">RFK Jr., Brooke Rollins make MAHA announcement - NewsNation</a>
+                            </div>
+                            <div class="news-source">https://www.newsnationnow.com/health/brooke-rollin...</div>
+                        </td>
+                        <td class="col-date">
+                            <span class="date-text">Wed, 10 Dec 2025 14:45:43 GMT</span>
+                        </td>
+                        <td class="col-summary">
+                            <div class="summary-text">美国农业部长布鲁克·罗林斯与卫生部长罗伯特·F·肯尼迪周三将与医保与医疗服务中心主任梅赫梅特·奥兹在东部时间9:50联合发布“让美国更健康”相关声明。此公告紧随罗林斯与特朗普公布的120亿美元农援计划（110亿美元一次性支付、10亿美元预留）</div>
+                            <button class="detail-btn" onclick="showDetail(7)">
+                                查看详情
+                            </button>
+                        </td>
+                        <td class="col-action">
+                            <a href="https://www.newsnationnow.com/health/brooke-rollins-rfk-jr-usda-maha-announcement/" target="_blank" class="action-btn">
+                                原文
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="col-index">
+                            <span class="index-badge">9</span>
+                        </td>
+                        <td class="col-title">
+                            <div class="news-title">
+                                <a href="https://www.aol.com/world-boxing-apologizes-naming-imane-093324591.html" target="_blank">World Boxing apologizes after naming Imane Khelif in mandatory sex testing announcement - AOL.com</a>
+                            </div>
+                            <div class="news-source">https://www.aol.com/world-boxing-apologizes-naming...</div>
+                        </td>
+                        <td class="col-date">
+                            <span class="date-text">Sat, 06 Dec 2025 19:06:49 GMT</span>
+                        </td>
+                        <td class="col-summary">
+                            <div class="summary-text">（摘要生成失败）World Boxing apologizes after naming Imane Khelif in mandatory sex testing announcement - AOL.com</div>
+                            <button class="detail-btn" onclick="showDetail(8)">
+                                查看详情
+                            </button>
+                        </td>
+                        <td class="col-action">
+                            <a href="https://www.aol.com/world-boxing-apologizes-naming-imane-093324591.html" target="_blank" class="action-btn">
+                                原文
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>由 AI 自动生成 · 数据来源: <a href="https://tavily.com" target="_blank">Tavily</a></p>
+        </footer>
+    </div>
+
+    <!-- 详情模态框 -->
+    <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title"></h2>
+                <button class="modal-close" onclick="closeModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-section">
+                <div class="modal-section-title">AI 智能摘要</div>
+                <div class="modal-summary" id="modal-summary"></div>
+            </div>
+            <div class="modal-section">
+                <div class="modal-section-title">原文内容</div>
+                <div class="modal-content-text" id="modal-content"></div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" target="_blank" class="modal-link" id="modal-link">
+                    阅读原文
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 新闻数据
+        const newsData = [
+            
+            {
+                title: "Baidu\u0027s HK shares hit near 4-week high on assessing unit spin-off plan - TradingView",
+                summary: "\u767e\u5ea6\u9999\u6e2f\u80a1\u4ef7\u4e0a\u6da85.2%\u81f3127.9\u6e2f\u5143\uff0c\u521b11\u670813\u65e5\u4ee5\u6765\u65b0\u9ad8\uff0c\u8fde\u7eed\u4e09\u65e5\u4e0a\u6da8\u5e76\u5f55\u5f97\u81ea10\u670827\u65e5\u4ee5\u6765\u6700\u5927\u5355\u65e5\u6da8\u5e45\uff1b\u7f8e\u80a1\u540c\u671f\u6da85.9%\u3002\u516c\u53f8\u79f0\u6b63\u8bc4\u4f30\u5c06AI\u82af\u7247\u5b50\u516c\u53f8\u6606\u4ed1\u82af\u5206\u62c6\u5e76\u5355\u72ec\u5728\u6e2f\u4e0a\u5e02\uff0c\u82e5\u63a8\u8fdb\u5c06\u9700\u76f8\u5173\u76d1\u7ba1\u5ba1\u6279\u3002",
+                content: "[Get started](/pricing/?source=header_go_pro_button\u0026feature=start_free_trial)\n\n# Baidu\u0027s HK shares hit near 4-week high on assessing unit spin-off plan\n\nRefinitivLess than 1 min read\n\n[BIDU](/symbols/NASDAQ-BIDU/)[HSI](/symbols/HSI-HSI/)[HHSTECH](/symbols/HSI-HSTECH/)[HHSAMI](/symbols/HSI-HSAMI/)\n\n\\*\\* Hong Kong shares of Chinese internet search giant Baidu Inc [BIDU](/symbols/NASDAQ-BIDU/) climb 5.2% to HK$127.9, their highest level since November 13, and on course for a third consecutive session of gains\n\n\\*\\* Stock set for the biggest one-day pct gain since October 27; top pct gainer in the Hang Seng Index [HSI](/symbols/HSI-HSI/) and Hang Seng Tech Index [HHSTECH](/symbols/HSI-HSTECH/), which are down 0.4% and up 0.2%, respectively\n\n\\*\\* U.S.-listed stock [BIDU](/symbols/NASDAQ-BIDU/) rose 5.9% on Friday\n\n\\*\\* Baidu says it is assessing proposed spin-off and separate listing of Kunlunxin (Beijing) Technology and, if proceeded, the spin-off and listing will subject to relevant regulatory approval process\n\n\\*\\* Baidu\u0027s AI chip unit Kunlunxin is planning an initial public offering in Hong Kong, having recently completed a fundraising that valued it at 21 billion yuan ($2.97 billion), three people familiar with the matter told Reuters\n\n\\*\\* YTD, Baidu\u0027s Hong Kong stock up 52.4%, U.S.-listed shares up 49.2%\n\n[Asia](/news/world/?area=ASI)[Chinese stocks](/markets/stocks-china/news/)[Hong Kong stocks](/markets/stocks-hong-kong/news/)[Reuters](/news/providers/reuters)\n\n\u00a9 Copyright Thomson Reuters 2025. Click For Restrictions - https://agency.reuters.com/en/copyright.html\n\nLogin or create a forever free account to read this news\n\n---\n\n## [More news from Reuters](/news-flow/?provider=reuters)\n\n ",
+                url: "https://www.tradingview.com/news/reuters.com,2025:newsml_L1N3XE010:0-baidu-s-hk-shares-hit-near-4-week-high-on-assessing-unit-spin-off-plan/"
+            },
+            
+            {
+                title: "Baidu\u0027s Hong Kong shares jump on report AI chip unit plans listing - TradingView",
+                summary: "\u56e0\u4f20\u51fa\u767e\u5ea6\u65d7\u4e0bAI\u82af\u7247\u516c\u53f8\u6606\u4ed1\u82af\u8ba1\u5212\u5728\u9999\u6e2fIPO\uff0c\u767e\u5ea6\u9999\u6e2f\u80a1\u4ef7\u5927\u6da87.8%\u81f3124.8\u6e2f\u5143\uff0c\u521b11\u670813\u65e5\u4ee5\u6765\u65b0\u9ad8\u5e76\u8fde\u7eed\u7b2c\u4e8c\u65e5\u4e0a\u6da8\uff0c\u4e3a\u81ea9\u670817\u65e5\u4ee5\u6765\u6700\u5927\u5355\u65e5\u6da8\u5e45\u3002\u6d88\u606f\u79f0\u6606\u4ed1\u82af\u8fd1\u671f\u5b8c\u6210\u878d\u8d44\u4f30\u503c\u7ea6210\u4ebf\u5143\u4eba\u6c11\u5e01\uff0c\u52a0\u5165\u4e2d\u56fd\u82af\u7247\u4f01\u4e1a\u4e0a\u5e02\u6f6e\uff0c\u7ee7\u6469\u5c14\u7ebf\u7a0b\u4e0a\u6d77\u4e0a\u5e02\u540e\u3002\u5e74\u5185\u767e\u5ea6\u9999\u6e2f\u80a1\u4e0a\u6da847.2%\uff0c\u7f8e\u80a1\u4e0a\u6da840.8%\u3002",
+                content: "[Get started](/pricing/?source=header_go_pro_button\u0026feature=start_free_trial)\n\n# Baidu\u0027s Hong Kong shares jump on report AI chip unit plans listing\n\nRefinitivLess than 1 min read\n\n[BIDU](/symbols/NASDAQ-BIDU/)[HHSTECH](/symbols/HSI-HSTECH/)[HHSAMI](/symbols/HSI-HSAMI/)[HSI](/symbols/HSI-HSI/)\n\n\\*\\* Hong Kong shares of Chinese internet search giant Baidu Inc [BIDU](/symbols/NASDAQ-BIDU/) jump 7.8% to HK$124.8, their highest level since November 13, and on course for a second straight session of gains\n\n\\*\\* Stock set for the biggest one-day pct gain since September 17; top pct gainer in the Hang Seng Tech Index [HHSTECH](/symbols/HSI-HSTECH/) and Hang Seng Automobile Index [HHSAMI](/symbols/HSI-HSAMI/), which are up 0.2% and 0.5%, respectively\n\n\\*\\* Kunlunxin, the AI chip unit of Baidu, is planning an initial public offering in Hong Kong, having recently completed a fundraising that valued it at 21 billion yuan ($2.97 billion), three people familiar with the matter told Reuters\n\n\\*\\* Kunlunxin joins a wave of Chinese chip companies planning public listings and follows listing of graphics processing units maker Moore Threads (688795.SS), which debuted on the Shanghai Stock Exchange on Friday at more than five times its IPO price\n\n\\*\\* YTD, Baidu\u0027s Hong Kong stock up 47.2%, U.S.-listed shares [BIDU](/symbols/NASDAQ-BIDU/) up 40.8%\n\n[Asia](/news/world/?area=ASI)[Chinese stocks](/markets/stocks-china/news/)[Hong Kong stocks](/markets/stocks-hong-kong/news/)[Reuters](/news/providers/reuters)\n\n\u00a9 Copyright Thomson Reuters 2025. Click For Restrictions - https://agency.reuters.com/en/copyright.html\n\nLogin or create a forever free account to read this news\n\n---\n\n## [More news from Reuters](/news-flow/?provider=reuters)\n\n ",
+                url: "https://www.tradingview.com/news/reuters.com,2025:newsml_L1N3XB049:0-baidu-s-hong-kong-shares-jump-on-report-ai-chip-unit-plans-listing/"
+            },
+            
+            {
+                title: "Microsoft, Amazon unveil billion-dollar AI, workforce investments in India - marketscreener.com",
+                summary: "\uff08\u6458\u8981\u751f\u6210\u5931\u8d25\uff09Microsoft, Amazon unveil billion-dollar AI, workforce investments in India - marketscreener.com",
+                content: "Or log in with\n\nGoogleGoogle\n\n[Email Registration](/registration/member/?skipFS=1?utmzb_campaign=btn-menu++redirect_btn-menu_email++\u0026utmzb_content=++++\u0026utmzb_source=redirect\u0026utmzb_medium=email)\n\nOr log in with\n\nGoogleGoogle\n\nLog In\n\nNot a member ?\n\n[Email Registration](/registration/member/?skipFS=1?utmzb_campaign=btn-menu++redirect_btn-menu_email++\u0026utmzb_content=++++\u0026utmzb_source=redirect\u0026utmzb_medium=email)\n\nOr log in with\n\nGoogleGoogle\n\n* [Homepage](/)\n* Markets\n\n  + Equities\n\n    - [Top Capitalization](/stock-exchange/shares/ \"Markets - \")\n    - [United States](/stock-exchange/shares/north-america/united-states-12/ \"Markets - Equities: united-states\")\n    - [North America](/stock-exchange/shares/north-america/ \"Markets - Market price north-america\")\n    - [Europe](/stock-exchange/shares/europe/ \"Markets - Market price europe\")\n    - [Asia](/stock-exchange/shares/asia/ \"Markets - Market price asia\")\n    - [Middle East](/stock-exchange/shares/middle-east/ \"Markets - Market price middle-east\")\n    - [Sector Research](/stock-exchange/sectors/ \"Markets - \")\n    - [Company calendar](/stock-exchange/calendar/finance/ \"Markets - \")\n    - [Equities Analysis](/analysis/shares/ \"Markets - \")\n    - [Most popular](/watchlist/consulteglobal_1 \"Markets - \")\n    - [NVIDIA CORPORATION](/quote/stock/NVIDIA-CORPORATION-57355629/ \"Markets - NVIDIA Corporation\")\n    - [MICROSOFT CORPORATION](/quote/stock/MICROSOFT-CORPORATION-4835/ \"Markets - Microsoft Corporation\")\n    - [META PLATFORMS, INC.](/quote/stock/META-PLATFORMS-INC-10547141/ \"Markets - Meta Platforms, Inc.\")\n    - [AMD (ADVANCED MICRO DEVICES)](/quote/stock/AMD-ADVANCED-MICRO-DEVICE-19475876/ \"Markets - AMD (Advanced Micro Devices)\")\n    - [NETFLIX, INC.](/quote/stock/NETFLIX-INC-44292425/ \"Markets - Netflix, Inc.\")\n    - [JPMORGAN CHASE \u0026 CO.](/quote/stock/JPMORGAN-CHASE-CO-37468997/ \"Markets - JPMorgan Chase \u0026 Co.\")\n    - [ALPHABET INC.](/quote/stock/ALPHABET-INC-24203373/ \"Markets - Alphabet Inc.\")\n  + Indices\n\n    - [Homepage](/stock-exchange/indexes/ \"Markets - \")\n    - [Rankings](/stock-exchange/indexes/ranking/ \"Markets - \")\n    - [Europe](/stock-exchange/indexes/europe/ \"Markets - \")\n    - [America](/stock-exchange/indexes/americas/ \"Markets - \")\n    - [Asia](/stock-exchange/indexes/asia/ \"Markets - \")\n    - [Africa](/stock-exchange/indexes/africa/ \"Markets - \")\n    - [Index Analysis](/analysis/index-research/ \"Markets - \")\n    - [Indexes News](/news/indexes/ \"Markets - \")\n    - [S\u0026P 500](/quote/index/S-P-500-4985/ \"Markets - S\u0026P 500\")\n    - [DOW JONES](/quote/index/DOW-JONES-INDUSTRIAL-4945/ \"Markets - Dow Jones Industrial\")\n    - [NASDAQ 100](/quote/index/NASDAQ-100-4946/ \"Markets - NASDAQ 100\")\n    - [TSX COMP](/quote/index/TSX-COMPOSITE-7454/ \"Markets - TSX Composite\")\n    - [FTSE 100](/quote/index/FTSE-100-7392/ \"Markets - FTSE 100\")\n    - [DAX](/quote/index/DAX-7395/ \"Markets - DAX\")\n    - [CAC 40](/quote/index/CAC-40-4941/ \"Markets - CAC 40\")\n    - [EURO STOXX 50](/quote/index/EURO-STOXX-50-INDEX-7396/ \"Markets - Euro STOXX 50 Index\")\n  + Currency / Forex\n\n    - [Homepage](/stock-exchange/currencies/ \"Markets - \")\n    - [Rankings](/stock-exchange/currencies/ranking/ \"Markets - \")\n    - [Currency Cross Rate](/stock-exchange/currencies/crossrate/ \"Markets - \")\n    - [Currency Converter](/stock-exchange/currencies/converter/ \"Markets - \")\n    - [Forex Analysis](/analysis/forex-currency/ \"Markets - \")\n    - [Currencies News](/news/currencies/ \"Markets - \")\n    - [USD / EUR](/quote/currency/US-DOLLAR-EURO-USD-EUR-90101/ \"Markets - US Dollar / Euro (USD/EUR)\")\n    - [USD / CAD](/quote/currency/US-DOLLAR-CANADIAN-DOLLAR-2359031/ \"Markets - US Dollar / Canadian Dollar (USD/CAD)\")\n    - [USD / MXN](/quote/currency/US-DOLLAR-MEXICAN-PESO-US-2367953/ \"Markets - US Dollar / Mexican Peso (USD/MXN)\")\n    - [USD / BRL](/quote/currency/US-DOLLAR-BRAZILIAN-REAL--2358367/ \"Markets - US Dollar / Brazilian Real (USD/BRL)\")\n    - [USD / INR](/quote/currency/US-DOLLAR-INDIAN-RUPEE-US-2364186/ \"Markets - US Dollar / Indian Rupee (USD/INR)\")\n  + Commodities\n\n    - [Homepage](/stock-exchange/commodities/ \"Markets - \")\n    - [Energy](/stock-exchange/commodities/energies/ \"Markets - \")\n    - [Precious metals](/stock-exchange/commodities/precious_metals/ \"Markets - \")\n    - [Agriculture](/stock-exchange/commodities/agricultural_products/ \"Markets - \")\n    - [Industrial Metals](/stock-exchange/commodities/industrial_metallurgy/ \"Markets - \")\n    - [Livestock and Cattle](/stock-exchange/commodities/breeding_livestock/ \"Markets - \")\n    - [GOLD](/quote/commodity/GOLD-4947/ \"Markets - Gold\")\n    - [CRUDE OIL (WTI)](/quote/commodity/WTI-2355639/ \"Markets - WTI\")\n    - [CRUDE OIL (BRENT)](/quote/commodity/BRENT-CRUDE-OIL-SPOT-4948/ \"Markets - Brent Crude Oil Spot\")\n    - [SILVER](/quote/commodity/SILVER-16221/ \"Markets - Silver\")\n    - [PLATINUM](/quote/commodity/PLATINUM-89083/ \"Markets - Platinum\")\n  + Cryptocurrencies\n\n    - [Homepage](/stock-exchange/cryptocurrencies/ \"Markets - \")\n    - [Rankings](/stock-exchange/cryptocurrencies/ranking/ \"Markets - \")\n    - [Charts](/stock-exchange/cryptocurrencies/graphics/ \"Markets - \")\n    - [Analysis](/analysis/cryptocurrencies/ \"Markets - \")\n    - [News](/news/cryptocurrencies/ \"Markets - \")\n    - [BITCOIN](/quote/cryptocurrency/BITCOIN-BTC-USD-45553945/ \"Markets - Bitcoin (BTC/USD)\")\n    - [ETHEREUM](/quote/cryptocurrency/ETHEREUM-ETH-USD-45554109/ \"Markets - Ethereum (ETH/USD)\")\n    - [BINANCE COIN](/quote/cryptocurrency/BINANCE-COIN-BNB-USD-133757270/ \"Markets - Binance Coin (BNB/USD)\")\n    - [SOLANA](/quote/cryptocurrency/SOLANA-SOL-USD-128433627/ \"Markets - Solana (SOL/USD)\")\n    - [CARDANO](/quote/cryptocurrency/CARDANO-ADA-USD-119600672/ \"Markets - Cardano (ADA/USD)\")\n    - [CHAINLINK](/quote/cryptocurrency/CHAINLINK-LINK-USD-119643024/ \"Markets - Chainlink (LINK/USD)\")\n  + Interest Rates\n\n    - [Homepage](/stock-exchange/interest-rates/ \"Markets - \")\n    - [Yield Curve](/stock-exchange/interest-rates/yield-curves/ \"Markets - \")\n    - [Developed Nations](/stock-exchange/interest-rates/developed-countries/ \"Markets - \")\n    - [Emerging Countries](/stock-exchange/interest-rates/emerging-countries/ \"Markets - \")\n  + ETF\n\n    - [Summary](/stock-exchange/ETF/ \"Markets - \")\n    - [Screener](/stock-exchange/ETF/search/ \"Markets - \")\n    - [Analysis](/analysis/ETF/ \"Markets - \")\n    - [News](/news/ETF/ \"Markets - \")\n* News\n\n  + All News\n\n    - [World](/news/ \"News - \")\n    - [United States](/news/regions/local/ \"News - \")\n    - [Europe](/news/regions/europe/ \"News - \")\n    - [North America](/news/regions/north-america/ \"News - \")\n    - [South America](/news/regions/south-america/ \"News - \")\n    - [Asia](/news/regions/asia/ \"News - \")\n    - [Africa](/news/regions/africa/ \"News - \")\n    - [Middle East](/news/regions/middle_east/ \"News - \")\n    - [Emerging](/news/regions/emerging-countries/ \"News - \")\n  + Companies\n\n    - [All News](/news/companies/ \"News - \")\n    - [Analyst Reco.](/news/companies/recommandations/ \"News - \")\n    - [Rumors](/news/companies/rumors/ \"News - \")\n    - [IPOs](/news/companies/IPO/ \"News - \")\n    - [Capital Markets Transactions](/news/companies/capital-markets-transactions/ \"News - \")\n    - [New Contracts](/news/companies/new-contracts/ \"News - \")\n    - [Profit Warnings](/news/companies/profit-warning/ \"News - \")\n    - [Appointments](/news/companies/appointments/ \"News - \")\n    - [Press Releases](/news/companies/press_release/ \"News - \")\n    - [Security Transactions](/news/companies/corporate_action/ \"News - \")\n    - [Earnings reports](/news/companies/publications/ \"News - \")\n    - [New markets](/news/companies/new-markets/ \"News - \")\n    - [New products](/news/companies/new-products/ \"News - \")\n    - [Corporate strategies](/news/companies/corporate-strategies/ \"News - \")\n    - [Legal risks](/news/companies/legal-risks/ \"News - \")\n    - [Share buybacks](/news/companies/share-buybacks/ \"News - \")\n    - [Mergers and acquisitions](/news/companies/mergers-acquisitions/ \"News - \")\n    - [Call Transcripts](/news/companies/call-transcripts/ \"News - \")\n    - [Guidance](/news/companies/guidance/ \"News - \")\n  + [Indices](/news/indexes/ \"News - \")\n  + [Currency / Forex](/news/currencies/ \"News - \")\n  + [Commodities](/news/commodities/ \"News - \")\n  + [Cryptocurrencies](/news/cryptocurrencies/ \"News - \")\n  + [ETF](/news/ETF/ \"News - \")\n  + [Interest Rates](/news/rates/ \"News - \")\n  + [Economy](/news/economy/ \"News - \")\n  + Themes\n\n    - [Asset Management](/news/topics/management-assets/ \"News - \")\n    - [Activism](/news/topics/activism/ \"News - \")\n    - [Climate and ESG](/news/topics/ESG/ \"News - \")\n    - [Cybersecurity](/news/topics/cybersecurity/ \"News - \")\n    - [Geopolitics](/news/topics/geopolitics/ \"News - \")\n    - [Central Banks](/news/topics/central-banks/ \"News - \")\n    - [Inflation](/news/topics/inflation/ \"News - \")\n    - [Business Leaders](/insiders/ \"News - \")\n  + [Sectors](/news/sectors/ \"News - \")\n  + Calendar\n\n    - [Economic Calendar](/stock-exchange/calendar/economic/ \"News - \")\n    - [Company calendar](/stock-exchange/calendar/finance/ \"News - \")\n  + [All our articles](/news/marketscreener/ \"News - \")\n  + [Most Read News](/news/most-read/ \"News - \")\n  + [Hot News](/news/hot-news/ \"News - \")\n* Analysis\n\n  + [All Analysis](/analysis/ \"Analysis - \")\n  + [Must Read](/analysis/must-reads/ \"Analysis - \")\n  + [Equities](/analysis/shares/ \"Analysis - \")\n  + [Interviews](/analysis/interviews/ \"Analysis - \")\n  + [Indices](/analysis/index-research/ \"Analysis - \")\n  + [Currencies](/analysis/forex-currency/ \"Analysis - \")\n  + [Commodities](/analysis/commodities/ \"Analysis - \")\n  + [ETF](/analysis/ETF/ \"Analysis - \")\n  + [Cryptocurrencies](/analysis/cryptocurrencies/ \"Analysis - \")\n  + Stock Trading Strategies\n\n    - [All](/analysis/shares-strategies/ \"Analysis - \")\n    - [America](/analysis/shares-strategies/america/ \"Analysis - \")\n    - [Europe](/analysis/shares-strategies/europe/ \"Analysis - \")\n    - [Asia](/analysis/shares-strategies/asia/ \"Analysis - \")\n* Our Shows\n\n  + [Shows](/videos/ \"Our Shows - \")\n  + [Must Watch](/videos/must-watch/ \"Our Shows - \")\n  + [Satirical Cartoon](/videos/satirical-cartoon/ \"Our Shows - \")\n  + [Today\u0027s Editorial](/videos/today-on-wall-street/ \"Our Shows - \")\n  + [Crypto Recap](/videos/crypto-recap/ \"Our Shows - \")\n* Stock Picks\n\n  + [All our investments](/stock-analyses/ \"Stock Picks - \")\n  + [United States](/stock-analyses/america/ \"Stock Picks - \")\n  + [Europe](/stock-analyses/europe/ \"Stock Picks - \")\n  + [Asia, Pacific](/stock-analyses/asia-pacific/ \"Stock Picks - \")\n* Portfolios\n\n  + [Virtual Portfolios](/registration/member/?utmzb_campaign=portefeuilles-virtuels++redirect_portefeuilles-virtuels++\u0026utmzb_content=++++\u0026utmzb_source=redirect\u0026utmzb_medium=url_declenchement \"Portfolios - \")\n  + [USA Portfolio](/services/solutions/?utmzb_campaign=portefeuille++blocage_portefeuille_portefeuille-us_menu++\u0026utmzb_content=+++menu+\u0026utmzb_source=blocage\u0026utmzb_medium=portefeuille-us \"Portfolios - \")\n  + [European Portfolio](/services/solutions/?utmzb_campaign=portefeuille++blocage_portefeuille_portefeuille-eu_menu++\u0026utmzb_content=+++menu+\u0026utmzb_source=blocage\u0026utmzb_medium=portefeuille-eu \"Portfolios - \")\n  + [Asian Portfolio](/services/solutions/?utmzb_campaign=portefeuille++blocage_portefeuille_portefeuille-asie_menu++\u0026utmzb_content=+++menu+\u0026utmzb_source=blocage\u0026utmzb_medium=portefeuille-asie \"Portfolios - \")\n* Watchlists\n\n  + My Watchlists\n\n    - [Watchlists](/registration/member/?utmzb_campaign=mes-listes++redirect_mes-listes++\u0026utmzb_content=++++\u0026utmzb_source=redirect\u0026utmzb_medium=url_declenchement \"Watchlists - \")\n    - [My previous session](/registration/member/?utmzb_campaign=mes-listes++redirect_mes-listes++\u0026utmzb_content=++++\u0026utmzb_source=redirect\u0026utmzb_medium=url_declenchement \"Watchlists - \")\n    - [My most visited](/registration/member/?utmzb_campaign=mes-listes++redirect_mes-listes++\u0026utmzb_content=++++\u0026utmzb_source=redirect\u0026utmzb_medium=url_declenchement \"Watchlists - \")\n    - [Most popular](/registration/member/?utmzb_campaign=mes-listes++redirect_mes-listes++\u0026utmzb_content=++++\u0026utmzb_source=redirect\u0026utmzb_medium=url_declenchement \"Watchlists - \")\n  + Investment Style\n\n    - [Homepage](/investment-styles-lists/ \"Watchlists - \")\n    - [Undervalued stocks](/investment-styles-lists/value/ \"Watchlists - \")\n    - [Multibaggers](/investment-styles-lists/multibaggers/ \"Watchlists - \")\n    - [Low capital intensity](/investment-styles-lists/stocks_capex_light/ \"Watchlists - \")\n    - [Growth stocks at reasonable prices](/investment-styles-lists/stocks_garp/ \"Watchlists - \")\n    - [ESG stocks](/investment-styles-lists/esg_stocks/ \"Watchlists - \")\n    - [Low volatility](/investment-styles-lists/low_volatility/ \"Watchlists - \")\n  + Investment Themes\n\n    - [Homepage](/investment-themes/ \"Watchlists - \")\n    - [Adtechs](/investment-themes/adtech/ \"Watchlists - \")\n    - [Israeli innovation](/investment-themes/innovation_israel/ \"Watchlists - \")\n    - [Fintechs](/investment-themes/fintech/ \"Watchlists - \")\n    - [Metaverse](/investment-themes/metaverse/ \"Watchlists - \")\n    - [Boring businesses](/investment-themes/boring_businesses/ \"Watchlists - \")\n    - [Smart home](/investment-themes/smart_home/ \"Watchlists - \")\n* Rankings\n\n  + Top Movers\n\n    - [Short-Term Gainers \u0026 Losers](/top-records/price-change/ \"Rankings - \")\n    - [Long-term Gainers \u0026 Losers](/top-records/price-change/mid-and-long-term/ \"Rankings - \")\n    - [Unusual volumes](/top-records/price-change/unusual-volumes/ \"Rankings - \")\n    - [New Historical Highs](/top-records/price-change/new-historical-low/ \"Rankings - \")\n    - [New Historical Lows](/top-records/price-change/new-historical-high/ \"Rankings - \")\n  + Top Fundamentals\n\n    - [Fundamental Composite](/top-records/finances/ \"Rankings - \")\n    - [Sales growth](/top-records/finances/sales-growth/ \"Rankings - \")\n    - [Earnings Growth](/top-records/finances/earnings-growth/ \"Rankings - \")\n    - [Profitability](/top-records/finances/profitability/ \"Rankings - \")\n    - [Finances](/top-records/finances/finances/ \"Rankings - \")\n  + Rankings Valuation\n\n    - [Valuation Composite](/top-records/valuation/ \"Rankings - \")\n    - [Capitalization](/top-records/valuation/market-capitalization/ \"Rankings - \")\n    - [P/E ratio](/top-records/valuation/PER/ \"Rankings - \")\n    - [Enterprise value](/top-records/valuation/EV/ \"Rankings - \")\n    - [Yield](/top-records/valuation/yield/ \"Rankings - \")\n    - [Price to Book (PBR)](/top-records/valuation/price-to-book/ \"Rankings - \")\n    - [Free Cash Flow (FCF)](/top-records/valuation/free-cash-flow/ \"Rankings - \")\n  + Top Consensus\n\n    - [Consensus composite](/top-records/consensus/ \"Rankings - \")\n    - [Analyst Opinion](/top-records/consensus/opinions/ \"Rankings - \")\n    - [Target price](/top-records/consensus/target-price/ \"Rankings - \")\n    - [Opinion Divergences](/top-records/consensus/divergence/ \"Rankings - \")\n    - [Estimates Revisions](/top-records/consensus/estimates-revisions/ \"Rankings - \")\n    - [Analyst coverage](/top-records/consensus/analyst-coverage/ \"Rankings - \")\n  + Technical Analysis Rankings\n\n    - [RSI](/top-records/technical/ \"Rankings - \")\n    - [GAPS](/top-records/technical/gaps/ \"Rankings - \")\n    - [STIM](/top-records/technical/STIM/ \"Rankings - \")\n    - [Daily Breakouts](/top-records/technical/technical-signals/ \"Rankings - \")\n    - [Weekly Breakouts](/top-records/technical/weekly-technical-signals/ \"Rankings - \")\n    - [Trends](/top-records/technical/trends/ \"Rankings - \")\n    - [Volatility](/top-records/technical/volatility/ \"Rankings - \")\n  + Top ranking ESG\n\n    - [ESG MSCI](/top-records/ESG/ \"Rankings - \")\n    - [Environment](/top-records/ESG/environment/ \"Rankings - \")\n    - [Social](/top-records/ESG/social/ \"Rankings - \")\n    - [Governance](/top-records/ESG/governance/ \"Rankings - \")\n    - [Islamic Finance](/top-records/ESG/islamic-finance/ \"Rankings - \")\n    - [Paris Agreement](/top-records/ESG/paris-agreement/ \"Rankings - \")\n* Screeners\n\n  + [Stock Screener Home](/stock-screener \"Screeners - The Surperformance search engine analyses financial data from all listed companies in the world.\")\n  + Investment Themes\n\n    - [Diabetes](/services/solutions/ \"Screeners - \")\n    - [Pricing Power](/services/solutions/ \"Screeners - \")\n    - [Let\u0027s all cycle!](/services/solutions/ \"Screeners - \")\n    - [Water](/services/solutions/ \"Screeners - \")\n    - [Smart City](/services/solutions/ \"Screeners - \")\n    - [Europe\u0027s family businesses](/services/solutions/ \"Screeners - \")\n  + Technical Rankings\n\n    - [Oversold stocks](/tools/stock-screener/oversold-stocks/ \"Screeners - \")\n    - [Overbought stocks](/tools/stock-screener/overbought-stocks/ \"Screeners - \")\n    - [Close to resistance](/tools/stock-screener/close-to-resistances/ \"Screeners - \")\n    - [Close to support](/tools/stock-screener/close-to-supports/ \"Screeners - \")\n    - [Accumulation Phases](/tools/stock-screener/accumulation-phase/ \"Screeners - \")\n    - [Most volatile stocks](/tools/stock-screener/most-volatile-stocks/ \"Screeners - \")\n  + Fundamental Rankings\n\n    - [Top Investor Rating](/tools/stock-screener/top-investor-rating/ \"Screeners - \")\n    - [Top Trading Rating](/tools/stock-screener/top-trading-rating/ \"Screeners - \")\n    - [Top Consensus](/tools/stock-screener/top-consensus/ \"Screeners - \")\n    - [Top Growth](/tools/stock-screener/growth-stocks/ \"Screeners - \")\n    - [Top Dividends](/tools/stock-screener/yield-stocks/ \"Screeners - \")\n    - [Low valuations](/tools/stock-screener/low-valuations/ \"Screeners - \")\n  + My Screeners\n\n    - [All my stocks](/registration/member/ \"Screeners - \")\n    - [Watchlists](/registration/member/ \"Screeners - \")\n    - [Virtual Portfolios](/registration/member/ \"Screeners - \")\n* Tools\n\n  + MarketScreener tools\n\n    - [Stock Screener](/stock-screener \"Tools - \")\n    - [iPhone app](/services/outils/iphone_ipad/ \"Tools - \")\n  + Expert tools\n\n    - [Stock Screener PRO](/services/solutions/?restricted=1\u0026utmzb_campaign=site%20202003%20abo%20en_us\u0026utmzb_content=all%20menu%20onglet_outils%20stockscreener_pro%20stockscreener_pro\u0026utmzb_source=house\u0026utmzb_medium=display \"Tools - \")\n    - [Portfolio Creator](/services/solutions/?restricted=1\u0026utmzb_campaign=site%20202003%20abo%20en_us\u0026utmzb_content=all%20menu%20onglet_outils%20portfolio_creator%20portfolio_creator\u0026utmzb_source=house\u0026utmzb_medium=display \"Tools - \")\n    - [Event Screener](/services/solutions/?restricted=1\u0026utmzb_campaign=site%20202003%20abo%20en_us\u0026utmzb_content=all%20menu%20onglet_outils%20event_screener%20event_screener\u0026utmzb_source=house\u0026utmzb_medium=display \"Tools - \")\n  + [Dynamic Chart](/dynamic-chart/ \"Tools - \")\n  + [Company calendar](/stock-exchange/calendar/finance/ \"Tools - \")\n  + [Economic Calendar](/stock-exchange/calendar/economic/ \"Tools - \")\n  + [Currency Converter](/stock-exchange/currencies/converter/ \"Tools - \")\n* Our Services\n\n  + [Our subscriptions](/services/solutions/ \"Our Services - \")\n  + [Our Stock Picks](/stock-analyses/ \"Our Services - \")\n  + [Stock Screener](/stock-screener?utmzb_campaign=site%202017%20abo%20%20en_us\u0026utmzb_content=all%20menu%20onglet_service%20stockscreener%20stockscreener\u0026utmzb_source=house\u0026utmzb_medium=display \"Our Services - The Surperformance search engine analyses financial data from all listed companies in the world.\")\n  + [Thematic Investment Lists](/investment-themes/?utmzb_campaign=site%202017%20abo%20%20en_us\u0026utmzb_content=all%20menu%20onglet_service%20liste_thematique%20topliste\u0026utmzb_source=house\u0026utmzb_medium=display \"Our Services - \")\n  + MarketScreener Portfolios\n\n    - [European Portfolio](/services/solutions/ \"Our Services - \")\n    - [USA Portfolio](/services/solutions/ \"Our Services - \")\n    - [Asian Portfolio](/services/solutions/ \"Our Services - \")\n\n[MICROSOFT CORPORATION](/quote/stock/MICROSOFT-CORPORATION-4835/)\n\n[Add to a list](/registration/member/?utmzb_campaign=ajouter-listes++redirect_ajouter-listes++\u0026utmzb_content=++++\u0026utmzb_source=redirect\u0026utmzb_medium=url_declenchement)\n\n## Microsoft Corporation\n\n[## Equities](/stock-exchange/shares/north-america/united-states-12/)\n\n## MSFT\n\n## US5949181045\n\n[## Software](/stock-exchange/sectors/technology/software-it-services/?cf=Y3FjeWp6OVpNUVVHZU1KRVJTQ2JtZ2o5M3A0R3lDcUNaVmNHOGJMa1JsWT0)\n\n|  |  |  | | --- | --- | --- | | Real-time Estimate  Cboe BZX  Other stock markets   12:43:22 2025-12-10 pm EST | 5-day change | 1st Jan Change | | 481.80 USD | -2.08% |  | +0.78% | +14.23% |   |  |  |  | | --- | --- | --- | | 12:18pm | [UiPath Business Trends Stabilizing as Automation Demand Grows, RBC Says](/news/uipath-business-trends-stabilizing-as-automation-demand-grows-rbc-says-ce7d50dadb8aff20) | MT | | 12:15pm | [Amazon to invest over $35bn in India by 2030](/news/amazon-to-invest-over-35bn-in-india-by-2030-ce7d50dadb8af32c) |  [All News](/quote/stock/MICROSOFT-CORPORATION-4835/news/)  [Analyst Reco.](/quote/stock/MICROSOFT-CORPORATION-4835/news-broker-research/)  [Highlights](/quote/stock/MICROSOFT-CORPORATION-4835/news-key-events/)  [Insiders](/quote/stock/MICROSOFT-CORPORATION-4835/news-insiders/)  [Transcripts](/quote/stock/MICROSOFT-CORPORATION-4835/news-call-transcripts/)  [Press Releases](/quote/stock/MICROSOFT-CORPORATION-4835/news-press-releases/)  [Official Publications](/quote/stock/MICROSOFT-CORPORATION-4835/news-publications/)  [Other languages](/quote/stock/MICROSOFT-CORPORATION-4835/news-other-languages/)  [Trading Ideas](/quote/stock/MICROSOFT-CORPORATION-4835/news-recommandations/)  [MarketScreener Editorial Features](/quote/stock/MICROSOFT-CORPORATION-4835/news-strategies/)  [MarketScreener Strategies](/quote/stock/MICROSOFT-CORPORATION-4835/news-analysis/)  Microsoft, Amazon unveil billion-dollar AI, workforce investments in India Published on 12/10/2025 at 11:32 am EST  Acquiremedia  Share  [Microsoft Corporation](/quote/stock/MICROSOFT-CORPORATION-4835/)  -2.02%  Amazon and Microsoft announced separate billion-dollar investments in India aimed at expanding AI services in other key areas, like employment.  On Wednesday, Amazon unveiled plans to invest over $35 billion across its businesses in India through 2030. Microsoft, meanwhile, will invest $17.5 billion over the next four years to expand India\u0027s cloud and artificial intelligence infrastructure, workforce training and other in other areas, the company said Tuesday.    We have invested at scale in growing the physical and digital infrastructure for small businesses in India, creating millions of jobs, and taking Made-in-India global,\" according to Amit Agarwal, Amazon\u0027s senior VP of emerging markets.  Amazon said by 2030 it will support more than 3 million direct, indirect and seasonal jobs and has digitized 12 million small businesses in India enabling some $20 billion in exports.  Microsoft\u0027s fresh commitment builds on a $3 billion pledge made earlier this year, which the software giant added remained on track for deployed by next year\u0027s end.  It will expand three existing operational data center regions in Chennai, Hyderabad and Pune.  On Tuesday, Microsoft CEO Satya Nadella announced the initiative following a meeting with Indian Prime Minister Narendra Modi.  \"This transformation is anchored on three pillars: hyperscale infrastructure to run AI at scale, sovereign-ready solutions that ensure trust, and skilling programs that empower every Indian to not just join the future but shape it,\" Puneet Chandok, president of Microsoft India and South Asia, said in a statement.  Microsoft said it will add advanced AI features to India\u0027s two major employment platforms in its Ministry of Labour and Employment -- e-Shram and the National Career Service.  India is targeting to reach more than 310 million Indian citizens.  India\u0027s e-Shram is built on Microsoft Azure and links state aid that drove expansion of India\u0027s social protection coverage from 24% in 2019 to 64% by this year.  \"As AI reshapes the digital economy, India remains committed to innovation anchored in trust and sovereignty,\" Shri Ashwini Vaishnaw, India\u0027s union council minister of electronics, information and broadcasting under Modi, added Tuesday.  Copyright 2025 United Press International, Inc. (UPI). Any reproduction, republication, redistribution and/or modification of any UPI content is expressly prohibited without UPI\u0027s prior written consent., source International Top News  \u00a9 Acquiremedia - 2025  Share    [Latest news about Microsoft Corporation](/quote/stock/MICROSOFT-CORPORATION-4835/news/)  |  |  |  | | --- | --- | --- | | 12:18pm | [UiPath Business Trends Stabilizing as Automation Demand Grows, RBC Says](/news/uipath-business-trends-stabilizing-as-automation-demand-grows-rbc-says-ce7d50dadb8aff20) | MT | | 12:15pm | [Amazon to invest over $35bn in India by 2030](/news/amazon-to-invest-over-35bn-in-india-by-2030-ce7d50dadb8af32c) | | 10:48am | [GameStop disappoints in Q3, struggling with digital](/news/gamestop-disappoints-in-q3-struggling-with-digital-ce7d50dad88cf326) | | 08:58am | [This Is Decision Day](/news/this-is-decision-day-ce7d50dad98af12d) | | 08:55am | [Adobe Launches Creative, Productivity Apps on OpenAI\u0027s ChatGPT](/news/adobe-launches-creative-productivity-apps-on-openai-s-chatgpt-ce7d50dad98af427) | MT | | 08:18am | [Adobe brings Adobe Photoshop, Adobe Express, Adobe Acrobat directly into ChatGPT](/news/adobe-brings-adobe-photoshop-adobe-express-adobe-acrobat-directly-into-chatgpt-ce7d51d3d080f121) | RE | | 08:15am | [Adobe Integrates With ChatGPT as Companies Flock to OpenAI Chatbot\u0027s App Program](/news/adobe-integrates-with-chatgpt-as-companies-flock-to-openai-chatbot-s-app-program-ce7d51d3d080f525) | DJ | | 09:03am | [Adobe plugs Photoshop, Acrobat tools into ChatGPT](/news/adobe-plugs-photoshop-acrobat-tools-into-chatgpt-ce7d51d3d08fff24) | RE | | 11:40am | [Elon Musk\u0027s SpaceX to raise over $25 billion in blockbuster 2026 IPO, source says](/news/elon-musk-s-spacex-to-raise-over-25-billion-in-blockbuster-2026-ipo-source-says-ce7d51d3d180f02d) | RE | | 06:24am | [Norway\u0027s $2 trillion sovereign fund cautious on volatile data centres](/news/norway-s-2-trillion-sovereign-fund-cautious-on-volatile-data-centres-ce7d51d3d18af124) | RE | | 05:58am | [SpaceX, OpenAI, ByteDance\u2026 These mega-unicorns that are snubbing the stock market](/news/spacex-openai-bytedancea-these-mega-unicorns-that-are-snubbing-the-stock-market-ce7d51d3d188f427) | | 04:56am | [Aptitude Wins Contract Renewal for Fynapse Platform in US](/news/aptitude-wins-contract-renewal-for-fynapse-platform-in-us-ce7d51d3de8eff24) | MT | | 03:59am | [Microsoft, Amazon Bet Billions on India -- Update](/news/microsoft-amazon-bet-billions-on-india-update-ce7d51d3de8bff24) | DJ | | 02:19am | [Microsoft massively strengthens its presence in India with a $17.5 billion investment](/news/microsoft-massively-strengthens-its-presence-in-india-with-a-17-5-billion-investment-ce7d51d3df8cf72c) | | 06:03am | [ROI-AI masking the economy cuts both ways: Mike Dolan](/news/roi-ai-masking-the-economy-cuts-both-ways-mike-dolan-ce7d51d3dc8bf426) | RE | | 10:50am | [Amazon to invest over $35 billion in India on AI, exports](/news/amazon-to-invest-over-35-billion-in-india-on-ai-exports-ce7d51d3dd8ff727) | RE | | 12:47am | [Amazon to Invest Over $35 Billion In India](/news/amazon-to-invest-over-35-billion-in-india-ce7d51d3dd8ef427) | DJ | | 12:39am | [PRESS DIGEST-Wall Street Journal - December 10](/news/press-digest-wall-street-journal-december-10-ce7d51d3dd8ef72c) | RE | | 09:54pm | [Microsoft Plans to Invest $23 Billion on AI in India, Canada](/news/microsoft-plans-to-invest-23-billion-on-ai-in-india-canada-ce7d51d3dd8af520) | DJ | | 09:34pm | [Australia social media watchdog sees common cause with US as age ban begins](/news/australia-social-media-watchdog-sees-common-cause-with-us-as-age-ban-begins-ce7d51d3dd8bf726) | RE | | Dec. 09 | [GameStop quarterly revenue misses estimates amid struggles with digital pivot](/news/gamestop-quarterly-revenue-misses-estimates-amid-struggles-with-digital-pivot-ce7d51d3db80f721) | RE | | Dec. 09 | [OpenAI Names Denise Dresser as Chief Revenue Officer](/news/openai-names-denise-dresser-as-chief-revenue-officer-ce7d51d3db8df624) | MT | | Dec. 09 | [Sector Update: Tech Stocks Mixed Late Afternoon](/news/sector-update-tech-stocks-mixed-late-afternoon-ce7d51d3db8df722) | MT | | Dec. 09 | [OpenAI appoints Denise Dresser as chief revenue officer](/news/openai-appoints-denise-dresser-as-chief-revenue-officer-ce7d51d3db8af222) | RE | | Dec. 09 | [Google\u0027s Gemini Sees Increased Mobile App Downloads, Nipping OpenAI Heels](/news/google-s-gemini-sees-increased-mobile-app-downloads-nipping-openai-heels-ce7d51d3db88f72d) | MT |  [Chart Microsoft Corporation](/quote/stock/MICROSOFT-CORPORATION-4835/graphics/)  [MSFT: Dynamic Chart](/quote/stock/MICROSOFT-CORPORATION-4835/graphics/)  [Company Profile](/quote/stock/MICROSOFT-CORPORATION-4835/company/)  Microsoft Corporation is the world\u0027s leader in the design, development and marketing of operating systems and software programs for PC\u0027s and servers. The group also builds and sells computer equipment. Net sales break down by activity as follows: - sale of operating systems and application development tools (42.9%): primarily for servers (Azure, SQL Server, Windows Server, Visual Studio, System Center, GitHub, etc.) and (Windows); - development of cloud-based software applications (37.7%): programs for productivity (Microsoft 365; Word, Excel, PowerPoint, Outlook, OneNote, Publisher and Access), integrated management and customer relationship management (Dynamics 365), online file sharing and management (OneDrive), and unified and collaborative communications (Microsoft Teams); - other (19.4%): primarily sale of software licenses (Windows), tablets (Microsoft Surface), video game consoles and software (Xbox), computer accessories, etc. The United States accounts for 51.3% of net sales.  Employees  228,000  Sector  [Software](/stock-exchange/sectors/technology/software-it-services/?cf=Y3FjeWp6OVpNUVVHZU1KRVJTQ2JtZ2o5M3A0R3lDcUNaVmNHOGJMa1JsWT0)  Calendar  Dec. 11  [- Barclays Global Technology Conference](/quote/stock/MICROSOFT-CORPORATION-4835/calendar/)  [More about the company](/quote/stock/MICROSOFT-CORPORATION-4835/company/)  [Income Statement and Estimates](/quote/stock/MICROSOFT-CORPORATION-4835/finances/)  [More financial data](/quote/stock/MICROSOFT-CORPORATION-4835/finances/)  [Analysis / Opinion](/quote/stock/MICROSOFT-CORPORATION-4835/news-strategies/)  [**Microsoft Shares Slide on Report of Lower AI Demand**  December 03, 2025 at 11:17 am EST](/news/microsoft-shares-slide-on-report-of-lower-ai-demand-ce7d51dede8bf227)  [**ImpactFull Weekly #11 - OpenAI goes Vertical**  October 27, 2025 at 11:33 am EDT](/news/impactfull-weekly-11-openai-goes-vertical-ce7d5ddfdb8df22c)  [**Microsoft accelerates AI growth with strategic partnership**  July 29, 2025 at 05:11 am EDT](/news/microsoft-accelerates-ai-growth-with-strategic-partnership-ce7c5fd9dc89fe26)  [More Strategies](/quote/stock/MICROSOFT-CORPORATION-4835/news-strategies/)  [Ratings](/quote/stock/MICROSOFT-CORPORATION-4835/ratings/)  Trader  Trader  This super rating is the result of a weighted average of the rankings based on the following ratings: Global Valuation (Composite), EPS Revisions (4 months), and Visibility (Composite). We recommend that you carefully review the associated descriptions.  Investor  Investor  This super composite rating is the result of a weighted average of the rankings based on the following ratings: Fundamentals (Composite), Global Valuation (Composite), EPS Revisions (1 year), and Visibility (Composite). We recommend that you carefully review the associated descriptions.  Global  Global  This composite rating is the result of an average of the rankings based on the following ratings: Fundamentals (Composite), Valuation (Composite), Financial Estimates Revisions (Composite), Consensus (Composite), and Visibility (Composite). The company must be covered by at least 4 of these 5 ratings for the calculation to be performed. We recommend that you carefully review the associated descriptions.  Quality  This composite rating is the result of an average of the rankings based on the following ratings: Capital Efficiency (Composite), Quality of Financial Reporting (Composite), and Financial Health (Composite). The company must be covered by at least 2 of these 3 ratings for the calculation to be performed. We recommend that you carefully review the associated descriptions.  ESG MSCI [More Ratings](/quote/stock/MICROSOFT-CORPORATION-4835/ratings/)  [Analysts\u0027 Consensus](/quote/stock/MICROSOFT-CORPORATION-4835/consensus/)  Sell Buy  Mean consensus  Number of Analysts  Last Close Price  492.02USD  Average target price  625.41USD  Spread / Average Target [Consensus](/quote/stock/MICROSOFT-CORPORATION-4835/consensus/)  [EPS Estimates](/quote/stock/MICROSOFT-CORPORATION-4835/consensus-revisions/)  [Revisions to estimates](/quote/stock/MICROSOFT-CORPORATION-4835/consensus-revisions/)  Quarterly revenue - Rate of surprise  [Company calendar](/quote/stock/MICROSOFT-CORPORATION-4835/calendar/)      1. [Stock Market](/) 2. [Stock Market News](/news/) 3. Microsoft, Amazon unveil billion-dollar AI, workforce investments in India    [Stock markets for all   100% Free Registration  100% Free Registration](/registration/member/?utmzb_campaign=non-inscrits++sticky-btn-light_non-inscrits_bourse-portee-tous_bg-noir+bourse-portee-tous_bg-noir+\u0026utmzb_content=+++inscrition-gratuite+\u0026utmzb_source=sticky-btn-light\u0026utmzb_medium=url_declenchement)  Select your edition  All financial news and data tailored to specific country editions  NORTH AMERICA  [United-States](/)[Canada](//ca.marketscreener.com/)  MIDDLE EAST  [Saudi Arabia](//sa.marketscreener.com/)[United Arab Emirates](//ae.marketscreener.com/)  [France](//www.zonebourse.com/)[Deutschland](//de.marketscreener.com/)[Suisse](//ch.zonebourse.com/)[Schweiz](//ch.marketscreener.com/)[Italia](//it.marketscreener.com/)[\u00d6sterreich](//at.marketscreener.com/)[Belgi\u00eb](//be.marketscreener.com/)[Nederland](//nl.marketscreener.com/)[Espa\u00f1a](//es.marketscreener.com/)[Sverige](//se.marketscreener.com/)[United Kingdom](//uk.marketscreener.com/)  [Australia](//au.marketscreener.com/)[India](//in.marketscreener.com/)[Hong Kong](//hk.marketscreener.com/) |",
+                url: "https://www.marketscreener.com/news/microsoft-amazon-unveil-billion-dollar-ai-workforce-investments-in-india-ce7d50dad881f625"
+            },
+            
+            {
+                title: "Kaiser Agrees to $47.5 Million Settlement in Data-Sharing Suit - Bloomberg Law News",
+                summary: "\uff08\u6458\u8981\u751f\u6210\u5931\u8d25\uff09Kaiser Agrees to $47.5 Million Settlement in Data-Sharing Suit - Bloomberg Law News",
+                content: "Kaiser Agrees to $47.5 Million Settlement in Data-Sharing Suit\n\n===============\n\n[Skip to content](https://news.bloomberglaw.com/ip-law/kaiser-agrees-to-47-5-million-settlement-in-data-sharing-suit#that-jump-content--default)\n\n[Bloomberg the Company \u0026 Its Products The Company \u0026 its Products](https://www.bloomberg.com/company/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)[Bloomberg Terminal Demo Request](https://www.bloomberg.com/professional/contact-menu/?utm_source=bloomberg-menu\u0026utm_medium=bnanews\u0026bbgsum=DG-WS-PROF-DEMO-bbgmenu)[Bloomberg Anywhere Remote Login Bloomberg Anywhere Login](https://bba.bloomberg.net/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)[Bloomberg Customer Support Customer Support](https://www.bloomberg.com/professional/support/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n*   ### Bloomberg\n\nConnecting decision makers to a dynamic network of information, people and ideas, Bloomberg quickly and accurately delivers business and financial information, news and insight around the world \n### For Customers\n\n    *   [Bloomberg Anywhere Remote Login](https://bba.bloomberg.net/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Software Updates](https://www.bloomberg.com/professional/support/customer-support/software-updates/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Manage Products and Account Information](https://service.bloomberg.com/portal/sessions/new?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Support\n\nAmericas+1 212 318 2000\n\nEMEA+44 20 7330 7500\n\nAsia Pacific+65 6212 1000\n\n*   ### Company\n\n    *   [About](https://www.bloomberg.com/company/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Careers](https://www.bloomberg.com/company/what-we-do/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Diversity and Inclusion](https://www.bloomberg.com/company/diversity-inclusion/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Tech At Bloomberg](https://www.bloomberg.com/company/values/tech-at-bloomberg/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Philanthropy](https://www.bloomberg.com/company/philanthropy/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Sustainability](https://www.bloomberg.com/company/sustainability/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg London](https://www.bloomberg.com/london/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Beta](https://www.bloomberg.com/company/values/tech-at-bloomberg/bloomberg-beta/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Communications\n\n    *   [Press Announcements](https://www.bloomberg.com/company/announcements/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Press Contacts](https://www.bloomberg.com/company/press-contacts/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Follow\n\n    *   [Facebook](https://www.facebook.com/Bloomberglp)\n    *   [Instagram](https://www.instagram.com/bloomberg/)\n    *   [LinkedIn](https://www.linkedin.com/company/2494)\n    *   [Twitter](https://twitter.com/bloomberg)\n    *   [YouTube](https://www.youtube.com/@bloomberglp)\n\n*   ### Products\n\n    *   [Bloomberg Terminal](https://www.bloomberg.com/professional/products/bloomberg-terminal/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Data](https://www.bloomberg.com/professional/products/data/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Trading](https://www.bloomberg.com/professional/products/trading/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Risk](https://www.bloomberg.com/professional/products/risk/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Compliance](https://www.bloomberg.com/professional/products/compliance/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Indices](https://www.bloomberg.com/professional/products/indices/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Industry Products\n\n    *   [Bloomberg Law](https://pro.bloomberglaw.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Tax](https://pro.bloombergtax.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Government](https://about.bgov.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [BloombergNEF](https://about.bnef.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n*   ### Media\n\n    *   [Bloomberg Markets](https://www.bloomberg.com/markets/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Technology](https://www.bloomberg.com/technology/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Pursuits](https://www.bloomberg.com/pursuits/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Politics](https://www.bloomberg.com/politics/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Opinion](https://www.bloomberg.com/opinion/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Businessweek](https://www.bloomberg.com/businessweek/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Live Conferences](https://www.bloomberglive.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Radio](https://www.bloombergradio.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Television](https://www.bloomberg.com/live?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [News Bureaus](https://www.bloomberg.com/company/news-bureaus/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Media Services\n\n    *   [Bloomberg Media Distribution](https://www.bloomberg.com/distribution?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Advertising](https://www.bloombergmedia.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n*   ### Company\n\n    *   [About](https://www.bloomberg.com/company/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Careers](https://www.bloomberg.com/company/what-we-do/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Diversity and Inclusion](https://www.bloomberg.com/company/diversity-inclusion/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Tech At Bloomberg](https://www.bloomberg.com/company/values/tech-at-bloomberg/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Philanthropy](https://www.bloomberg.com/company/philanthropy/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Sustainability](https://www.bloomberg.com/company/sustainability/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg London](https://www.bloomberg.com/london/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Beta](https://www.bloomberg.com/company/values/tech-at-bloomberg/bloomberg-beta/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Communications\n\n    *   [Press Announcements](https://www.bloomberg.com/company/announcements/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Press Contacts](https://www.bloomberg.com/company/press-contacts/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Follow\n\n    *   [Facebook](https://www.facebook.com/Bloomberglp)\n    *   [Instagram](https://www.instagram.com/bloomberg/)\n    *   [LinkedIn](https://www.linkedin.com/company/2494)\n    *   [Twitter](https://twitter.com/bloomberg)\n    *   [YouTube](https://www.youtube.com/@bloomberglp)\n\n*   ### Products\n\n    *   [Bloomberg Terminal](https://www.bloomberg.com/professional/products/bloomberg-terminal/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Data](https://www.bloomberg.com/professional/products/data/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Trading](https://www.bloomberg.com/professional/products/trading/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Risk](https://www.bloomberg.com/professional/products/risk/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Compliance](https://www.bloomberg.com/professional/products/compliance/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Indices](https://www.bloomberg.com/professional/products/indices/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Industry Products\n\n    *   [Bloomberg Law](https://pro.bloomberglaw.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Tax](https://pro.bloombergtax.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Government](https://about.bgov.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Environment](https://pro.bloombergenvironment.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [BloombergNEF](https://about.bnef.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n*   ### Media\n\n    *   [Bloomberg Markets](https://www.bloomberg.com/markets/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Technology](https://www.bloomberg.com/technology/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Pursuits](https://www.bloomberg.com/pursuits/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Politics](https://www.bloomberg.com/politics/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Opinion](https://www.bloomberg.com/opinion/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Businessweek](https://www.bloomberg.com/businessweek/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Live Conferences](https://www.bloomberglive.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Radio](https://www.bloombergradio.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Television](https://www.bloomberg.com/live?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [News Bureaus](https://www.bloomberg.com/company/news-bureaus/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Media Services\n\n    *   [Bloomberg Media Distribution](https://www.bloomberg.com/distribution?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Advertising](https://www.bloombergmedia.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n*   ### Bloomberg\n\nConnecting decision makers to a dynamic network of information, people and ideas, Bloomberg quickly and accurately delivers business and financial information, news and insight around the world \n### For Customers\n\n    *   [Bloomberg Anywhere Remote Login](https://bba.bloomberg.net/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Software Updates](https://www.bloomberg.com/professional/support/customer-support/software-updates/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Manage Contracts and Orders](https://service.bloomberg.com/portal/sessions/new?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Support\n\nAmericas+1 212 318 2000\n\nEMEA+44 20 7330 7500\n\nAsia Pacific+65 6212 1000\n\n![Image 1: Search](https://news-cdn.bindg.com/indg/assets/icons/icon-search-white.svg)![Image 2: Open Menu](https://news-cdn.bindg.com/indg/assets/icons/icon-hamburger-menu-white.svg)![Image 3: Open Menu](https://news-cdn.bindg.com/indg/assets/icons/icon-hamburger-menu-white.svg) News ![Image 4](https://news-cdn.bindg.com/indg/assets/icons/icon-chevron-down-white.svg)[Podcasts](https://news.bloomberglaw.com/podcasts)[Videos](https://news.bloomberglaw.com/videos/)\n\n*   [Home](https://news.bloomberglaw.com/rankings-awards)\n*   [They\u0027ve Got Next: The 40 Under 40](https://news.bloomberglaw.com/rankings-awards/theyve-got-next-the-40-under-40)\n*   [Leading Law Firms Survey](https://news.bloomberglaw.com/rankings-awards/leading-law-firms)\n*   [Pro Bono Innovators](https://news.bloomberglaw.com/rankings-awards/pro-bono-innovators)\n*   [Unrivaled](https://news.bloomberglaw.com/rankings-awards/unrivaled)\n*   [Law School Innovation Program](https://news.bloomberglaw.com/rankings-awards/law-school-innovation-program)\n*   [League Tables](https://news.bloomberglaw.com/rankings-awards/league-tables)\n*   [Bloomberg Law Reports\u00ae: Surveys](https://news.bloomberglaw.com/rankings-awards/surveys)\n*   [Data-Driven Departments](https://news.bloomberglaw.com/rankings-awards/data-driven-departments)\n\nRankings \u0026 Awards![Image 5](https://news-cdn.bindg.com/indg/assets/icons/icon-chevron-down-white.svg)\n\n*   [Brief Analyzer](https://pro.bloomberglaw.com/brief-analyzer/?utm_medium=referral\u0026utm_source=n2-menu)\n*   [Draft Analyzer](https://pro.bloomberglaw.com/draft-analyzer/?utm_medium=referral\u0026utm_source=n2-menu)\n*   [Dockets](https://pro.bloomberglaw.com/court-dockets-search/?utm_medium=referral\u0026utm_source=n2-menu)\n*   [Practical Guidance](https://pro.bloomberglaw.com/the-complete-legal-research-resource/?utm_medium=referral\u0026utm_source=n2-menu)\n*   [Points of Law](https://pro.bloomberglaw.com/how-to-win-more-cases/?utm_medium=referral\u0026utm_source=n2-menu)\n\nResearch Tools![Image 6](https://news-cdn.bindg.com/indg/assets/icons/icon-chevron-down-white.svg)\n\n[![Image 7: Go to Bloomberg Law News](https://news-cdn.bindg.com/indg/assets/news/images/logo-law-inline-white.svg)](https://news.bloomberglaw.com/)\n\n Log In \n\n Sign Up For Newsletters \n\n Bloomberg Law \n\n*   [Antitrust](https://news.bloomberglaw.com/antitrust/)\n*   [Artificial Intelligence](https://news.bloomberglaw.com/artificial-intelligence/)\n*   [Banking](https://news.bloomberglaw.com/banking-law/)\n*   [Bankruptcy](https://news.bloomberglaw.com/bankruptcy-law/)\n*   [Before the Bar](https://news.bloomberglaw.com/before-the-bar/)\n*   [Benefits \u0026 Executive Compensation](https://news.bloomberglaw.com/employee-benefits/)\n*   [Bloomberg Law Analysis](https://news.bloomberglaw.com/bloomberg-law-analysis/)\n*   [Business \u0026 Practice](https://news.bloomberglaw.com/business-and-practice/)\n*   [California Brief](https://news.bloomberglaw.com/california-brief/)\n*   [Cannabis](https://news.bloomberglaw.com/cannabis/)\n*   [Capital Markets](https://news.bloomberglaw.com/capital-markets/)\n*   [Class Action](https://news.bloomberglaw.com/class-action/)\n*   [Construction Labor](https://news.bloomberglaw.com/construction-labor/)\n*   [Crypto](https://news.bloomberglaw.com/crypto/)\n*   [Daily Labor Report](https://news.bloomberglaw.com/daily-labor-report/)\n*   [Delaware Brief](https://news.bloomberglaw.com/delaware-brief/)\n*   [Employment](https://news.bloomberglaw.com/employment/)\n*   [Environment \u0026 Energy](https://news.bloomberglaw.com/environment-and-energy/)\n*   [ESG](https://news.bloomberglaw.com/esg/)\n*   [Federal Contracting](https://news.bloomberglaw.com/federal-contracting/)\n*   [Health Law \u0026 Business](https://news.bloomberglaw.com/health-law-and-business/)\n*   [Human Resources](https://news.bloomberglaw.com/human-resources-news/)\n*   [Immigration](https://news.bloomberglaw.com/immigration/)\n*   [In-House Counsel](https://news.bloomberglaw.com/in-house-counsel/)\n*   [Insurance](https://news.bloomberglaw.com/insurance/)\n*   [International Trade](https://news.bloomberglaw.com/international-trade/)\n*   [IP](https://news.bloomberglaw.com/ip-law/)\n*   [Labor Relations](https://news.bloomberglaw.com/labor-relations/)\n*   [Legal Ethics](https://news.bloomberglaw.com/legal-ethics/)\n*   [Legal Exchange: Insights \u0026 Commentary](https://news.bloomberglaw.com/legal-exchange-insights-and-commentary/)\n*   [Legal Ops \u0026 Tech](https://news.bloomberglaw.com/legal-ops-and-tech/)\n*   [Litigation](https://news.bloomberglaw.com/litigation/)\n*   [Litigation Finance](https://news.bloomberglaw.com/litigation-finance/)\n*   [Mergers \u0026 Acquisitions](https://news.bloomberglaw.com/mergers-and-acquisitions/)\n*   [New York Brief](https://news.bloomberglaw.com/new-york-brief/)\n*   [Occupational Safety \u0026 Health](https://news.bloomberglaw.com/safety/)\n*   [Pharmaceutical \u0026 Life Sciences](https://news.bloomberglaw.com/pharma-and-life-sciences/)\n*   [Privacy \u0026 Cybersecurity](https://news.bloomberglaw.com/privacy-and-data-security/)\n*   [Private Equity](https://news.bloomberglaw.com/private-equity/)\n*   [Product Liability \u0026 Toxics](https://news.bloomberglaw.com/product-liability-and-toxics-law/)\n*   [Securities](https://news.bloomberglaw.com/securities-law/)\n*   [Social Justice \u0026 Diversity](https://news.bloomberglaw.com/social-justice/)\n*   [Tech \u0026 Telecom](https://news.bloomberglaw.com/tech-and-telecom-law/)\n*   [US Law Week](https://news.bloomberglaw.com/us-law-week/)\n*   [White Collar \u0026 Criminal](https://news.bloomberglaw.com/white-collar-and-criminal-law/)\n\n Bloomberg Tax \n\n*   [Daily Tax Report \u00ae](https://news.bloomberglaw.com/daily-tax-report/)\n*   [Daily Tax Report International](https://news.bloomberglaw.com/daily-tax-report-international/)\n*   [Daily Tax Report State](https://news.bloomberglaw.com/daily-tax-report-state/)\n*   [Financial Accounting](https://news.bloomberglaw.com/financial-accounting/)\n*   [Payroll](https://news.bloomberglaw.com/payroll/)\n*   [Tariffs](https://news.bloomberglaw.com/tariff-news/)\n*   [Tax Insights \u0026 Commentary](https://news.bloomberglaw.com/tax-insights-and-commentary/)\n*   [Tax Management International](https://news.bloomberglaw.com/tax-management-international/)\n*   [Tax Management Memo](https://news.bloomberglaw.com/tax-management-memo/)\n*   [Transfer Pricing](https://news.bloomberglaw.com/transfer-pricing/)\n\n[IP](https://news.bloomberglaw.com/ip-law/)\n\n![Image 8: Print Article](https://news-cdn.bindg.com/indg/assets/icons/icon-print.svg)Print[![Image 9: Email Christopher Brown](https://news-cdn.bindg.com/indg/assets/icons/icon-email.svg)Email](mailto:?subject=News%20from%20Bloomberg%20Industry%20Group%3A%20IP%3A%20Kaiser%20Agrees%20to%20%2447.5%20Million%20Settlement%20in%20Data-Sharing%20Suit\u0026body=Here%20is%20a%20story%20that%20I%20thought%20would%20interest%20you.%0D%0A%0D%0Ahttps%3A%2F%2Fnews.bloomberglaw.com%2Flitigation%2Fkaiser-agrees-to-47-5-million-settlement-in-data-sharing-suit%3Futm_source%3DEmail_Share)\n\nShare To:[![Image 10: Share on Facebook](https://news-cdn.bindg.com/indg/assets/icons/icon-Facebook.svg)Facebook](https://facebook.com/sharer/sharer.php?u=https%3A%2F%2Fnews.bloomberglaw.com%2Flitigation%2Fkaiser-agrees-to-47-5-million-settlement-in-data-sharing-suit)\n\n[![Image 11: Share on LinkedIn](https://news-cdn.bindg.com/indg/assets/icons/icon-LinkedIn.svg)LinkedIn](https://linkedin.com/shareArticle?url=https%3A%2F%2Fnews.bloomberglaw.com%2Flitigation%2Fkaiser-agrees-to-47-5-million-settlement-in-data-sharing-suit)\n\n[![Image 12: Share on X](https://news-cdn.bindg.com/indg/images/26_AUTO_icon-X-black.webp)](https://twitter.com/intent/tweet?url=https%3A%2F%2Fnews.bloomberglaw.com%2Flitigation%2Fkaiser-agrees-to-47-5-million-settlement-in-data-sharing-suit)\n\nKaiser Agrees to $47.5 Million Settlement in Data-Sharing Suit\n==============================================================\n\nDecember 8, 2025, 7:04 PM UTC\n\n![Image 13: Christopher Brown](https://db0ip7zd23b50.cloudfront.net/dims4/default/91a465d/2147483647/crop/0x0+0+0/resize/80x80%3E/quality/90/?url=http%3A%2F%2Fbloomberg-bna-brightspot.s3.amazonaws.com%2Fec%2F53%2F62bd6b9e4111906e6bbee5fec216%2Fchrisbrown-bna.com.jpg)\n\n Christopher Brown \n\nStaff Correspondent\n\n[![Image 14: Email Christopher Brown](https://news-cdn.bindg.com/indg/assets/icons/icon-email.svg)](mailto:ChrisBrown@bloombergindustry.com)[![Image 15: Tweet Christopher Brown](https://news-cdn.bindg.com/indg/images/20_AUTO_icon-X-black.webp)](https://twitter.com/caaronbrownstl)\n\n![Image 16](https://news-api.bloomberglaw.com/v1/resize-image?url=http%3A%2F%2Fbloomberg-bna-brightspot.s3.amazonaws.com%2Ff3%2F69%2F549ecfee409b8c94890078f756da%2Fbli-lawyer-cybersecurity.png\u0026width=1240\u0026height=480\u0026fit=cover)\n\n Photo Illustration: Jonathan Hurtarte/Bloomberg Law; Photos: Getty Images \n\nKaiser Foundation Health Plan would pay up to $47.5 million to settle a lawsuit alleging it disclosed patients\u2019 personal information to Google LLC, Microsoft Corp., and other tech providers without consent in violation of state wiretapping laws, under a deal given initial approval in federal court.\n\nClass members would be eligible for a pro-rata share of the settlement fund after deduction of attorneys\u2019 fees and administrative costs, according to the plaintiffs\u2019 motion for preliminary approval filed in the US District Court for the Northern District of California on Dec. 5. Judge Edward M. Chen set a final fairness ...\n\nLearn more about Bloomberg Law or Log In to keep reading:\n---------------------------------------------------------\n\n### See Breaking News in Context\n\nBloomberg Law provides trusted coverage of current events enhanced with legal analysis.\n\n Learn more \n\n### Already a subscriber?\n\nLog in to keep reading or access research tools and resources.\n\n Log In \n\n \u00a9 2025 Bloomberg Industry Group, Inc. \n\n All Rights Reserved \n\nMore from Bloomberg Law\n-----------------------\n\n### Latest Stories in IP\n\n[![Image 17](https://db0ip7zd23b50.cloudfront.net/dims4/default/669bbdc/2147483647/crop/6048x3259+0+488/resize/347x187%3E/quality/90/?url=http%3A%2F%2Fbloomberg-bna-brightspot.s3.amazonaws.com%2Ff0%2Fcd%2Fb4550a084a5c90613bb5faad5199%2Fhttps-delivery-gettyimages.com%2Fdownloads%2F1247553442)](https://news.bloomberglaw.com/ip-law/ai-meeting-tools-pose-privacy-risks-as-offices-boost-technology)[AI Meeting Tools Pose Privacy Risks as Offices Boost Technology ---------------------------------------------------------------](https://news.bloomberglaw.com/ip-law/ai-meeting-tools-pose-privacy-risks-as-offices-boost-technology)\n\nThe embrace of AI meeting-transcription services in the workplace puts employers at risk of privacy lawsuits, breaches of confidentiality, and a host of other legal problems that could outweigh the technology\u2019s benefits.\n\n[![Image 18](https://db0ip7zd23b50.cloudfront.net/dims4/default/6aff37e/2147483647/crop/8137x4385+0+0/resize/347x187%3E/quality/90/?url=http%3A%2F%2Fbloomberg-bna-brightspot.s3.amazonaws.com%2Fc8%2F0c%2Ffc0d7ef2412c9e03053f5d48e4df%2Fspacex-rocket.jpg)](https://news.bloomberglaw.com/ip-law/texas-space-boom-requires-lots-of-lawyers-in-boost-for-firms)[Texas Space Boom Requires Lots of Lawyers in Boost for Firms ------------------------------------------------------------](https://news.bloomberglaw.com/ip-law/texas-space-boom-requires-lots-of-lawyers-in-boost-for-firms)\n\nLawyers are as necessary as rocket fuel for legally complex space ventures, so as launches proliferate in Texas, so does the work for law firms.\n\n[![Image 19](https://db0ip7zd23b50.cloudfront.net/dims4/default/3cf41c6/2147483647/legacy_thumbnail/347x187%3E/quality/90/?url=http%3A%2F%2Fbloomberg-bna-brightspot.s3.amazonaws.com%2Ff6%2Fd1%2F10017eab40a5a0105440c815f5ea%2Fspace-x.jpg)](https://news.bloomberglaw.com/ip-law/musks-x-sues-former-engineer-alleging-trade-secret-theft)[Musk\u2019s X Sues Former Engineer Alleging Trade Secret Theft ---------------------------------------------------------](https://news.bloomberglaw.com/ip-law/musks-x-sues-former-engineer-alleging-trade-secret-theft)\n\nElon Musk\u2019s X Corp. sued a former lead engineer, alleging she used the company\u2019s trade secrets to build her own company after she made social media posts critical of Musk and was fired.\n\n[Browse More Stories in IP](https://news.bloomberglaw.com/ip-law/)\n\n Sign Up For Newsletters \n\n[![Image 20: Go to Bloomberg Law News](https://news-cdn.bindg.com/indg/assets/news/images/logo-law-inline-white.svg)](https://news.bloomberglaw.com/)\n    *   [![Image 21: X Icon](https://news-cdn.bindg.com/indg/images/AUTO_26_icon-X-white.webp)](https://twitter.com/blaw)\n    *   [![Image 22: LinkedIn Icon](https://news-cdn.bindg.com/indg/images/AUTO_32_icon-LinkedIn-white.webp)](https://www.linkedin.com/company/bloomberg-law/)\n    *   [View Bloomberg Law\u0027s YouTube](https://www.youtube.com/user/bloomberglaw)\n\n*   [Submit A News Tip](https://news.bloomberglaw.com/tips/)\n*   [About Us](https://www.bloombergindustry.com/about-us/)\n*   [Contact Us](https://www.bloombergindustry.com/contact-us/)\n*   [pro.bloomberglaw.com](https://pro.bloomberglaw.com/)\n[Do Not Sell Or Share My Personal Information](https://news.bloomberglaw.com/ip-law/kaiser-agrees-to-47-5-million-settlement-in-data-sharing-suit)\n\n*    24/7 BLAW\u00ae HELP DESK \n*   [888.560.2529](tel:888.560.2529)\n*   [help@bloomberglaw.com](mailto:help@bloomberglaw.com)\n\n*   [Terms of Service](https://www.bloombergindustry.com/terms-and-conditions/)\n*    \u2022 \n*   [Privacy Policy](https://www.bloombergindustry.com/privacy-policy)\n\n*   [Copyright](https://www.bloombergindustry.com/copyright-and-usage-guidelines-copyright/)\n*    \u2022 \n*   [Accessibility](http://www.bloombergindustry.com/accessibility/)\n\n \u00a9 2025 Bloomberg Industry Group, Inc.  All Rights Reserved \n\n \u00a9 2025 Bloomberg Industry Group, Inc. All Rights Reserved",
+                url: "https://news.bloomberglaw.com/ip-law/kaiser-agrees-to-47-5-million-settlement-in-data-sharing-suit"
+            },
+            
+            {
+                title: "States Urge Supreme Court to Review Nuclear Fuel Storage Case - Bloomberg Law News",
+                summary: "\u82e5\u5e72\u5dde\u6566\u4fc3\u7f8e\u56fd\u6700\u9ad8\u6cd5\u9662\u53d7\u7406\u4e00\u5b97\u5173\u4e8e\u6838\u71c3\u6599\u96c6\u4e2d/\u4e34\u65f6\u8d2e\u5b58\u7684\u6848\u4ef6\uff0c\u6307\u51fa\u8be5\u6848\u7275\u6d89\u8054\u90a6\u76d1\u7ba1\u4e0e\u5dde\u4e3b\u6743\u3001\u73af\u5883\u4e0e\u5b89\u5168\u7b49\u91cd\u5927\u6cd5\u5f8b\u95ee\u9898\u3002\u5dde\u65b9\u79f0\u5404\u5de1\u56de\u6cd5\u9662\u88c1\u51b3\u5b58\u5728\u5206\u6b67\uff0c\u8981\u6c42\u6700\u9ad8\u6cd5\u9662\u5398\u6e05\u8054\u90a6\u673a\u6784\uff08\u5982\u6838\u76d1\u7ba1\u673a\u6784\uff09\u5728\u8bb8\u53ef\u548c\u63a8\u8fdb\u96c6\u4e2d\u8d2e\u5b58\u9879\u76ee\u4e0a\u7684\u6743\u529b\u4e0e\u9650\u5236\uff0c\u4ee5\u53ca\u53f8\u6cd5\u5ba1\u67e5\u6807\u51c6\u3002\u6b64\u6848\u88c1",
+                content: "States Urge Supreme Court to Review Nuclear Fuel Storage Case\n\n===============\n\n[Skip to content](https://news.bloomberglaw.com/business-and-practice/states-urge-supreme-court-to-review-nuclear-fuel-storage-case#that-jump-content--default)\n\n[Bloomberg the Company \u0026 Its Products The Company \u0026 its Products](https://www.bloomberg.com/company/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)[Bloomberg Terminal Demo Request](https://www.bloomberg.com/professional/contact-menu/?utm_source=bloomberg-menu\u0026utm_medium=bnanews\u0026bbgsum=DG-WS-PROF-DEMO-bbgmenu)[Bloomberg Anywhere Remote Login Bloomberg Anywhere Login](https://bba.bloomberg.net/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)[Bloomberg Customer Support Customer Support](https://www.bloomberg.com/professional/support/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n*   ### Bloomberg\n\nConnecting decision makers to a dynamic network of information, people and ideas, Bloomberg quickly and accurately delivers business and financial information, news and insight around the world \n### For Customers\n\n    *   [Bloomberg Anywhere Remote Login](https://bba.bloomberg.net/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Software Updates](https://www.bloomberg.com/professional/support/customer-support/software-updates/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Manage Products and Account Information](https://service.bloomberg.com/portal/sessions/new?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Support\n\nAmericas+1 212 318 2000\n\nEMEA+44 20 7330 7500\n\nAsia Pacific+65 6212 1000\n\n*   ### Company\n\n    *   [About](https://www.bloomberg.com/company/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Careers](https://www.bloomberg.com/company/what-we-do/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Diversity and Inclusion](https://www.bloomberg.com/company/diversity-inclusion/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Tech At Bloomberg](https://www.bloomberg.com/company/values/tech-at-bloomberg/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Philanthropy](https://www.bloomberg.com/company/philanthropy/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Sustainability](https://www.bloomberg.com/company/sustainability/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg London](https://www.bloomberg.com/london/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Beta](https://www.bloomberg.com/company/values/tech-at-bloomberg/bloomberg-beta/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Communications\n\n    *   [Press Announcements](https://www.bloomberg.com/company/announcements/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Press Contacts](https://www.bloomberg.com/company/press-contacts/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Follow\n\n    *   [Facebook](https://www.facebook.com/Bloomberglp)\n    *   [Instagram](https://www.instagram.com/bloomberg/)\n    *   [LinkedIn](https://www.linkedin.com/company/2494)\n    *   [Twitter](https://twitter.com/bloomberg)\n    *   [YouTube](https://www.youtube.com/@bloomberglp)\n\n*   ### Products\n\n    *   [Bloomberg Terminal](https://www.bloomberg.com/professional/products/bloomberg-terminal/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Data](https://www.bloomberg.com/professional/products/data/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Trading](https://www.bloomberg.com/professional/products/trading/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Risk](https://www.bloomberg.com/professional/products/risk/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Compliance](https://www.bloomberg.com/professional/products/compliance/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Indices](https://www.bloomberg.com/professional/products/indices/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Industry Products\n\n    *   [Bloomberg Law](https://pro.bloomberglaw.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Tax](https://pro.bloombergtax.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Government](https://about.bgov.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [BloombergNEF](https://about.bnef.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n*   ### Media\n\n    *   [Bloomberg Markets](https://www.bloomberg.com/markets/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Technology](https://www.bloomberg.com/technology/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Pursuits](https://www.bloomberg.com/pursuits/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Politics](https://www.bloomberg.com/politics/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Opinion](https://www.bloomberg.com/opinion/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Businessweek](https://www.bloomberg.com/businessweek/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Live Conferences](https://www.bloomberglive.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Radio](https://www.bloombergradio.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Television](https://www.bloomberg.com/live?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [News Bureaus](https://www.bloomberg.com/company/news-bureaus/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Media Services\n\n    *   [Bloomberg Media Distribution](https://www.bloomberg.com/distribution?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Advertising](https://www.bloombergmedia.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n*   ### Company\n\n    *   [About](https://www.bloomberg.com/company/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Careers](https://www.bloomberg.com/company/what-we-do/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Diversity and Inclusion](https://www.bloomberg.com/company/diversity-inclusion/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Tech At Bloomberg](https://www.bloomberg.com/company/values/tech-at-bloomberg/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Philanthropy](https://www.bloomberg.com/company/philanthropy/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Sustainability](https://www.bloomberg.com/company/sustainability/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg London](https://www.bloomberg.com/london/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Beta](https://www.bloomberg.com/company/values/tech-at-bloomberg/bloomberg-beta/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Communications\n\n    *   [Press Announcements](https://www.bloomberg.com/company/announcements/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Press Contacts](https://www.bloomberg.com/company/press-contacts/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Follow\n\n    *   [Facebook](https://www.facebook.com/Bloomberglp)\n    *   [Instagram](https://www.instagram.com/bloomberg/)\n    *   [LinkedIn](https://www.linkedin.com/company/2494)\n    *   [Twitter](https://twitter.com/bloomberg)\n    *   [YouTube](https://www.youtube.com/@bloomberglp)\n\n*   ### Products\n\n    *   [Bloomberg Terminal](https://www.bloomberg.com/professional/products/bloomberg-terminal/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Data](https://www.bloomberg.com/professional/products/data/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Trading](https://www.bloomberg.com/professional/products/trading/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Risk](https://www.bloomberg.com/professional/products/risk/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Compliance](https://www.bloomberg.com/professional/products/compliance/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Indices](https://www.bloomberg.com/professional/products/indices/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Industry Products\n\n    *   [Bloomberg Law](https://pro.bloomberglaw.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Tax](https://pro.bloombergtax.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Government](https://about.bgov.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Environment](https://pro.bloombergenvironment.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [BloombergNEF](https://about.bnef.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n*   ### Media\n\n    *   [Bloomberg Markets](https://www.bloomberg.com/markets/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Technology](https://www.bloomberg.com/technology/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Pursuits](https://www.bloomberg.com/pursuits/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Politics](https://www.bloomberg.com/politics/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Opinion](https://www.bloomberg.com/opinion/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Businessweek](https://www.bloomberg.com/businessweek/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Live Conferences](https://www.bloomberglive.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Radio](https://www.bloombergradio.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Bloomberg Television](https://www.bloomberg.com/live?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [News Bureaus](https://www.bloomberg.com/company/news-bureaus/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Media Services\n\n    *   [Bloomberg Media Distribution](https://www.bloomberg.com/distribution?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Advertising](https://www.bloombergmedia.com/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n*   ### Bloomberg\n\nConnecting decision makers to a dynamic network of information, people and ideas, Bloomberg quickly and accurately delivers business and financial information, news and insight around the world \n### For Customers\n\n    *   [Bloomberg Anywhere Remote Login](https://bba.bloomberg.net/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Software Updates](https://www.bloomberg.com/professional/support/customer-support/software-updates/?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n    *   [Manage Contracts and Orders](https://service.bloomberg.com/portal/sessions/new?utm_source=bloomberg-menu\u0026utm_medium=bnanews)\n\n### Support\n\nAmericas+1 212 318 2000\n\nEMEA+44 20 7330 7500\n\nAsia Pacific+65 6212 1000\n\n![Image 1: Search](https://news-cdn.bindg.com/indg/assets/icons/icon-search-white.svg)![Image 2: Open Menu](https://news-cdn.bindg.com/indg/assets/icons/icon-hamburger-menu-white.svg)![Image 3: Open Menu](https://news-cdn.bindg.com/indg/assets/icons/icon-hamburger-menu-white.svg) News ![Image 4](https://news-cdn.bindg.com/indg/assets/icons/icon-chevron-down-white.svg)[Podcasts](https://news.bloomberglaw.com/podcasts)[Videos](https://news.bloomberglaw.com/videos/)\n\n*   [Home](https://news.bloomberglaw.com/rankings-awards)\n*   [They\u0027ve Got Next: The 40 Under 40](https://news.bloomberglaw.com/rankings-awards/theyve-got-next-the-40-under-40)\n*   [Leading Law Firms Survey](https://news.bloomberglaw.com/rankings-awards/leading-law-firms)\n*   [Pro Bono Innovators](https://news.bloomberglaw.com/rankings-awards/pro-bono-innovators)\n*   [Unrivaled](https://news.bloomberglaw.com/rankings-awards/unrivaled)\n*   [Law School Innovation Program](https://news.bloomberglaw.com/rankings-awards/law-school-innovation-program)\n*   [League Tables](https://news.bloomberglaw.com/rankings-awards/league-tables)\n*   [Bloomberg Law Reports\u00ae: Surveys](https://news.bloomberglaw.com/rankings-awards/surveys)\n*   [Data-Driven Departments](https://news.bloomberglaw.com/rankings-awards/data-driven-departments)\n\nRankings \u0026 Awards![Image 5](https://news-cdn.bindg.com/indg/assets/icons/icon-chevron-down-white.svg)\n\n*   [Brief Analyzer](https://pro.bloomberglaw.com/brief-analyzer/?utm_medium=referral\u0026utm_source=n2-menu)\n*   [Draft Analyzer](https://pro.bloomberglaw.com/draft-analyzer/?utm_medium=referral\u0026utm_source=n2-menu)\n*   [Dockets](https://pro.bloomberglaw.com/court-dockets-search/?utm_medium=referral\u0026utm_source=n2-menu)\n*   [Practical Guidance](https://pro.bloomberglaw.com/the-complete-legal-research-resource/?utm_medium=referral\u0026utm_source=n2-menu)\n*   [Points of Law](https://pro.bloomberglaw.com/how-to-win-more-cases/?utm_medium=referral\u0026utm_source=n2-menu)\n\nResearch Tools![Image 6](https://news-cdn.bindg.com/indg/assets/icons/icon-chevron-down-white.svg)\n\n[![Image 7: Go to Bloomberg Law News](https://news-cdn.bindg.com/indg/assets/news/images/logo-law-inline-white.svg)](https://news.bloomberglaw.com/)\n\n Log In \n\n Sign Up For Newsletters \n\n Bloomberg Law \n\n*   [Antitrust](https://news.bloomberglaw.com/antitrust/)\n*   [Artificial Intelligence](https://news.bloomberglaw.com/artificial-intelligence/)\n*   [Banking](https://news.bloomberglaw.com/banking-law/)\n*   [Bankruptcy](https://news.bloomberglaw.com/bankruptcy-law/)\n*   [Before the Bar](https://news.bloomberglaw.com/before-the-bar/)\n*   [Benefits \u0026 Executive Compensation](https://news.bloomberglaw.com/employee-benefits/)\n*   [Bloomberg Law Analysis](https://news.bloomberglaw.com/bloomberg-law-analysis/)\n*   [Business \u0026 Practice](https://news.bloomberglaw.com/business-and-practice/)\n*   [California Brief](https://news.bloomberglaw.com/california-brief/)\n*   [Cannabis](https://news.bloomberglaw.com/cannabis/)\n*   [Capital Markets](https://news.bloomberglaw.com/capital-markets/)\n*   [Class Action](https://news.bloomberglaw.com/class-action/)\n*   [Construction Labor](https://news.bloomberglaw.com/construction-labor/)\n*   [Crypto](https://news.bloomberglaw.com/crypto/)\n*   [Daily Labor Report](https://news.bloomberglaw.com/daily-labor-report/)\n*   [Delaware Brief](https://news.bloomberglaw.com/delaware-brief/)\n*   [Employment](https://news.bloomberglaw.com/employment/)\n*   [Environment \u0026 Energy](https://news.bloomberglaw.com/environment-and-energy/)\n*   [ESG](https://news.bloomberglaw.com/esg/)\n*   [Federal Contracting](https://news.bloomberglaw.com/federal-contracting/)\n*   [Health Law \u0026 Business](https://news.bloomberglaw.com/health-law-and-business/)\n*   [Human Resources](https://news.bloomberglaw.com/human-resources-news/)\n*   [Immigration](https://news.bloomberglaw.com/immigration/)\n*   [In-House Counsel](https://news.bloomberglaw.com/in-house-counsel/)\n*   [Insurance](https://news.bloomberglaw.com/insurance/)\n*   [International Trade](https://news.bloomberglaw.com/international-trade/)\n*   [IP](https://news.bloomberglaw.com/ip-law/)\n*   [Labor Relations](https://news.bloomberglaw.com/labor-relations/)\n*   [Legal Ethics](https://news.bloomberglaw.com/legal-ethics/)\n*   [Legal Exchange: Insights \u0026 Commentary](https://news.bloomberglaw.com/legal-exchange-insights-and-commentary/)\n*   [Legal Ops \u0026 Tech](https://news.bloomberglaw.com/legal-ops-and-tech/)\n*   [Litigation](https://news.bloomberglaw.com/litigation/)\n*   [Litigation Finance](https://news.bloomberglaw.com/litigation-finance/)\n*   [Mergers \u0026 Acquisitions](https://news.bloomberglaw.com/mergers-and-acquisitions/)\n*   [New York Brief](https://news.bloomberglaw.com/new-york-brief/)\n*   [Occupational Safety \u0026 Health](https://news.bloomberglaw.com/safety/)\n*   [Pharmaceutical \u0026 Life Sciences](https://news.bloomberglaw.com/pharma-and-life-sciences/)\n*   [Privacy \u0026 Cybersecurity](https://news.bloomberglaw.com/privacy-and-data-security/)\n*   [Private Equity](https://news.bloomberglaw.com/private-equity/)\n*   [Product Liability \u0026 Toxics](https://news.bloomberglaw.com/product-liability-and-toxics-law/)\n*   [Securities](https://news.bloomberglaw.com/securities-law/)\n*   [Social Justice \u0026 Diversity](https://news.bloomberglaw.com/social-justice/)\n*   [Tech \u0026 Telecom](https://news.bloomberglaw.com/tech-and-telecom-law/)\n*   [US Law Week](https://news.bloomberglaw.com/us-law-week/)\n*   [White Collar \u0026 Criminal](https://news.bloomberglaw.com/white-collar-and-criminal-law/)\n\n Bloomberg Tax \n\n*   [Daily Tax Report \u00ae](https://news.bloomberglaw.com/daily-tax-report/)\n*   [Daily Tax Report International](https://news.bloomberglaw.com/daily-tax-report-international/)\n*   [Daily Tax Report State](https://news.bloomberglaw.com/daily-tax-report-state/)\n*   [Financial Accounting](https://news.bloomberglaw.com/financial-accounting/)\n*   [Payroll](https://news.bloomberglaw.com/payroll/)\n*   [Tariffs](https://news.bloomberglaw.com/tariff-news/)\n*   [Tax Insights \u0026 Commentary](https://news.bloomberglaw.com/tax-insights-and-commentary/)\n*   [Tax Management International](https://news.bloomberglaw.com/tax-management-international/)\n*   [Tax Management Memo](https://news.bloomberglaw.com/tax-management-memo/)\n*   [Transfer Pricing](https://news.bloomberglaw.com/transfer-pricing/)\n\n[Business \u0026 Practice](https://news.bloomberglaw.com/business-and-practice/)\n\n![Image 8: Print Article](https://news-cdn.bindg.com/indg/assets/icons/icon-print.svg)Print[![Image 9: Email Shayna Greene](https://news-cdn.bindg.com/indg/assets/icons/icon-email.svg)Email](mailto:?subject=News%20from%20Bloomberg%20Industry%20Group%3A%20Business%20%26%20Practice%3A%20States%20Urge%20Supreme%20Court%20to%20Review%20Nuclear%20Fuel%20Storage%20Case\u0026body=Here%20is%20a%20story%20that%20I%20thought%20would%20interest%20you.%0D%0A%0D%0Ahttps%3A%2F%2Fnews.bloomberglaw.com%2Fenvironment-and-energy%2Fstates-urge-supreme-court-to-review-nuclear-fuel-storage-case%3Futm_source%3DEmail_Share)\n\nShare To:[![Image 10: Share on Facebook](https://news-cdn.bindg.com/indg/assets/icons/icon-Facebook.svg)Facebook](https://facebook.com/sharer/sharer.php?u=https%3A%2F%2Fnews.bloomberglaw.com%2Fenvironment-and-energy%2Fstates-urge-supreme-court-to-review-nuclear-fuel-storage-case)\n\n[![Image 11: Share on LinkedIn](https://news-cdn.bindg.com/indg/assets/icons/icon-LinkedIn.svg)LinkedIn](https://linkedin.com/shareArticle?url=https%3A%2F%2Fnews.bloomberglaw.com%2Fenvironment-and-energy%2Fstates-urge-supreme-court-to-review-nuclear-fuel-storage-case)\n\n[![Image 12: Share on X](https://news-cdn.bindg.com/indg/images/26_AUTO_icon-X-black.webp)](https://twitter.com/intent/tweet?url=https%3A%2F%2Fnews.bloomberglaw.com%2Fenvironment-and-energy%2Fstates-urge-supreme-court-to-review-nuclear-fuel-storage-case)\n\nStates Urge Supreme Court to Review Nuclear Fuel Storage Case\n=============================================================\n\nDecember 4, 2025, 8:23 PM UTC\n\n![Image 13: Shayna Greene](https://db0ip7zd23b50.cloudfront.net/dims4/default/2ddeb02/2147483647/legacy_thumbnail/80x80%3E/quality/90/?url=http%3A%2F%2Fbloomberg-bna-brightspot.s3.amazonaws.com%2Fc7%2Fe9%2Fc2d02c004355a91ddcfb4a9f591d%2Fthumbnail-img-3892.jpg)\n\n Shayna Greene \n\nReporter\n\n[![Image 14: Email Shayna Greene](https://news-cdn.bindg.com/indg/assets/icons/icon-email.svg)](mailto:sgreene@bloombergindustry.com)\n\n![Image 15](https://news-api.bloomberglaw.com/v1/resize-image?url=http%3A%2F%2Fbloomberg-bna-brightspot.s3.amazonaws.com%2F18%2F9a%2F99293b5b4281b1d2550470aa84bb%2Fgettyimages-1086383720.jpg\u0026width=1240\u0026height=480\u0026fit=cover\u0026crop=1021x394%2B1%2B201)\n\n The US Supreme Court building in Washington on Jan. 22, 2019. \n\n Photographer: Al Drago/Bloomberg \n\nSeveral states asked the US Supreme Court to hear a case regarding a Nuclear Regulatory Commission license to temporarily store nuclear waste, arguing the outcome will affect states that want to have a say in where it\u2019s stored.\n\nNew Mexico, Michigan, and Utah said in their amicus brief filed Thursday that if the court denies certiorari, potential future host states wouldn\u2019t be able to challenge the alleged \u201cunlawful license condition\u201d at issue here.\n\n\u201cBeyond Nuclear\u2019s petition for certiorari correctly focuses on how the D.C. Circuit\u2019s decision deprives it of judicial review both now and in the future,\u201d the states ...\n\nLearn more about Bloomberg Law or Log In to keep reading:\n---------------------------------------------------------\n\n### See Breaking News in Context\n\nBloomberg Law provides trusted coverage of current events enhanced with legal analysis.\n\n Learn more \n\n### Already a subscriber?\n\nLog in to keep reading or access research tools and resources.\n\n Log In \n\n \u00a9 2025 Bloomberg Industry Group, Inc. \n\n All Rights Reserved \n\nMore from Bloomberg Law\n-----------------------\n\n### Most Read Stories in Business \u0026 Practice\n\n[![Image 16](https://db0ip7zd23b50.cloudfront.net/dims4/default/bb3ee0d/2147483647/legacy_thumbnail/347x187%3E/quality/90/?url=http%3A%2F%2Fbloomberg-bna-brightspot.s3.amazonaws.com%2F6f%2F1a%2F33eaa62c4c7a85946ef93d578a25%2Fbli-law-lateral-move-3b.png)](https://news.bloomberglaw.com/business-and-practice/kirkland-latham-pull-in-big-law-rival-equity-partners-in-texas)[Kirkland, Latham Nab Big Law Rival Equity Partners in Texas (1) ---------------------------------------------------------------](https://news.bloomberglaw.com/business-and-practice/kirkland-latham-pull-in-big-law-rival-equity-partners-in-texas)\n\nThe two biggest US law firms by revenue are staffing up on equity partners from rivals in major Texas cities.\n\n[![Image 17](https://db0ip7zd23b50.cloudfront.net/dims4/default/1fad0a7/2147483647/crop/6048x3259+0+0/resize/347x187%3E/quality/90/?url=http%3A%2F%2Fbloomberg-bna-brightspot.s3.amazonaws.com%2F6c%2F3b%2F870a3f084760b92fd8a19075dda6%2Fgettyimages-2212763849.jpg)](https://news.bloomberglaw.com/business-and-practice/big-laws-pushy-recruiting-pressures-first-semester-students)[Big Law\u2019s Pushy Recruiting Pressures First-Semester Students ------------------------------------------------------------](https://news.bloomberglaw.com/business-and-practice/big-laws-pushy-recruiting-pressures-first-semester-students)\n\nThe biggest law firms\u2019 intensive recruiting of first-year students has spread to smaller rivals, with some making offers even before first-semester grades are in.\n\n[![Image 18](https://db0ip7zd23b50.cloudfront.net/dims4/default/3521cf7/2147483647/legacy_thumbnail/347x187%3E/quality/90/?url=http%3A%2F%2Fbloomberg-bna-brightspot.s3.amazonaws.com%2F20%2Fb0%2Fdf7f2e3a468cbe6754428d9ead2f%2Fbli-ai-intellectual-property.png)](https://news.bloomberglaw.com/business-and-practice/judges-ai-blunders-spark-debate-on-technology-use-in-courts)[Judges\u2019 AI Blunders Spark Debate on Technology Use in Courts ------------------------------------------------------------](https://news.bloomberglaw.com/business-and-practice/judges-ai-blunders-spark-debate-on-technology-use-in-courts)\n\nWhen questioned by the chairman of the Senate Judiciary Committee over a flawed June opinion, a federal judge blamed an intern\u2019s use of generative AI for the error and banned use of the technology in his chambers. Other judges and law school professors say more can be gained by embracing the ubiquitous technology.\n\n### Latest Stories in Business \u0026 Practice\n\n[![Image 19](https://db0ip7zd23b50.cloudfront.net/dims4/default/df0412d/2147483647/legacy_thumbnail/347x187%3E/quality/90/?url=http%3A%2F%2Fbloomberg-bna-brightspot.s3.amazonaws.com%2Fc1%2Fcf%2F58159ffe49a48312b0efd2d163bd%2Fblwbiglaw-ropes-and-gray.png)](https://news.bloomberglaw.com/business-and-practice/meta-policy-strategist-joins-ropes-gray-as-its-first-ai-chief)[Meta Policy Strategist Joins Ropes \u0026 Gray as Its First AI Chief ---------------------------------------------------------------](https://news.bloomberglaw.com/business-and-practice/meta-policy-strategist-joins-ropes-gray-as-its-first-ai-chief)\n\nRopes \u0026 Gray is extending its commitment to the transformative nature of artificial intelligence as it brings on its first chief of AI strategy.\n\n[![Image 20](https://db0ip7zd23b50.cloudfront.net/dims4/default/a05e32c/2147483647/legacy_thumbnail/347x187%3E/quality/90/?url=http%3A%2F%2Fbloomberg-bna-brightspot.s3.amazonaws.com%2F2a%2F51%2F339141ee4ba5a27f6a3e2d5e315c%2F438417696.jpg)](https://news.bloomberglaw.com/business-and-practice/authors-lawyers-in-anthropic-ai-settlement-ask-for-300-million)[Authors\u2019 Lawyers in Anthropic AI Settlement Ask for $300 Million ----------------------------------------------------------------](https://news.bloomberglaw.com/business-and-practice/authors-lawyers-in-anthropic-ai-settlement-ask-for-300-million)\n\nLawyers representing a group of authors who sued Anthropic PBC over its AI training process are seeking 20% of the landmark $1.5 billion class-action settlement fund as attorneys\u2019 fees.\n\n[![Image 21](https://db0ip7zd23b50.cloudfront.net/dims4/default/7e0bc47/2147483647/legacy_thumbnail/347x187%3E/quality/90/?url=http%3A%2F%2Fbloomberg-bna-brightspot.s3.amazonaws.com%2F9e%2F2e%2F7d7a85504abf8fce0a082f90bac8%2Fgettyimages-2246895619.jpg)](https://news.bloomberglaw.com/business-and-practice/doj-no-2-knocks-white-collar-bar-for-weaker-enforcement-claims)[DOJ No. 2 Knocks White-Collar Bar for Weaker Enforcement Claims ---------------------------------------------------------------](https://news.bloomberglaw.com/business-and-practice/doj-no-2-knocks-white-collar-bar-for-weaker-enforcement-claims)\n\nThe Justice Department is taking notice of inconsistencies when white-collar defense lawyers complain on LinkedIn about softer Trump enforcement only to advocate for client relief, Deputy Attorney General Todd Blanche said.\n\n[Browse More Stories in Business \u0026 Practice](https://news.bloomberglaw.com/business-and-practice/)\n\n Sign Up For Newsletters \n\n[![Image 22: Go to Bloomberg Law News](https://news-cdn.bindg.com/indg/assets/news/images/logo-law-inline-white.svg)](https://news.bloomberglaw.com/)\n    *   [![Image 23: X Icon](https://news-cdn.bindg.com/indg/images/AUTO_26_icon-X-white.webp)](https://twitter.com/blaw)\n    *   [![Image 24: LinkedIn Icon](https://news-cdn.bindg.com/indg/images/AUTO_32_icon-LinkedIn-white.webp)](https://www.linkedin.com/company/bloomberg-law/)\n    *   [View Bloomberg Law\u0027s YouTube](https://www.youtube.com/user/bloomberglaw)\n\n*   [Submit A News Tip](https://news.bloomberglaw.com/tips/)\n*   [About Us](https://www.bloombergindustry.com/about-us/)\n*   [Contact Us](https://www.bloombergindustry.com/contact-us/)\n*   [pro.bloomberglaw.com](https://pro.bloomberglaw.com/)\n[Do Not Sell Or Share My Personal Information](https://news.bloomberglaw.com/business-and-practice/states-urge-supreme-court-to-review-nuclear-fuel-storage-case)\n\n*    24/7 BLAW\u00ae HELP DESK \n*   [888.560.2529](tel:888.560.2529)\n*   [help@bloomberglaw.com](mailto:help@bloomberglaw.com)\n\n*   [Terms of Service](https://www.bloombergindustry.com/terms-and-conditions/)\n*    \u2022 \n*   [Privacy Policy](https://www.bloombergindustry.com/privacy-policy)\n\n*   [Copyright](https://www.bloombergindustry.com/copyright-and-usage-guidelines-copyright/)\n*    \u2022 \n*   [Accessibility](http://www.bloombergindustry.com/accessibility/)\n\n \u00a9 2025 Bloomberg Industry Group, Inc.  All Rights Reserved \n\n \u00a9 2025 Bloomberg Industry Group, Inc. All Rights Reserved",
+                url: "https://news.bloomberglaw.com/business-and-practice/states-urge-supreme-court-to-review-nuclear-fuel-storage-case"
+            },
+            
+            {
+                title: "Google Drive\u2019s web file viewer finally gets the glow-up it deserves - Android Central",
+                summary: "Google Drive \u7f51\u9875\u7248\u5168\u9762\u5347\u7ea7\uff0c\u6dd8\u6c70\u65e7\u7684\u6587\u4ef6\u67e5\u770b\u5668\uff0c\u754c\u9762\u66f4\u6e05\u723d\u3001\u54cd\u5e94\u66f4\u5feb\uff0c\u6539\u5584\u4e86\u5728\u6d4f\u89c8\u5668\u4e2d\u67e5\u770b\u548c\u7ba1\u7406\u6587\u4ef6\u7684\u4f53\u9a8c\u3002PDF \u67e5\u770b\u83b7\u5f97\u91cd\u5927\u6539\u8fdb\uff1a\u5de6\u4fa7\u76ee\u5f55\u548c\u9875\u9762\u7f29\u7565\u56fe\u65b9\u4fbf\u5feb\u901f\u8df3\u8f6c\uff1b\u89c6\u9891\u652f\u6301\u8f6c\u5f55\u5173\u952e\u8bcd\u641c\u7d22\uff0c\u53ef\u76f4\u63a5\u5b9a\u4f4d\u8bed\u97f3\u7247\u6bb5\u3002\u66f4\u65b0\u8fd8\u89e3\u51b3\u4e86\u957f\u671f\u7684\u5bfc\u822a\u4e0e\u6574\u7406\u75db\u70b9\uff0c\u5e76\u53ef\u4e0e Drive \u7684 Gemini \u9a71\u52a8\u97f3\u9891\u6458\u8981\u914d\u5408",
+                content: "Don\u0027t miss these\n\n## YOUR NEXT READ:\n\nTrending\n\n* [Cyber Monday](https://www.androidcentral.com/tag/cyber-monday)\n* [AI: Everything you need to know](https://www.androidcentral.com/apps-software/ai/ai-in-motion-the-road-to-ai-and-the-future-of-mobile)\n* [Galaxy S26](https://www.androidcentral.com/phones/samsung-galaxy-s26)\n* [Pixel 10](https://www.androidcentral.com/phones/google-pixel-10)\n* [Pixel 10 Pro Fold](https://www.androidcentral.com/phones/google-pixel-10-pro-fold)\n* [Galaxy Z Fold 7](https://www.androidcentral.com/phones/samsung-galaxy-z-fold-7-and-z-flip-7-your-ultimate-guide)\n* [Galaxy Z Flip 7](https://www.androidcentral.com/phones/samsung-galaxy-z-fold-7-and-z-flip-7-your-ultimate-guide)\n\n1. [Apps \u0026 Software](https://www.androidcentral.com/apps-software)\n\n# Google Drive update makes navigating PDFs and files effortless\n\n[News](https://www.androidcentral.com/news)\n\nBy [Jay Bonggolto](https://www.androidcentral.com/author/jay-bonggolto)   published\n\nGoogle Drive just fixed its clunkiest feature.\n\n [Comments (0) ()](#viafoura-comments)\n\n(Image credit: Harish Jonnalagadda / Android Central)\n\n## What you need to know\n\n* Google Drive finally dumps its outdated file viewer, replacing it with a cleaner, faster, and far more useful interface.\n* PDF viewing gets a massive upgrade with a sidebar table of contents and page thumbnails.\n* The new video transcript search lets you jump straight to any spoken keyword.\n\nDisclaimer\n\nEnjoy our content? Make sure to [**set Android Central as a preferred source**](https://www.google.com/preferences/source?q=androidcentral.com) in Google Search, and [**find out why you should**](https://www.androidcentral.com/apps-software/ask-jerry-how-to-curate-your-google-news-search-and-why-you-should) so that you can stay up-to-date on the latest news, reviews, features, and more.\n\nFor a long time, opening a file in Google Drive felt outdated, especially when you were just trying to read a PDF in your browser. Now, that old experience is finally gone.\n\nGoogle Drive on the web is getting rid of its old, clunky viewer. What used to be a basic, sometimes frustrating way to open PDFs, images, and videos [is being replaced](https://workspaceupdates.googleblog.com/2025/12/google-drive-web-modern-file-viewer-interface.html) with a cleaner, more useful workspace.\n\nThis update fixes common complaints about how you move around, organize, and use the Drive viewer. If you spend a lot of time jumping between documents or reviewing media straight from your browser, you\u2019ll feel the difference immediately.\n\n## PDFs in Drive finally make sense\n\nThe biggest improvement is for PDFs, which have always been a weak spot in Drive. The new viewer now shows a table of contents on the left if the file has one, along with thumbnail previews for every page. You no longer have to scroll endlessly through a hundred-page document hoping to land on the right paragraph.\n\nThis new interface pairs nicely with [Drive\u2019s Gemini-powered audio summaries](https://www.androidcentral.com/apps-software/google-drives-new-ai-audio-summaries-make-pdfs-effortless). You can generate and listen to a quick overview right from the side panel, or jump into the \u201cAudio overviews\u201d folder to replay anything you\u2019ve saved.\n\nGoogle didn\u2019t stop at PDFs, though. Video files get a surprisingly powerful upgrade with a transcript search tool built right into the viewer. Instead of scrubbing back and forth trying to find the exact moment someone mentions a keyword, you can type the word directly into the transcript and jump straight to that point in the video.\n\nThis feature saves you time right away, especially if you work with long recordings or meeting videos.\n\nBe an expert in 5 minutes\n\nGet the latest news from Android Central, your trusted companion in the world of Android\n\nAll of this sits atop a refreshed interface that looks cleaner and behaves more predictably. The toolbar has been redesigned, the file menu is more intuitive, and the overall layout feels less cramped.\n\nThe rollout is already underway for users on Google\u2019s Rapid Release track, while Scheduled Release domains will begin seeing the new viewer starting December 11, 2025. The update is available for both personal and Workspace users.\n\n[Jay Bonggolto](https://www.androidcentral.com/author/jay-bonggolto)\n\nSocial Links Navigation\n\nNews Writer \u0026 Reviewer\n\nJay Bonggolto always keeps a nose for news. He has been writing about consumer tech and apps for as long as he can remember, and he has used a variety of Android phones since falling in love with Jelly Bean. Send him a direct message via X or LinkedIn.\n\nYou must confirm your public display name before commenting\n\nPlease logout and then login again, you will then be prompted to enter your display name.\n\nLATEST ARTICLES\n\n1. 1\n\n   [The EU just slapped X with a \u20ac120 million fine for its \u0027deceptive\u0027 blue checks](https://www.androidcentral.com/apps-software/the-eu-just-slapped-x-with-a-eur120-million-fine-for-its-deceptive-blue-checks)\n2. 2\n\n   [Samsung Galaxy Z TriFold vs. Huawei Mate XTs: How the two trifolding phones stack up](https://www.androidcentral.com/phones/samsung-galaxy/samsung-galaxy-z-trifold-vs-huawei-mate-xts)\n3. 3\n\n   [Is the Samsung Galaxy Z TriFold waterproof?](https://www.androidcentral.com/phones/samsung-galaxy/samsung-galaxy-z-trifold-waterproof)\n4. [One UI 8.5 beta is now official for the Samsung Galaxy S25 series](https://www.androidcentral.com/phones/samsung-galaxy/one-ui-8-5-beta-official-galaxy-s25-series)\n5. [Samsung Qi2 charger leak suggests a MagSafe rival could finally come to the Galaxy S26](https://www.androidcentral.com/phones/samsung-galaxy/samsung-qi2-charger-leak-suggests-a-magsafe-rival-could-finally-come-to-the-galaxy-s26)\n\nPlease login or signup to comment\n\nPlease wait...",
+                url: "https://www.androidcentral.com/apps-software/google-drive-update-makes-navigating-pdfs-and-files-effortless"
+            },
+            
+            {
+                title: "Microsoft Issues \u2018Critical Update\u2019 For All Windows 11 Users - Forbes",
+                summary: "\uff08\u6458\u8981\u751f\u6210\u5931\u8d25\uff09Microsoft Issues \u2018Critical Update\u2019 For All Windows 11 Users - Forbes",
+                content: "[Innovation](https://www.forbes.com/innovation/)[Cybersecurity](https://www.forbes.com/cybersecurity/)\n\n# Microsoft Issues \u2018Critical Update\u2019 For All Windows 11 Users\n\nBy[Zak Doffman](https://www.forbes.com/sites/zakdoffman/ \"https://www.forbes.com/sites/zakdoffman/\"),\n\nForbes contributors publish independent expert analyses and insights.\n\n Zak Doffman writes about security, surveillance and privacy.\n\nWhile the Windows world focuses on [failed updates](https://www.forbes.com/sites/zakdoffman/2025/11/29/microsoft-confirms-windows-password-failure-no-fix-available/) and a new [automated upgrade](https://www.forbes.com/sites/zakdoffman/2025/12/07/microsoft-confirms-new-upgrade-decision-for-all-windows-users/) that has just gone live for all users, Microsoft has also just issued a new Windows 11 update it describes as \u201ccritical.\u201d It\u2019s available for download now.\n\nAs spotted by [*Neowin*](https://www.neowin.net/news/microsoft-released-windows-11-kb5071844-recovery-update/), this new dynamic update \u201cbrings improvements to the Windows Recovery process in the form of WinRE updates, which are also called Safe OS updates. The dynamic updates also affect the Setup file binaries in the form of Setup updates.\u201d\n\n[ForbesIs Your Boss Using New Microsoft And Google Updates To Spy On You?By Zak Doffman](https://www.forbes.com/sites/zakdoffman/2025/12/07/is-your-boss-using-new-microsoft-and-google-updates-to-spy-on-you/)\n\nThese updates \u201cinclude fixes to Setup.exebinaries, SafeOS updates for Windows Recovery Environment, and more. Dynamic Updates also help preserve Language Pack (LP) and Features on Demand (FODs) content during the upgrade process.\u201d\n\nBecause Windows 11 version 23H2 is now end-of-support, the new updates are only available for Windows 11 25H2, Windows 11 24H2 and Windows Server 2025.\"\n\nMORE FOR YOU\n\n[Microsoft](https://support.microsoft.com/en-gb/topic/kb5071844-safe-os-dynamic-update-for-windows-11-version-24h2-and-25h2-and-windows-server-2025-december-1-2025-281bf3ec-bec2-45a0-9f4d-ac0776a09ba4) says \u201cthis update is available through Windows Update. It will be downloaded and installed automatically.\u201d The company also notes that \u201cthere are no prerequisites to apply this update, you do not have to restart your device after you apply this update (and) this update cannot be removed once it is applied to a Windows image.\u201d\n\n[WinRE](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/windows-recovery-environment--windows-re--technical-reference?view=windows-11) \u201cis a recovery environment that can repair common causes of unbootable operating systems.\" WinRE is preloaded in both Windows 10 and Windows 11. Once updated, the WinRE version on your Windows 11 PC should be 10.0.26100.7297.\n\n[ForbesGoogle\u2019s Android Warning\u2014Hackers Gain Access To User AccountsBy Zak Doffman](https://www.forbes.com/sites/zakdoffman/2025/12/06/google-confirms-android-update-as-hackers-gain-access-to-accounts/)\n\nAs a reminder, your PC should now offer you a one-click toggle to install Windows 11 25H2, irregardless of whether you\u2019re now running Windows 11 or Windows 10 \u2014 as long as your PC ticks the right boxes for Windows 11/s hardware hurdles.\n\nMicrosoft has also confirmed that these updates decisions now use a \u2018machine-learning\u2019 based approach. Per [*Windows Latest*](https://www.windowslatest.com/2025/12/06/microsoft-confirms-itll-auto-download-windows-11-25h2-using-machine-learning-based-approach-on-some-pcs/), \u201cMicrosoft is not talking about just \u2018offering\u2019 it like a normal download and install feature update. Instead, Windows Update will silently download version 25H2 in the background and let you decide if you want to install the update or postpone it.\u201d And that decision is based on machine learning.\n\n[Editorial Standards](https://www.forbes.com/sites/forbesstaff/article/forbes-editorial-values-and-standards/)[Reprints \u0026 Permissions](https://www.parsintl.com/publications/forbes/)\n\nLOADING VIDEO PLAYER...\nFORBES\u2019 FEATURED Video",
+                url: "https://www.forbes.com/sites/zakdoffman/2025/12/08/microsoft-issues-critical-update-for-all-windows-11-users/"
+            },
+            
+            {
+                title: "RFK Jr., Brooke Rollins make MAHA announcement - NewsNation",
+                summary: "\u7f8e\u56fd\u519c\u4e1a\u90e8\u957f\u5e03\u9c81\u514b\u00b7\u7f57\u6797\u65af\u4e0e\u536b\u751f\u90e8\u957f\u7f57\u4f2f\u7279\u00b7F\u00b7\u80af\u5c3c\u8fea\u5468\u4e09\u5c06\u4e0e\u533b\u4fdd\u4e0e\u533b\u7597\u670d\u52a1\u4e2d\u5fc3\u4e3b\u4efb\u6885\u8d6b\u6885\u7279\u00b7\u5965\u5179\u5728\u4e1c\u90e8\u65f6\u95f49:50\u8054\u5408\u53d1\u5e03\u201c\u8ba9\u7f8e\u56fd\u66f4\u5065\u5eb7\u201d\u76f8\u5173\u58f0\u660e\u3002\u6b64\u516c\u544a\u7d27\u968f\u7f57\u6797\u65af\u4e0e\u7279\u6717\u666e\u516c\u5e03\u7684120\u4ebf\u7f8e\u5143\u519c\u63f4\u8ba1\u5212\uff08110\u4ebf\u7f8e\u5143\u4e00\u6b21\u6027\u652f\u4ed8\u300110\u4ebf\u7f8e\u5143\u9884\u7559\uff09",
+                content: "[Skip to content](#content)\n\n\n\n[LIVE TV\n\nNewsNation Live with Marni Hughes](https://www.newsnationnow.com/news-nation-live/)\n\n1/2\n\nTrending\n\n* [COLD WEATHER TIPS](https://www.newsnationnow.com/weather/should-i-warm-up-my-car-before-driving-in-the-winter/)\n* [CRUISE SHIP DEATH](https://www.newsnationnow.com/banfield/michael-virgil-lawsuit-royal-caribbean/)\n* [FRAUD IN MAINE?](https://www.newsnationnow.com/us-news/northeast/maine-whistleblower-gateway/)\n\n[Watch Live](https://www.newsnationnow.com/health/brooke-rollins-rfk-jr-usda-maha-announcement/)\n\n[Watch Live\n\nRFK Jr., Brooke Rollins make MAHA announcement](https://www.newsnationnow.com/health/brooke-rollins-rfk-jr-usda-maha-announcement/)\n\n# RFK Jr., Brooke Rollins make MAHA announcement\n\n[Taylor Delandro](https://www.newsnationnow.com/author/taylor-delandro/ \"Posts by Taylor Delandro\")\n\n Updated:\n\n*Want to see more of NewsNation? Get 24/7 fact-based news coverage with the* [***NewsNation app***](https://www.newsnationnow.com/app/) *or add NewsNation as a* [***preferred source on Google***](https://www.google.com/preferences/source?q=https%3A%2F%2Fwww.newsnationnow.com%2F\u0026utm_source=google\u0026utm_medium=NewsNation\u0026utm_campaign=preferred_sources\u0026utm_id=NewsNation+preferred+sources)***!***\n\n([NewsNation](https://www.newsnationnow.com/)) \u2014 Agriculture Secretary Brooke Rollins and Health Secretary [Robert F. Kennedy Jr.](https://www.newsnationnow.com/health/rfk-jr-s-advisory-panel-may-change-childhood-vaccine-guidance/) are scheduled to make an announcement Wednesday \u201cin an effort to Make America Healthy Again,\u201d according to the [Department of Agriculture](https://www.youtube.com/watch?v=bGCwdYCM0-Q).\n\nDr. Mehmet Oz, administrator of the Centers for Medicare and Medicaid Services, will join in the announcement, set for 9:50 a.m. EST. NewsNation will stream the event in the media player above.\n\nThe announcement follows Rollins\u2019 appearance with President Donald Trump on Monday, when he [unveiled $12 billion](https://www.newsnationnow.com/politics/usda-farmer-aid-china-soybean-deal-brooke-rollins-trump/) in\u00a0[aid to American farmers](https://www.newsnationnow.com/business/ap-business/ap-trump-is-proposing-a-12b-farm-aid-package-to-soften-blow-of-his-tariffs-white-house-official-says/). Rollins described the payment as a bridge for farmers to get through to the next planting season. She noted that $11 billion would be available for one-time payments, with $1 billion set aside to ensure the department can meet other needs.\n\nLast Friday, Kennedy\u2019s\u00a0handpicked vaccine committee voted to [end a decades-long recommendation](https://www.newsnationnow.com/health/advisory-panel-vote-hepatitis-b-vaccine-babies/) that all newborns be given the\u00a0[hepatitis B vaccine](https://www.newsnationnow.com/health/should-adults-get-vaccinated-against-hepatitis-b/). Federal health guidance currently recommends vaccination within the first day of life, but the Centers for Disease Control and Prevention\u2019s\u00a0[Advisory Committee on Immunization Practices](https://www.newsnationnow.com/health/health-headlines/ap-kennedys-vaccine-committee-plans-to-vote-on-covid-19-hepatitis-b-and-chickenpox-shots/)\u00a0voted to change that.\n\n[Add as preferred source on Google](https://google.com/preferences/source?q=https://www.newsnationnow.com)\n\n## Trending on NewsNation\n\n### [Lawyer: Lawsuit accusing cruise of overserving is questionable](https://www.newsnationnow.com/banfield/michael-virgil-lawsuit-royal-caribbean/)\n\nVideo\n\n### [Should I warm up my car before driving in the winter?](https://www.newsnationnow.com/weather/should-i-warm-up-my-car-before-driving-in-the-winter/)\n\nVideo\n\n### [Cheryl Hines recounts breaking out in hives after meeting Trump](https://www.newsnationnow.com/vargasreports/cheryl-hines-rfk-jr-president/)\n\nVideo\n\n### [Mom, stepdad blame each other for killing of pregnant daughter](https://www.newsnationnow.com/banfield/rebecca-park-mom-stepdad-blame-each-other-killing/)\n\nVideo\n\n### [The states and cities raising the minimum wage in 2026](https://www.newsnationnow.com/business/your-money/minimum-wage-2026/)\n\nVideo\n\n### [Whistleblower alleges Minnesota-like fraud in Maine](https://www.newsnationnow.com/us-news/northeast/maine-whistleblower-gateway/)\n\nVideo",
+                url: "https://www.newsnationnow.com/health/brooke-rollins-rfk-jr-usda-maha-announcement/"
+            },
+            
+            {
+                title: "World Boxing apologizes after naming Imane Khelif in mandatory sex testing announcement - AOL.com",
+                summary: "\uff08\u6458\u8981\u751f\u6210\u5931\u8d25\uff09World Boxing apologizes after naming Imane Khelif in mandatory sex testing announcement - AOL.com",
+                content: "* [Home](https://www.aol.com/ \"Home\")\n* [Atlanta, GA\n\n  Atlanta, GA\n\n  Local News](https://www.aol.com/local/ \"Local\")\n* [Subscriptions](https://www.aol.com/products?ncid=mbr_rusacqlnk00000036 \"Subscriptions\")\n\n\n\n* [Home \u0026 Garden](https://www.aol.com/home-garden/ \"Home \u0026 Garden\")\n\n\n* [True Crime](https://www.aol.com/true-crime/ \"True Crime\")\n\n* Finance\n* [Finance](https://www.aol.com/finance/ \"Finance\")\n* [Banking](https://www.aol.com/finance/banking/ \"Banking\")\n* [Business News](https://www.aol.com/news/business/ \"Business News\")\n* [Estate \u0026 Retirement Planning](https://www.aol.com/finance/retirement-planning/ \"Estate \u0026 Retirement Planning\")\n* [Loans \u0026 Mortgages](https://www.aol.com/finance/mortgages/ \"Loans \u0026 Mortgages\")\n\n* Health\n* [Health](https://www.aol.com/health/ \"Health\")\n* [Medicare](https://www.aol.com/health/medicare/ \"Medicare\")\n\n* News\n* [News](https://www.aol.com/news/ \"News\")\n* [Business](https://www.aol.com/news/business/ \"Business\")\n* [Lighter Side](https://www.aol.com/news/lighter \"Lighter Side\")\n* [Politics](https://www.aol.com/news/politics/ \"Politics\")\n* [Science \u0026 Tech](https://www.aol.com/news/science-tech/ \"Science \u0026 Tech\")\n* [Sports](https://www.aol.com/news/sports/ \"Sports\")\n* [Weather](https://www.aol.com/weather/ \"Weather\")\n\nFor premium support please call:\n\n[800-290-4726](tel:800-290-4726)[more ways to reach us](https://help.aol.com/contact/)\n\n[Sign in](https://oidc.www.aol.com/login/?lang=en-us\u0026intl=us\u0026src=fp-us\u0026dest=https%3A%2F%2Fwww.aol.com%2Fnews%2Fworld-boxing-apologizes-naming-imane-093324591.html \"Sign in\")\n\n[Mail](https://mail.aol.com \"email link\")\n\nFor premium support please call:\n\n[800-290-4726](tel:800-290-4726)[more ways to reach us](https://help.aol.com/contact/)\n\n[Mail](https://mail.aol.com \"email link\")\n\n[Sign in](https://oidc.www.aol.com/login/?lang=en-us\u0026intl=us\u0026src=fp-us\u0026dest=https%3A%2F%2Fwww.aol.com%2Fnews%2Fworld-boxing-apologizes-naming-imane-093324591.html \"Sign in\")\n\n* [Home](https://www.aol.com/ \"Home\")\n* [Atlanta, GA\n\n  Atlanta, GA\n\n  Local News](https://www.aol.com/local/ \"Local\")\n* [Subscriptions](https://www.aol.com/products?ncid=mbr_rusacqlnk00000036 \"Subscriptions\")\n* [Animals](https://www.aol.com/animals/ \"Animals\")\n* [Entertainment](https://www.aol.com/entertainment/ \"Entertainment\")\n* [Food](https://www.aol.com/food/ \"Food\")\n* [Games](https://www.aol.com/games/ \"Games\")\n* [Home \u0026 Garden](https://www.aol.com/home-garden/ \"Home \u0026 Garden\")\n* [Shopping](https://www.aol.com/shopping/ \"Shopping\")\n* [Style](https://www.aol.com/style/ \"Style\")\n* [Travel](https://www.aol.com/travel/ \"Travel\")\n* [True Crime](https://www.aol.com/true-crime/ \"True Crime\")\n\n* Finance\n* [Finance](https://www.aol.com/finance/ \"Finance\")\n* [Banking](https://www.aol.com/finance/banking/ \"Banking\")\n* [Business News](https://www.aol.com/news/business/ \"Business News\")\n* [Estate \u0026 Retirement Planning](https://www.aol.com/finance/retirement-planning/ \"Estate \u0026 Retirement Planning\")\n* [Loans \u0026 Mortgages](https://www.aol.com/finance/mortgages/ \"Loans \u0026 Mortgages\")\n\n* Health\n* [Health](https://www.aol.com/health/ \"Health\")\n* [Medicare](https://www.aol.com/health/medicare/ \"Medicare\")\n\n* News\n* [News](https://www.aol.com/news/ \"News\")\n* [Business](https://www.aol.com/news/business/ \"Business\")\n* [Lighter Side](https://www.aol.com/news/lighter \"Lighter Side\")\n* [Politics](https://www.aol.com/news/politics/ \"Politics\")\n* [Science \u0026 Tech](https://www.aol.com/news/science-tech/ \"Science \u0026 Tech\")\n* [Sports](https://www.aol.com/news/sports/ \"Sports\")\n* [Weather](https://www.aol.com/weather/ \"Weather\")\n\n[Sign in](https://oidc.www.aol.com/login/?lang=en-us\u0026intl=us\u0026src=fp-us\u0026dest=https%3A%2F%2Fwww.aol.com%2Fnews%2Fworld-boxing-apologizes-naming-imane-093324591.html)\n\n* [Home](https://www.aol.com/ \"Home\")\n* [Atlanta, GA\n\n  Atlanta, GA\n\n  Local News](https://www.aol.com/local/ \"Local\")\n* [Subscriptions](https://www.aol.com/products?ncid=mbr_rusacqlnk00000036 \"Subscriptions\")\n* [Animals](https://www.aol.com/animals/ \"Animals\")\n* [Entertainment](https://www.aol.com/entertainment/ \"Entertainment\")\n* [Food](https://www.aol.com/food/ \"Food\")\n* [Games](https://www.aol.com/games/ \"Games\")\n* [Home \u0026 Garden](https://www.aol.com/home-garden/ \"Home \u0026 Garden\")\n* [Shopping](https://www.aol.com/shopping/ \"Shopping\")\n* [Style](https://www.aol.com/style/ \"Style\")\n* [Travel](https://www.aol.com/travel/ \"Travel\")\n* [True Crime](https://www.aol.com/true-crime/ \"True Crime\")\n\n* Finance\n* [Finance](https://www.aol.com/finance/ \"Finance\")\n* [Banking](https://www.aol.com/finance/banking/ \"Banking\")\n* [Business News](https://www.aol.com/news/business/ \"Business News\")\n* [Estate \u0026 Retirement Planning](https://www.aol.com/finance/retirement-planning/ \"Estate \u0026 Retirement Planning\")\n* [Loans \u0026 Mortgages](https://www.aol.com/finance/mortgages/ \"Loans \u0026 Mortgages\")\n\n* Health\n* [Health](https://www.aol.com/health/ \"Health\")\n* [Medicare](https://www.aol.com/health/medicare/ \"Medicare\")\n\n* News\n* [News](https://www.aol.com/news/ \"News\")\n* [Business](https://www.aol.com/news/business/ \"Business\")\n* [Lighter Side](https://www.aol.com/news/lighter \"Lighter Side\")\n* [Politics](https://www.aol.com/news/politics/ \"Politics\")\n* [Science \u0026 Tech](https://www.aol.com/news/science-tech/ \"Science \u0026 Tech\")\n* [Sports](https://www.aol.com/news/sports/ \"Sports\")\n* [Weather](https://www.aol.com/weather/ \"Weather\")\n\n# World Boxing apologizes after naming Imane Khelif in mandatory sex testing announcement\n\nStory by Reuters\n\nWorld Boxing has apologized after Imane Khelif was named in their announcement on [mandatory sex testing](https://www.cnn.com/2025/05/30/sport/imane-khelif-world-boxing-sex-screening-spt?cid=external-feeds_iluminar_yahoo) for all boxers in their competitions, saying the Paris Olympics gold medalist\u2019s privacy should have been protected.\n\nThe global body, which will oversee boxing competitions in the [2028 Olympics](https://www.cnn.com/2025/03/19/sport/imane-khelif-la-olympics-donald-trump-spt/index.html?cid=external-feeds_iluminar_yahoo) after being granted provisional recognition by the International Olympic Committee, made the announcement last week, less than a year after Khelif won [gold](https://www.cnn.com/2024/08/09/sport/imane-khelif-gold-medal-boxing-spt/index.html?cid=external-feeds_iluminar_yahoo) in Paris amid a gender-eligibility row.\n\nThe announcement specifically said the body had sent a letter to the Algerian Boxing Federation saying Khelif \u201cmay not participate in the female category\u201d of any World Boxing event until she undergoes the test.\n\nHowever, a source said World Boxing president Boris van der Vorst had personally written to Algerian Boxing Federation president Abdelkader Abbas to apologize for including Khelif\u2019s name.\n\nVan der Vorst said World Boxing should have made a greater effort to protect Khelif\u2019s privacy.\n\nIn last week\u2019s announcement, World Boxing said all athletes over the age of 18 will have to undertake a PCR (polymerase chain reaction) genetic test, which can be conducted by a nasal or mouth swab, saliva or blood.\n\nKhelif and the Algerian Boxing Federation could not be immediately reached for comment.\n\nThe country\u2019s federation joined World Boxing in September, one of more than 100 national federations that have joined the body since it was established in 2023.\n\nFor more CNN news and newsletters create an account at [CNN.com](http://www.cnn.com/account/register?source=external-feeds_iluminar\u0026cid=external-feeds_iluminar_yahoo\u0026registration_email_campaign=https://www.cnn.com/newsletters)\n\nAdvertisement\n\nAdvertisement\n\nDon\u0027t miss our daily roundup.\n\nStay informed with a handpicked selection of the day\u0027s top AOL stories, delivered to your inbox.\n\nThanks for signing up.\n\nThank you for signing up. You will receive a confirmation email shortly.\n\nStay informed with a handpicked selection of the day\u0027s top AOL stories, delivered to your inbox.\n\n#### In Other News\n\n[Entertainment](/entertainment/)\n\n[Entertainment](/entertainment/ \"Entertainment\")\n\n[People](https://www.people.com/)\n\n[##### Dick Van Dyke says he\u2019s probably the \u2018last person alive\u2019 who knew the \u0027real\u0027 Walt Dis\u2026](https://www.aol.com/articles/dick-van-dyke-says-probably-140000384.html)\n\n[Entertainment](/entertainment/ \"Entertainment\")\n\n[Elle](http://www.elle.com/)\n\n[##### Elizabeth Olsen calls husband Robbie Arnett the \u0027greatest support\u0027 in rare comment](https://www.aol.com/articles/everything-elizabeth-olsens-husband-robbie-202900383.html)\n\n[Finance](/finance/)\n\n[Finance](/finance/ \"Finance\")\n\n[USA TODAY](https://www.usatoday.com/money/)\n\n[##### Will Netflix, HBO Max merge? What to know about Warner Bros. deal](https://www.aol.com/articles/netflix-hbo-max-merge-know-205403111.html)\n\n[Finance](/finance/ \"Finance\")\n\n[Reuters](https://www.reuters.com/)\n\n[##### Boeing says Trump\u0027s equity stake plan doesn\u0027t apply to big US defense firms](https://www.aol.com/articles/boeing-says-trumps-equity-stake-202317517.html)\n\n[Food](/food/)\n\n[Food](/food/ \"Food\")\n\n[Tasting Table](https://www.tastingtable.com/)\n\n[##### Buy this cut of meat for the most satisfying bite of prime rib](https://www.aol.com/articles/buy-cut-meat-most-satisfying-213000183.html)\n\n[Food](/food/ \"Food\")\n\n[Food Republic](https://www.foodrepublic.com/)\n\n[##### Why doesn\u0027t McDonald\u0027s put a whole slice of cheese on the Filet-O-Fish?](https://www.aol.com/articles/why-doesnt-mcdonalds-put-whole-211700880.html)\n\n[Lighter Side](/news/lighter/)\n\n[Lighter Side](/news/lighter/ \"Lighter Side\")\n\n[The Weather Channel](https://www.weather.com)\n\n[##### A dream, a van and 16,000 miles: How 1 family visited all 50 states in 2025](https://www.aol.com/articles/dream-van-16-000-miles-151310436.html)\n\n[Lighter Side](/news/lighter/ \"Lighter Side\")\n\n[People](https://www.people.com/)\n\n[##### Woman asks co-worker to stop calling her \u0027condescending\u0027 nickname \u2014 he says she\u0027s too\u2026](https://www.aol.com/articles/woman-asks-older-co-worker-200000304.html)\n\n[News](/news/)\n\n[News](/news/ \"News\")\n\n[CNN](https://www.cnn.com/)\n\n[##### Chernobyl protective shield can no longer confine radiation after drone strike, UN nu\u2026](https://www.aol.com/articles/chernobyl-protective-shield-no-longer-181905628.html)\n\n[News](/news/ \"News\")\n\n[USA TODAY](https://www.usatoday.com/news/)\n\n[##### Magnitude 7 earthquake rocks Alaska](https://www.aol.com/articles/magnitude-7-earthquake-rocks-alaska-211848757.html)\n\n[Weather](/weather/)\n\n[Weather](/weather/ \"Weather\")\n\n[USA TODAY](https://www.usatoday.com/news/)\n\n[##### Magnitude 7 earthquake rocks Alaska](https://www.aol.com/articles/magnitude-7-earthquake-rocks-alaska-211848757.html)\n\n[Weather](/weather/ \"Weather\")\n\n[The Weather Channel](https://www.weather.com)\n\n[##### Clipper Systems Bringing Rounds Of Cold Air and Chances Of Snow For Midwest, Northeas\u2026](https://www.aol.com/articles/first-week-meteorological-winter-bring-161129430.html)\n\nAdvertisement\n\nAdvertisement\n\nAdvertisement\n\n### Related articles\n\nAdvertisement\n\nAdvertisement\n\n### Related articles\n\nAdvertisement\n\nAdvertisement\n\n### Related articles\n\nAdvertisement\n\n## From Our Partners",
+                url: "https://www.aol.com/world-boxing-apologizes-naming-imane-093324591.html"
+            }
+            
+        ];
+
+        function showDetail(index) {
+            const news = newsData[index];
+            document.getElementById('modal-title').textContent = news.title;
+            document.getElementById('modal-summary').textContent = news.summary;
+            document.getElementById('modal-content').textContent = news.content || '暂无原文内容';
+            document.getElementById('modal-link').href = news.url;
+            document.getElementById('modal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(event) {
+            if (!event || event.target === document.getElementById('modal')) {
+                document.getElementById('modal').classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // ESC 关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

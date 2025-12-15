@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:docs.tavily.com)",
+      "WebFetch(domain:tavily.com)"
+    ]
+  }
+}
