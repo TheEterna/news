@@ -5,7 +5,17 @@
       "WebFetch(domain:docs.tavily.com)",
       "WebFetch(domain:tavily.com)",
       "Bash(dir /b \"D:\\\\dev\\\\work\\\\news\")",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "WebFetch(domain:serpapi.com)",
+      "WebFetch(domain:www.explinks.com)",
+      "Bash(.venvScriptspip install google-search-results)",
+      "Bash(D:\\\\dev\\\\work\\\\news\\\\.venv\\\\Scripts\\\\pip.exe install:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(iconv:*)",
+      "Bash(.venv/Scripts/pip.exe install:*)",
+      "WebFetch(domain:www.jisuapi.com)",
+      "WebFetch(domain:gnews.io)"
     ]
   }
 }

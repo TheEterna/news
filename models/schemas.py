@@ -20,6 +20,7 @@ class NewsItem(BaseModel):
     published_date: Optional[str] = Field(None, description="发布日期")
     content: str = Field("", description="新闻内容")
     summary: str = Field("", description="AI生成的摘要")
+    source_engine: str = Field("", description="来源搜索引擎")
 
 
 class NewsResponse(BaseModel):

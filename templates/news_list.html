@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ company_name }} - 新闻列表</title>
     <style>
+        /* ========== 瑞士风格设计系统 ========== */
         * {
             margin: 0;
             padding: 0;
@@ -12,238 +13,225 @@
         }
 
         :root {
-            /* 亮色主题 */
-            --bg-primary: #f8f9fc;
-            --bg-secondary: #ffffff;
-            --glass-bg: rgba(255, 255, 255, 0.8);
-            --glass-border: rgba(0, 0, 0, 0.08);
-            --glass-hover: rgba(139, 92, 246, 0.04);
-            --text-primary: #1a1a2e;
-            --text-secondary: #4a4a68;
-            --text-tertiary: #8888a0;
-            --accent-purple: #8b5cf6;
-            --accent-blue: #3b82f6;
-            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
-            --border-radius: 16px;
-            --border-radius-sm: 8px;
-            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.12);
+            /* 瑞士风格配色 */
+            --white: #FFFFFF;
+            --black: #000000;
+            --red: #E53935;
+            --gray-100: #F5F5F5;
+            --gray-200: #EEEEEE;
+            --gray-300: #E0E0E0;
+            --gray-500: #9E9E9E;
+            --gray-700: #616161;
+            --gray-900: #212121;
+
+            /* 网格间距 */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 48px;
+            --space-2xl: 96px;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            line-height: 1.6;
+            font-family: "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--white);
+            color: var(--black);
+            line-height: 1.5;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* 背景装饰 */
-        .bg-decoration {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: 0;
-        }
-
-        .bg-decoration::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
-                        radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 40%);
-        }
-
+        /* ========== 布局 ========== */
         .container {
-            position: relative;
-            z-index: 1;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 40px 24px;
+            padding: var(--space-xl) var(--space-lg);
         }
 
-        /* 头部 */
+        /* ========== 头部 ========== */
         .header {
-            text-align: center;
-            margin-bottom: 48px;
+            border-bottom: 3px solid var(--black);
+            padding-bottom: var(--space-lg);
+            margin-bottom: var(--space-xl);
         }
 
-        .header-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--glass-border);
-            border-radius: 100px;
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 24px;
-            box-shadow: var(--shadow);
-        }
-
-        .header-badge::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background: var(--accent-gradient);
-            border-radius: 50%;
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: var(--space-md);
         }
 
         .header h1 {
-            font-size: 42px;
+            font-size: 72px;
             font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 12px;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            text-transform: uppercase;
+        }
+
+        .header-badge {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--white);
+            background: var(--red);
+            padding: var(--space-xs) var(--space-sm);
         }
 
         .header-meta {
-            color: var(--text-tertiary);
-            font-size: 14px;
-        }
-
-        .header-meta span {
-            margin: 0 8px;
-        }
-
-        /* 统计信息 */
-        .stats-bar {
-            display: flex;
-            gap: 24px;
-            padding: 20px 28px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 32px;
-        }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-label {
             font-size: 12px;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
+            color: var(--gray-700);
             letter-spacing: 0.05em;
         }
 
-        /* 表格容器 */
-        .table-container {
-            background: var(--bg-secondary);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
+        .header-meta span {
+            margin-right: var(--space-lg);
         }
 
-        /* 表格样式 */
+        /* ========== 统计栏 ========== */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-bottom: 1px solid var(--gray-300);
+            margin-bottom: var(--space-xl);
+        }
+
+        .stat-item {
+            padding: var(--space-lg) 0;
+            border-right: 1px solid var(--gray-300);
+        }
+
+        .stat-item:last-child {
+            border-right: none;
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gray-500);
+        }
+
+        /* ========== 表格 ========== */
+        .table-section {
+            margin-bottom: var(--space-xl);
+        }
+
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gray-500);
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--gray-300);
+        }
+
         .news-table {
             width: 100%;
             border-collapse: collapse;
         }
 
         .news-table thead {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.06) 0%, rgba(59, 130, 246, 0.04) 100%);
+            border-bottom: 2px solid var(--black);
         }
 
         .news-table th {
-            padding: 16px 20px;
+            padding: var(--space-md) var(--space-sm);
             text-align: left;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-secondary);
-            border-bottom: 1px solid var(--glass-border);
+            color: var(--black);
+            vertical-align: bottom;
         }
 
-        .news-table td {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--glass-border);
-            vertical-align: top;
+        .news-table th:first-child {
+            padding-left: 0;
+            width: 48px;
         }
 
         .news-table tbody tr {
-            transition: background 0.2s;
+            border-bottom: 1px solid var(--gray-200);
+            transition: background 0.15s;
         }
 
         .news-table tbody tr:hover {
-            background: var(--glass-hover);
+            background: var(--gray-100);
         }
 
-        .news-table tbody tr:last-child td {
-            border-bottom: none;
+        .news-table td {
+            padding: var(--space-lg) var(--space-sm);
+            vertical-align: top;
         }
 
-        /* 序号列 */
-        .col-index {
-            width: 60px;
-            text-align: center;
+        .news-table td:first-child {
+            padding-left: 0;
         }
 
-        .index-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            background: var(--accent-gradient);
-            border-radius: 50%;
-            font-size: 13px;
-            font-weight: 600;
-            color: #fff;
+        /* 序号 */
+        .index-num {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gray-300);
+            font-variant-numeric: tabular-nums;
         }
 
         /* 标题列 */
         .col-title {
-            min-width: 300px;
+            width: 40%;
         }
 
         .news-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-primary);
-            line-height: 1.5;
-            margin-bottom: 6px;
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: var(--space-xs);
         }
 
         .news-title a {
-            color: inherit;
+            color: var(--black);
             text-decoration: none;
-            transition: color 0.2s;
+            transition: color 0.15s;
         }
 
         .news-title a:hover {
-            color: var(--accent-purple);
+            color: var(--red);
         }
 
-        .news-source {
-            font-size: 12px;
-            color: var(--text-tertiary);
+        .news-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 11px;
+            color: var(--gray-500);
+        }
+
+        .source-tag {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--white);
+            background: var(--black);
+            padding: 2px 6px;
+        }
+
+        .source-tag.baidu {
+            background: var(--red);
         }
 
         /* 日期列 */
@@ -252,18 +240,19 @@
         }
 
         .date-text {
-            font-size: 13px;
-            color: var(--text-secondary);
+            font-size: 12px;
+            color: var(--gray-700);
+            font-variant-numeric: tabular-nums;
         }
 
         /* 摘要列 */
         .col-summary {
-            max-width: 400px;
+            width: 35%;
         }
 
         .summary-text {
             font-size: 13px;
-            color: var(--text-secondary);
+            color: var(--gray-700);
             line-height: 1.6;
             display: -webkit-box;
             -webkit-line-clamp: 3;
@@ -273,99 +262,78 @@
 
         /* 操作列 */
         .col-action {
-            width: 100px;
-            text-align: center;
+            width: 80px;
+            text-align: right;
         }
 
-        .action-btn {
+        .action-link {
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 8px 14px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            color: var(--accent-purple);
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--black);
             text-decoration: none;
-            transition: all 0.2s;
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--black);
+            transition: all 0.15s;
         }
 
-        .action-btn:hover {
-            background: var(--accent-gradient);
-            color: #fff;
-            border-color: transparent;
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        .action-link:hover {
+            background: var(--black);
+            color: var(--white);
         }
 
-        .action-btn svg {
+        .action-link svg {
             width: 12px;
             height: 12px;
         }
 
-        /* 详情按钮 */
         .detail-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 8px 14px;
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.08) 100%);
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            border-radius: 8px;
-            color: var(--accent-purple);
-            font-size: 12px;
-            font-weight: 500;
+            display: inline-block;
+            margin-top: var(--space-sm);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--red);
+            text-decoration: underline;
             cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 10px;
+            background: none;
+            border: none;
+            padding: 0;
         }
 
         .detail-btn:hover {
-            background: var(--accent-gradient);
-            color: #fff;
-            border-color: transparent;
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            color: var(--black);
         }
 
-        /* 页脚 */
+        /* ========== 页脚 ========== */
         .footer {
-            text-align: center;
-            padding: 40px 0;
-            color: var(--text-tertiary);
-            font-size: 13px;
+            border-top: 1px solid var(--gray-300);
+            padding-top: var(--space-lg);
+            margin-top: var(--space-xl);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--gray-500);
         }
 
         .footer a {
-            color: var(--accent-purple);
+            color: var(--black);
             text-decoration: none;
+            font-weight: 700;
         }
 
-        /* 响应式 */
-        @media (max-width: 900px) {
-            .container {
-                padding: 24px 16px;
-            }
-
-            .header h1 {
-                font-size: 28px;
-            }
-
-            .table-container {
-                overflow-x: auto;
-            }
-
-            .news-table {
-                min-width: 700px;
-            }
-
-            .stats-bar {
-                flex-wrap: wrap;
-                gap: 16px;
-            }
+        .footer a:hover {
+            color: var(--red);
         }
 
-        /* 模态框 - 更大更亮 */
+        /* ========== 模态框 ========== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -373,12 +341,11 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.8);
             z-index: 100;
             align-items: center;
             justify-content: center;
-            padding: 24px;
+            padding: var(--space-lg);
         }
 
         .modal-overlay.show {
@@ -386,211 +353,231 @@
         }
 
         .modal-content {
-            background: #ffffff;
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            max-width: 900px;
+            background: var(--white);
+            max-width: 800px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            padding: 40px;
-            box-shadow: var(--shadow-lg);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 28px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--glass-border);
+            padding: var(--space-lg);
+            border-bottom: 2px solid var(--black);
         }
 
         .modal-title {
             font-size: 24px;
             font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1.4;
+            line-height: 1.3;
             flex: 1;
-            padding-right: 20px;
+            padding-right: var(--space-lg);
         }
 
         .modal-close {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--bg-primary);
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            color: var(--text-secondary);
+            background: var(--black);
+            border: none;
+            color: var(--white);
             cursor: pointer;
-            transition: all 0.2s;
             flex-shrink: 0;
+            transition: background 0.15s;
         }
 
         .modal-close:hover {
-            background: var(--accent-gradient);
-            color: #fff;
-            border-color: transparent;
+            background: var(--red);
+        }
+
+        .modal-body {
+            padding: var(--space-lg);
         }
 
         .modal-section {
-            margin-bottom: 28px;
+            margin-bottom: var(--space-lg);
         }
 
-        .modal-section-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 600;
+        .modal-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .modal-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--accent-purple);
-            margin-bottom: 16px;
-        }
-
-        .modal-section-title::before {
-            content: '';
-            width: 4px;
-            height: 16px;
-            background: var(--accent-gradient);
-            border-radius: 2px;
+            color: var(--red);
+            margin-bottom: var(--space-sm);
         }
 
         .modal-summary {
             font-size: 16px;
-            color: var(--text-secondary);
-            line-height: 1.9;
-            padding: 24px;
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.06) 0%, rgba(59, 130, 246, 0.04) 100%);
-            border: 1px solid rgba(139, 92, 246, 0.12);
-            border-radius: var(--border-radius-sm);
+            line-height: 1.8;
+            color: var(--black);
+            padding: var(--space-md);
+            background: var(--gray-100);
+            border-left: 3px solid var(--red);
         }
 
         .modal-content-text {
-            font-size: 15px;
-            color: var(--text-secondary);
-            line-height: 1.9;
-            padding: 24px;
-            background: var(--bg-primary);
-            border-radius: var(--border-radius-sm);
-            border: 1px solid var(--glass-border);
-            max-height: 400px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--gray-700);
+            padding: var(--space-md);
+            background: var(--gray-100);
+            max-height: 300px;
             overflow-y: auto;
         }
 
-        /* 滚动条样式 */
-        .modal-content-text::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .modal-content-text::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .modal-content-text::-webkit-scrollbar-thumb {
-            background: var(--glass-border);
-            border-radius: 3px;
-        }
-
         .modal-footer {
-            display: flex;
-            gap: 12px;
-            padding-top: 20px;
-            border-top: 1px solid var(--glass-border);
+            padding: var(--space-lg);
+            border-top: 1px solid var(--gray-300);
         }
 
         .modal-link {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 14px 24px;
-            background: var(--accent-gradient);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            font-weight: 600;
+            gap: var(--space-sm);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--white);
+            background: var(--black);
+            padding: var(--space-md) var(--space-lg);
             text-decoration: none;
-            transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            transition: background 0.15s;
         }
 
         .modal-link:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+            background: var(--red);
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 900px) {
+            .container {
+                padding: var(--space-lg) var(--space-md);
+            }
+
+            .header h1 {
+                font-size: 48px;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-item {
+                border-right: none;
+                border-bottom: 1px solid var(--gray-300);
+                padding: var(--space-md) 0;
+            }
+
+            .stat-item:last-child {
+                border-bottom: none;
+            }
+
+            .news-table thead {
+                display: none;
+            }
+
+            .news-table tbody tr {
+                display: block;
+                padding: var(--space-lg) 0;
+            }
+
+            .news-table td {
+                display: block;
+                padding: var(--space-xs) 0;
+                width: 100% !important;
+            }
+
+            .col-action {
+                text-align: left;
+                margin-top: var(--space-md);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="bg-decoration"></div>
-
     <div class="container">
         <!-- 头部 -->
         <header class="header">
-            <div class="header-badge">新闻列表</div>
-            <h1>{{ company_name }}</h1>
+            <div class="header-top">
+                <h1>{{ company_name }}</h1>
+                <span class="header-badge">News Index</span>
+            </div>
             <div class="header-meta">
-                <span>生成时间: {{ fetch_time }}</span>
-                <span>·</span>
-                <span>共 {{ news_count }} 条新闻</span>
+                <span>生成时间 {{ fetch_time }}</span>
+                <span>共 {{ news_count }} 条</span>
             </div>
         </header>
 
-        <!-- 统计信息 -->
+        <!-- 统计栏 -->
         <div class="stats-bar">
             <div class="stat-item">
-                <span class="stat-value">{{ news_count }}</span>
-                <span class="stat-label">新闻数量</span>
+                <div class="stat-value">{{ news_count }}</div>
+                <div class="stat-label">Total News</div>
             </div>
             <div class="stat-item">
-                <span class="stat-value">{{ time_range }}</span>
-                <span class="stat-label">时间范围</span>
+                <div class="stat-value">{{ time_range }}</div>
+                <div class="stat-label">Time Range</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">2</div>
+                <div class="stat-label">Sources</div>
             </div>
         </div>
 
         <!-- 新闻表格 -->
-        <div class="table-container">
+        <section class="table-section">
+            <div class="section-title">News Articles</div>
             <table class="news-table">
                 <thead>
                     <tr>
-                        <th class="col-index">#</th>
-                        <th class="col-title">新闻标题</th>
-                        <th class="col-date">发布日期</th>
-                        <th class="col-summary">AI 摘要</th>
-                        <th class="col-action">操作</th>
+                        <th>No.</th>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <th>Summary</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for news in news_list %}
                     <tr>
-                        <td class="col-index">
-                            <span class="index-badge">{{ loop.index }}</span>
+                        <td>
+                            <span class="index-num">{{ "%02d"|format(loop.index) }}</span>
                         </td>
                         <td class="col-title">
                             <div class="news-title">
                                 <a href="{{ news.url }}" target="_blank">{{ news.title }}</a>
                             </div>
-                            <div class="news-source">{{ news.url | truncate(50) }}</div>
+                            <div class="news-meta">
+                                {% if news.source_engine %}
+                                <span class="source-tag {% if '百度' in news.source_engine %}baidu{% endif %}">{{ news.source_engine }}</span>
+                                {% endif %}
+                                <span>{{ news.url | truncate(40) }}</span>
+                            </div>
                         </td>
                         <td class="col-date">
-                            <span class="date-text">{{ news.published_date or '-' }}</span>
+                            <span class="date-text">{{ news.published_date or '—' }}</span>
                         </td>
                         <td class="col-summary">
-                            <div class="summary-text">{{ news.summary }}</div>
+                            <div class="summary-text">{{ news.summary or '暂无摘要' }}</div>
                             <button class="detail-btn" onclick="showDetail({{ loop.index0 }})">
-                                查看详情
+                                View Details →
                             </button>
                         </td>
                         <td class="col-action">
-                            <a href="{{ news.url }}" target="_blank" class="action-btn">
+                            <a href="{{ news.url }}" target="_blank" class="action-link">
                                 原文
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                                    <polyline points="15 3 21 3 21 9"/>
-                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                    <path d="M7 17L17 7M17 7H7M17 7V17"/>
                                 </svg>
                             </a>
                         </td>
@@ -598,11 +585,14 @@
                     {% endfor %}
                 </tbody>
             </table>
-        </div>
+        </section>
 
         <!-- 页脚 -->
         <footer class="footer">
-            <p>由 AI 自动生成 · 数据来源: <a href="https://tavily.com" target="_blank">Tavily</a></p>
+            <div class="footer-content">
+                <span>AI Generated Report</span>
+                <span>Data: <a href="https://tavily.com" target="_blank">Tavily</a> + <a href="https://serpapi.com" target="_blank">Baidu News</a></span>
+            </div>
         </footer>
     </div>
 
@@ -612,25 +602,27 @@
             <div class="modal-header">
                 <h2 class="modal-title" id="modal-title"></h2>
                 <button class="modal-close" onclick="closeModal()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"/>
                         <line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
                 </button>
             </div>
-            <div class="modal-section">
-                <div class="modal-section-title">AI 智能摘要</div>
-                <div class="modal-summary" id="modal-summary"></div>
-            </div>
-            <div class="modal-section">
-                <div class="modal-section-title">原文内容</div>
-                <div class="modal-content-text" id="modal-content"></div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <div class="modal-label">AI Summary</div>
+                    <div class="modal-summary" id="modal-summary"></div>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-label">Original Content</div>
+                    <div class="modal-content-text" id="modal-content"></div>
+                </div>
             </div>
             <div class="modal-footer">
                 <a href="#" target="_blank" class="modal-link" id="modal-link">
-                    阅读原文
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    Read Original
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M7 17L17 7M17 7H7M17 7V17"/>
                     </svg>
                 </a>
             </div>
@@ -638,7 +630,6 @@
     </div>
 
     <script>
-        // 新闻数据
         const newsData = [
             {% for news in news_list %}
             {
@@ -653,7 +644,7 @@
         function showDetail(index) {
             const news = newsData[index];
             document.getElementById('modal-title').textContent = news.title;
-            document.getElementById('modal-summary').textContent = news.summary;
+            document.getElementById('modal-summary').textContent = news.summary || '暂无摘要';
             document.getElementById('modal-content').textContent = news.content || '暂无原文内容';
             document.getElementById('modal-link').href = news.url;
             document.getElementById('modal').classList.add('show');
@@ -667,11 +658,8 @@
             }
         }
 
-        // ESC 关闭模态框
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeModal();
-            }
+            if (e.key === 'Escape') closeModal();
         });
     </script>
 </body>

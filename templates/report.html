@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ company_name }} - 新闻摘要报告</title>
     <style>
+        /* ========== 瑞士风格设计系统 ========== */
         * {
             margin: 0;
             padding: 0;
@@ -12,367 +13,313 @@
         }
 
         :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #12121a;
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-hover: rgba(255, 255, 255, 0.06);
-            --text-primary: #f5f5f7;
-            --text-secondary: rgba(255, 255, 255, 0.6);
-            --text-tertiary: rgba(255, 255, 255, 0.4);
-            --accent-purple: #8b5cf6;
-            --accent-blue: #3b82f6;
-            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
-            --border-radius: 16px;
-            --border-radius-sm: 8px;
+            /* 瑞士风格配色 */
+            --white: #FFFFFF;
+            --black: #000000;
+            --red: #E53935;
+            --gray-100: #F5F5F5;
+            --gray-200: #EEEEEE;
+            --gray-300: #E0E0E0;
+            --gray-500: #9E9E9E;
+            --gray-700: #616161;
+            --gray-900: #212121;
+
+            /* 网格间距 */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 48px;
+            --space-2xl: 96px;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            line-height: 1.6;
+            font-family: "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--white);
+            color: var(--black);
+            line-height: 1.5;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* 背景装饰 */
-        .bg-decoration {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: 0;
-        }
-
-        .bg-decoration::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%);
-        }
-
+        /* ========== 布局 ========== */
         .container {
-            position: relative;
-            z-index: 1;
             max-width: 900px;
             margin: 0 auto;
-            padding: 40px 24px;
+            padding: var(--space-xl) var(--space-lg);
         }
 
-        /* 头部 */
+        /* ========== 头部 ========== */
         .header {
-            text-align: center;
-            margin-bottom: 48px;
+            border-bottom: 3px solid var(--black);
+            padding-bottom: var(--space-lg);
+            margin-bottom: var(--space-xl);
         }
 
-        .header-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 100px;
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 24px;
-            backdrop-filter: blur(20px);
-        }
-
-        .header-badge::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background: var(--accent-gradient);
-            border-radius: 50%;
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-md);
         }
 
         .header h1 {
-            font-size: 42px;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            margin-bottom: 12px;
-            background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.7) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 64px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            text-transform: uppercase;
+        }
+
+        .header-badge {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--white);
+            background: var(--red);
+            padding: var(--space-xs) var(--space-sm);
         }
 
         .header-meta {
-            color: var(--text-tertiary);
-            font-size: 14px;
-        }
-
-        .header-meta span {
-            margin: 0 8px;
-        }
-
-        /* 玻璃卡片 */
-        .glass-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 28px;
-            margin-bottom: 24px;
-            transition: all 0.3s ease;
-        }
-
-        .glass-card:hover {
-            background: var(--glass-hover);
-            border-color: rgba(255, 255, 255, 0.12);
-        }
-
-        /* 统计信息 */
-        .stats-bar {
-            display: flex;
-            gap: 24px;
-            padding: 20px 28px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            backdrop-filter: blur(20px);
-            margin-bottom: 32px;
-        }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 600;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-label {
             font-size: 12px;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
+            color: var(--gray-700);
             letter-spacing: 0.05em;
         }
 
-        .section-title {
+        .header-meta span {
+            margin-right: var(--space-lg);
+        }
+
+        /* ========== 统计栏 ========== */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-bottom: 1px solid var(--gray-300);
+            margin-bottom: var(--space-xl);
+        }
+
+        .stat-item {
+            padding: var(--space-lg) 0;
+            border-right: 1px solid var(--gray-300);
+        }
+
+        .stat-item:last-child {
+            border-right: none;
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gray-500);
+        }
+
+        /* ========== 章节标题 ========== */
+        .section-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 13px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--text-tertiary);
-            margin-bottom: 20px;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
         }
 
-        .section-title::after {
-            content: '';
+        .section-number {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            color: var(--white);
+            background: var(--black);
+            padding: var(--space-xs) var(--space-sm);
+        }
+
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gray-500);
+        }
+
+        .section-line {
             flex: 1;
             height: 1px;
-            background: linear-gradient(90deg, var(--glass-border) 0%, transparent 100%);
+            background: var(--gray-300);
         }
 
-        /* 新闻列表 */
+        /* ========== 新闻卡片 ========== */
         .news-list {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: var(--space-xl);
         }
 
-        /* 单条新闻卡片 */
         .news-card {
-            position: relative;
+            display: grid;
+            grid-template-columns: 64px 1fr;
+            gap: var(--space-lg);
+            padding-bottom: var(--space-xl);
+            border-bottom: 1px solid var(--gray-200);
         }
 
-        .news-card::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 28px;
-            width: 4px;
-            height: calc(100% - 56px);
-            background: var(--accent-gradient);
-            border-radius: 2px;
-            opacity: 0.5;
-            transition: opacity 0.3s;
+        .news-card:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
         }
 
-        .news-card:hover::before {
-            opacity: 1;
-        }
-
-        .news-card .glass-card {
-            margin-left: 16px;
-            margin-bottom: 0;
-        }
-
-        /* 新闻序号 */
+        /* 序号 */
         .news-index {
-            position: absolute;
-            left: -8px;
-            top: 28px;
-            width: 32px;
-            height: 32px;
-            background: var(--accent-gradient);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 600;
-            color: #fff;
-            z-index: 2;
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--gray-200);
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
         }
 
+        .news-body {
+            min-width: 0;
+        }
+
+        /* 标题区 */
         .news-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 16px;
-            margin-bottom: 16px;
+            margin-bottom: var(--space-md);
         }
 
         .news-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-primary);
-            line-height: 1.5;
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: var(--space-sm);
         }
 
         .news-title a {
-            color: inherit;
+            color: var(--black);
             text-decoration: none;
-            transition: color 0.2s;
+            transition: color 0.15s;
         }
 
         .news-title a:hover {
-            color: var(--accent-purple);
+            color: var(--red);
+        }
+
+        .news-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+
+        .source-tag {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--white);
+            background: var(--black);
+            padding: 2px 6px;
+        }
+
+        .source-tag.baidu {
+            background: var(--red);
         }
 
         .news-date {
-            flex-shrink: 0;
-            font-size: 12px;
-            color: var(--text-tertiary);
-            padding: 4px 12px;
-            background: var(--glass-bg);
-            border-radius: 100px;
-            border: 1px solid var(--glass-border);
+            font-variant-numeric: tabular-nums;
         }
 
-        /* AI 摘要区域 */
-        .news-summary-section {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.06) 0%, rgba(59, 130, 246, 0.04) 100%);
-            border: 1px solid rgba(139, 92, 246, 0.12);
-            border-radius: var(--border-radius-sm);
-            padding: 20px;
-            margin-bottom: 16px;
+        /* AI 摘要 */
+        .summary-section {
+            margin-bottom: var(--space-md);
         }
 
         .summary-label {
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            font-weight: 500;
+            gap: var(--space-sm);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--accent-purple);
-            margin-bottom: 12px;
+            color: var(--red);
+            margin-bottom: var(--space-sm);
         }
 
-        .summary-label svg {
-            width: 14px;
-            height: 14px;
+        .summary-label::before {
+            content: '';
+            width: 12px;
+            height: 2px;
+            background: var(--red);
         }
 
-        .news-summary {
+        .summary-text {
             font-size: 15px;
-            color: var(--text-secondary);
             line-height: 1.8;
+            color: var(--gray-900);
+            padding: var(--space-md);
+            background: var(--gray-100);
+            border-left: 3px solid var(--red);
         }
 
-        /* 原文内容区域 */
-        .news-content-section {
-            margin-top: 16px;
+        /* 原文内容 */
+        .content-section {
+            margin-bottom: var(--space-md);
         }
 
         .content-toggle {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius-sm);
-            color: var(--text-secondary);
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
+            gap: var(--space-sm);
             width: 100%;
+            padding: var(--space-md);
+            background: none;
+            border: 1px solid var(--gray-300);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all 0.15s;
             text-align: left;
         }
 
         .content-toggle:hover {
-            background: var(--glass-hover);
-            color: var(--text-primary);
+            border-color: var(--black);
+            color: var(--black);
         }
 
         .content-toggle svg {
-            width: 16px;
-            height: 16px;
-            transition: transform 0.3s;
+            width: 14px;
+            height: 14px;
+            transition: transform 0.2s;
         }
 
         .content-toggle.active svg {
             transform: rotate(180deg);
         }
 
-        .news-content {
+        .content-body {
             display: none;
-            margin-top: 12px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: var(--border-radius-sm);
-            border: 1px solid var(--glass-border);
-            font-size: 14px;
-            color: var(--text-secondary);
+            margin-top: var(--space-sm);
+            padding: var(--space-md);
+            background: var(--gray-100);
+            font-size: 13px;
             line-height: 1.8;
+            color: var(--gray-700);
             max-height: 400px;
             overflow-y: auto;
         }
 
-        .news-content.show {
+        .content-body.show {
             display: block;
-        }
-
-        /* 滚动条样式 */
-        .news-content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .news-content::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .news-content::-webkit-scrollbar-thumb {
-            background: var(--glass-border);
-            border-radius: 3px;
-        }
-
-        .news-content::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.2);
         }
 
         /* 底部链接 */
@@ -380,176 +327,219 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--glass-border);
         }
 
-        .news-link {
+        .read-link {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            color: var(--accent-purple);
+            gap: var(--space-sm);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--black);
             text-decoration: none;
-            transition: gap 0.2s;
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--black);
+            transition: all 0.15s;
         }
 
-        .news-link:hover {
-            gap: 10px;
+        .read-link:hover {
+            background: var(--black);
+            color: var(--white);
         }
 
-        .news-link svg {
-            width: 14px;
-            height: 14px;
+        .read-link svg {
+            width: 12px;
+            height: 12px;
         }
 
-        .news-source {
-            font-size: 12px;
-            color: var(--text-tertiary);
+        .source-url {
+            font-size: 11px;
+            color: var(--gray-500);
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        /* 页脚 */
+        /* ========== 页脚 ========== */
         .footer {
-            text-align: center;
-            padding: 40px 0;
-            color: var(--text-tertiary);
-            font-size: 13px;
+            border-top: 3px solid var(--black);
+            padding-top: var(--space-lg);
+            margin-top: var(--space-xl);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--gray-500);
         }
 
         .footer a {
-            color: var(--accent-purple);
+            color: var(--black);
             text-decoration: none;
+            font-weight: 700;
         }
 
-        /* 响应式 */
+        .footer a:hover {
+            color: var(--red);
+        }
+
+        /* ========== 响应式 ========== */
         @media (max-width: 640px) {
             .container {
-                padding: 24px 16px;
+                padding: var(--space-lg) var(--space-md);
             }
 
             .header h1 {
-                font-size: 28px;
-            }
-
-            .glass-card {
-                padding: 20px;
+                font-size: 36px;
             }
 
             .stats-bar {
-                flex-wrap: wrap;
-                gap: 16px;
+                grid-template-columns: 1fr;
             }
 
-            .news-header {
-                flex-direction: column;
-                gap: 8px;
+            .stat-item {
+                border-right: none;
+                border-bottom: 1px solid var(--gray-300);
+                padding: var(--space-md) 0;
             }
 
-            .news-card .glass-card {
-                margin-left: 12px;
+            .stat-item:last-child {
+                border-bottom: none;
+            }
+
+            .stat-value {
+                font-size: 36px;
+            }
+
+            .news-card {
+                grid-template-columns: 1fr;
+                gap: var(--space-sm);
             }
 
             .news-index {
-                width: 28px;
-                height: 28px;
-                font-size: 12px;
-                left: -6px;
+                font-size: 24px;
+            }
+
+            .news-title {
+                font-size: 18px;
+            }
+
+            .news-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-sm);
+            }
+
+            .source-url {
+                max-width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <div class="bg-decoration"></div>
-
     <div class="container">
         <!-- 头部 -->
         <header class="header">
-            <div class="header-badge">新闻摘要报告</div>
-            <h1>{{ company_name }}</h1>
+            <div class="header-top">
+                <h1>{{ company_name }}</h1>
+                <span class="header-badge">Report</span>
+            </div>
             <div class="header-meta">
-                <span>生成时间: {{ fetch_time }}</span>
-                <span>·</span>
+                <span>生成时间 {{ fetch_time }}</span>
                 <span>共 {{ news_count }} 条新闻</span>
             </div>
         </header>
 
-        <!-- 统计信息 -->
+        <!-- 统计栏 -->
         <div class="stats-bar">
             <div class="stat-item">
-                <span class="stat-value">{{ news_count }}</span>
-                <span class="stat-label">新闻数量</span>
+                <div class="stat-value">{{ news_count }}</div>
+                <div class="stat-label">Total News</div>
             </div>
             <div class="stat-item">
-                <span class="stat-value">{{ time_range }}</span>
-                <span class="stat-label">时间范围</span>
+                <div class="stat-value">{{ time_range }}</div>
+                <div class="stat-label">Time Range</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">2</div>
+                <div class="stat-label">Sources</div>
             </div>
         </div>
 
-        <!-- 新闻详情列表 -->
+        <!-- 新闻详情 -->
         <section>
-            <div class="section-title">新闻详情</div>
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <span class="section-title">News Details</span>
+                <span class="section-line"></span>
+            </div>
+
             <div class="news-list">
                 {% for news in news_list %}
-                <div class="news-card">
-                    <span class="news-index">{{ loop.index }}</span>
-                    <div class="glass-card">
-                        <!-- 标题和日期 -->
+                <article class="news-card">
+                    <div class="news-index">{{ "%02d"|format(loop.index) }}</div>
+                    <div class="news-body">
+                        <!-- 标题区 -->
                         <div class="news-header">
-                            <h3 class="news-title">
+                            <h2 class="news-title">
                                 <a href="{{ news.url }}" target="_blank">{{ news.title }}</a>
-                            </h3>
-                            {% if news.published_date %}
-                            <span class="news-date">{{ news.published_date }}</span>
-                            {% endif %}
+                            </h2>
+                            <div class="news-meta">
+                                {% if news.source_engine %}
+                                <span class="source-tag {% if '百度' in news.source_engine %}baidu{% endif %}">{{ news.source_engine }}</span>
+                                {% endif %}
+                                {% if news.published_date %}
+                                <span class="news-date">{{ news.published_date }}</span>
+                                {% endif %}
+                            </div>
                         </div>
 
                         <!-- AI 摘要 -->
-                        <div class="news-summary-section">
-                            <div class="summary-label">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 2a4 4 0 0 1 4 4v1a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
-                                    <path d="M12 11v4"/>
-                                    <path d="M8 15h8"/>
-                                    <path d="M9 19h6"/>
-                                </svg>
-                                AI 智能摘要
-                            </div>
-                            <p class="news-summary">{{ news.summary }}</p>
+                        <div class="summary-section">
+                            <div class="summary-label">AI Summary</div>
+                            <p class="summary-text">{{ news.summary or '暂无摘要' }}</p>
                         </div>
 
-                        <!-- 原文内容（可展开） -->
+                        <!-- 原文内容 -->
                         {% if news.content %}
-                        <div class="news-content-section">
+                        <div class="content-section">
                             <button class="content-toggle" onclick="toggleContent(this)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M6 9l6 6 6-6"/>
                                 </svg>
-                                查看原文内容
+                                View Original Content
                             </button>
-                            <div class="news-content">{{ news.content }}</div>
+                            <div class="content-body">{{ news.content }}</div>
                         </div>
                         {% endif %}
 
                         <!-- 底部 -->
                         <div class="news-footer">
-                            <a href="{{ news.url }}" target="_blank" class="news-link">
-                                阅读原文
+                            <a href="{{ news.url }}" target="_blank" class="read-link">
+                                Read Original
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                    <path d="M7 17L17 7M17 7H7M17 7V17"/>
                                 </svg>
                             </a>
-                            <span class="news-source">来源: {{ news.url | truncate(40) }}</span>
+                            <span class="source-url">{{ news.url | truncate(50) }}</span>
                         </div>
                     </div>
-                </div>
+                </article>
                 {% endfor %}
             </div>
         </section>
 
         <!-- 页脚 -->
         <footer class="footer">
-            <p>由 AI 自动生成 · 数据来源: <a href="https://tavily.com" target="_blank">Tavily</a></p>
+            <div class="footer-content">
+                <span>AI Generated Report</span>
+                <span>Data: <a href="https://tavily.com" target="_blank">Tavily</a> + <a href="https://serpapi.com" target="_blank">Baidu News</a></span>
+            </div>
         </footer>
     </div>
 
@@ -558,9 +548,10 @@
             btn.classList.toggle('active');
             const content = btn.nextElementSibling;
             content.classList.toggle('show');
-            btn.innerHTML = content.classList.contains('show')
-                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>收起原文内容'
-                : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>查看原文内容';
+            const isOpen = content.classList.contains('show');
+            btn.innerHTML = isOpen
+                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>Hide Original Content'
+                : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>View Original Content';
         }
     </script>
 </body>

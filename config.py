@@ -20,6 +20,12 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 # Tavily API 配置
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
 
+# SerpApi 配置（百度新闻）
+SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY", "")
+
+# 搜索引擎模式：tavily, baidu, both
+SEARCH_ENGINE_MODE = os.getenv("SEARCH_ENGINE_MODE", "both")
+
 # 自部署大模型配置 (OpenAI 兼容格式)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "http://localhost:8000/v1")
