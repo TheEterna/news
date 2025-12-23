@@ -3,7 +3,9 @@
     "allow": [
       "WebSearch",
       "WebFetch(domain:docs.tavily.com)",
-      "WebFetch(domain:tavily.com)"
+      "WebFetch(domain:tavily.com)",
+      "Bash(dir /b \"D:\\\\dev\\\\work\\\\news\")",
+      "Bash(mkdir:*)"
     ]
   }
 }

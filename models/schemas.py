@@ -35,3 +35,45 @@ class ErrorResponse(BaseModel):
     """错误响应"""
     error: str = Field(..., description="错误信息")
     detail: Optional[str] = Field(None, description="详细信息")
+
+
+# ========== 两阶段系统新增模型 ==========
+
+class Phase1Request(BaseModel):
+    """阶段一请求：新闻搜集"""
+    company_name: str = Field(..., description="公司名称", min_length=1)
+
+
+class Phase1Response(BaseModel):
+    """阶段一响应"""
+    task_id: int = Field(..., description="任务ID")
+    company_name: str = Field(..., description="公司名称")
+    total_fetched: int = Field(0, description="总抓取数量")
+    pending_review_count: int = Field(0, description="待审核数量")
+    filtered_count: int = Field(0, description="已过滤数量")
+    message: str = Field("", description="提示信息")
+
+
+class Phase2ReviewRequest(BaseModel):
+    """阶段二请求：审核提交"""
+    task_id: int = Field(..., description="任务ID")
+    approved_news_ids: list[int] = Field(default_factory=list, description="确认通过的新闻ID列表")
+
+
+class Phase2Response(BaseModel):
+    """阶段二响应"""
+    task_id: int = Field(..., description="任务ID")
+    company_name: str = Field(..., description="公司名称")
+    approved_count: int = Field(0, description="通过数量")
+    overall_summary: str = Field("", description="整体总结")
+    message: str = Field("", description="提示信息")
+
+
+class TaskInfo(BaseModel):
+    """搜索任务信息"""
+    id: int
+    company_name: str
+    created_at: str
+    status: str
+    total_fetched: int
+    total_approved: int

@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 新闻搜集系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Linear 风格配色 */
+            --bg-primary: #f7f8fa;
+            --bg-glass: rgba(255, 255, 255, 0.72);
+            --bg-glass-hover: rgba(255, 255, 255, 0.88);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-border-hover: rgba(139, 92, 246, 0.25);
+            --text-primary: #0a0a0f;
+            --text-secondary: #3d3d4e;
+            --text-tertiary: #8a8a9a;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%);
+            --border-radius: 16px;
+            --border-radius-sm: 10px;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* 背景装饰 - Linear 风格渐变光斑 */
+        .bg-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .bg-decoration::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            left: -20%;
+            width: 70%;
+            height: 70%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 60%);
+            filter: blur(60px);
+        }
+
+        .bg-decoration::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            right: -10%;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 60%);
+            filter: blur(60px);
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        /* 头部 */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .header h1 {
+            font-size: 44px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 14px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--text-tertiary);
+            font-size: 16px;
+            font-weight: 500;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* 搜索卡片 - 玻璃拟态 */
+        .search-card {
+            padding: 40px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 40px;
+        }
+
+        .search-card h2 {
+            font-size: 20px;
+            margin-bottom: 26px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+
+        .search-card h2::before {
+            content: '1';
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-gradient);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid var(--glass-border);
+            border-radius: var(--border-radius-sm);
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        .input-group input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .search-btn {
+            padding: 15px 36px;
+            background: var(--accent-gradient);
+            color: #fff;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+            align-self: flex-end;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(139, 92, 246, 0.4);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 加载状态 - 玻璃拟态 */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(247, 248, 250, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 52px;
+            height: 52px;
+            border: 4px solid var(--glass-border);
+            border-top-color: var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* 任务列表 */
+        .tasks-section {
+            margin-top: 44px;
+        }
+
+        .tasks-section h2 {
+            font-size: 20px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+
+        .tasks-section h2::before {
+            content: '2';
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-gradient);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* 任务卡片 - 玻璃拟态 */
+        .task-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 22px 26px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+        }
+
+        .task-card:hover {
+            background: var(--bg-glass-hover);
+            border-color: var(--glass-border-hover);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .task-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .task-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .task-meta {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            display: flex;
+            gap: 16px;
+            font-weight: 500;
+        }
+
+        .task-status {
+            padding: 5px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .task-status.reviewing {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: var(--warning-color);
+        }
+
+        .task-status.completed {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--success-color);
+        }
+
+        .task-status.collecting {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: var(--accent-purple);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-review, .btn-view {
+            padding: 11px 22px;
+            border-radius: var(--border-radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-review {
+            background: var(--accent-gradient);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+        }
+
+        .btn-review:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
+        }
+
+        .btn-view {
+            background: rgba(255, 255, 255, 0.6);
+            color: var(--text-secondary);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-view:hover {
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-tertiary);
+        }
+
+        .empty-state p {
+            margin-top: 8px;
+        }
+
+        /* 流程说明 - 玻璃拟态 */
+        .flow-guide {
+            margin-top: 60px;
+            padding: 34px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+        }
+
+        .flow-guide h3 {
+            font-size: 16px;
+            margin-bottom: 22px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .flow-steps {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            flex: 1;
+            min-width: 180px;
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-sm);
+            transition: all 0.2s ease;
+        }
+
+        .flow-step:hover {
+            background: rgba(255, 255, 255, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .flow-step-num {
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-gradient);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        .flow-step-title {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        .flow-step-desc {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            line-height: 1.5;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 32px;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .search-btn {
+                width: 100%;
+            }
+
+            .task-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .task-actions {
+                width: 100%;
+            }
+
+            .task-actions a {
+                flex: 1;
+                text-align: center;
+            }
+
+            .flow-step {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-decoration"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">正在搜集新闻...</div>
+    </div>
+
+    <div class="container">
+        <header class="header">
+            <h1>AI 新闻搜集系统</h1>
+            <p>自动搜索科技公司新闻，AI 智能筛选，人工审核后生成摘要报告</p>
+        </header>
+
+        <!-- 搜索卡片 -->
+        <div class="search-card">
+            <h2>开始搜集新闻</h2>
+            <form class="search-form" id="searchForm" onsubmit="startCollect(event)">
+                <div class="input-group">
+                    <label for="companyName">输入公司名称</label>
+                    <input type="text" id="companyName" name="company_name"
+                           placeholder="例如：百度、OpenAI、字节跳动" required>
+                </div>
+                <button type="submit" class="search-btn" id="searchBtn">
+                    开始搜集
+                </button>
+            </form>
+        </div>
+
+        <!-- 任务列表 -->
+        <div class="tasks-section">
+            <h2>任务列表</h2>
+            <div class="task-list" id="taskList">
+                <div class="empty-state">
+                    <p>暂无任务记录</p>
+                    <p>输入公司名称开始搜集新闻</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 流程说明 -->
+        <div class="flow-guide">
+            <h3>使用流程</h3>
+            <div class="flow-steps">
+                <div class="flow-step">
+                    <div class="flow-step-num">1</div>
+                    <div class="flow-step-title">输入公司名称</div>
+                    <div class="flow-step-desc">系统自动生成搜索关键词并抓取新闻</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-num">2</div>
+                    <div class="flow-step-title">AI 自动分类</div>
+                    <div class="flow-step-desc">过滤访谈、财报等非产品类新闻</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-num">3</div>
+                    <div class="flow-step-title">人工审核</div>
+                    <div class="flow-step-desc">在审核页面勾选确认要保留的新闻</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-num">4</div>
+                    <div class="flow-step-title">生成报告</div>
+                    <div class="flow-step-desc">AI 为选中的新闻生成摘要和总结</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载时获取任务列表
+        document.addEventListener('DOMContentLoaded', loadTasks);
+
+        async function loadTasks() {
+            try {
+                const response = await fetch('/api/v2/tasks');
+                const data = await response.json();
+                renderTaskList(data.tasks || []);
+            } catch (error) {
+                console.error('加载任务列表失败:', error);
+            }
+        }
+
+        function renderTaskList(tasks) {
+            const container = document.getElementById('taskList');
+
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>暂无任务记录</p>
+                        <p>输入公司名称开始搜集新闻</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = tasks.map(task => {
+                const statusClass = task.status;
+                const statusText = {
+                    'collecting': '搜集中',
+                    'reviewing': '待审核',
+                    'completed': '已完成'
+                }[task.status] || task.status;
+
+                const createdAt = new Date(task.created_at).toLocaleString('zh-CN');
+
+                let actions = '';
+                if (task.status === 'reviewing') {
+                    actions = `<a href="/api/v2/tasks/${task.id}/review" class="btn-review">去审核</a>`;
+                } else if (task.status === 'completed') {
+                    actions = `<a href="/api/v2/tasks/${task.id}/report" class="btn-view">查看报告</a>`;
+                }
+
+                return `
+                    <div class="task-card">
+                        <div class="task-info">
+                            <div class="task-title">${task.company_name}</div>
+                            <div class="task-meta">
+                                <span>任务 #${task.id}</span>
+                                <span>${createdAt}</span>
+                                <span>抓取 ${task.total_fetched} 条</span>
+                                ${task.total_approved > 0 ? `<span>通过 ${task.total_approved} 条</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            <span class="task-status ${statusClass}">${statusText}</span>
+                            ${actions}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function startCollect(event) {
+            event.preventDefault();
+
+            const companyName = document.getElementById('companyName').value.trim();
+            if (!companyName) return;
+
+            const btn = document.getElementById('searchBtn');
+            const overlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+
+            btn.disabled = true;
+            overlay.classList.add('show');
+            loadingText.textContent = `正在搜集 "${companyName}" 相关新闻...`;
+
+            try {
+                const response = await fetch('/api/v2/news/collect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ company_name: companyName })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 跳转到审核页面
+                    window.location.href = `/api/v2/tasks/${data.task_id}/review`;
+                } else {
+                    alert('搜集失败: ' + (data.detail || '未知错误'));
+                }
+            } catch (error) {
+                console.error('请求失败:', error);
+                alert('请求失败，请检查网络连接');
+            } finally {
+                btn.disabled = false;
+                overlay.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>

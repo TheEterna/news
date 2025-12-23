@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ task.company_name }} - 新闻审核</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Linear 风格配色 */
+            --bg-primary: #f7f8fa;
+            --bg-glass: rgba(255, 255, 255, 0.72);
+            --bg-glass-hover: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-border-hover: rgba(139, 92, 246, 0.25);
+            --text-primary: #0a0a0f;
+            --text-secondary: #3d3d4e;
+            --text-tertiary: #8a8a9a;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%);
+            --border-radius: 16px;
+            --border-radius-sm: 10px;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* 背景装饰 - Linear 风格渐变光斑 */
+        .bg-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .bg-decoration::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            left: -20%;
+            width: 70%;
+            height: 70%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 60%);
+            filter: blur(60px);
+        }
+
+        .bg-decoration::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            right: -10%;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 60%);
+            filter: blur(60px);
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        /* 头部 */
+        .header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .header h1 {
+            font-size: 38px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .header-meta {
+            color: var(--text-tertiary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* 统计卡片 - 玻璃拟态 */
+        .stats-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 140px;
+            padding: 22px 20px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            background: var(--bg-glass-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-value {
+            font-size: 34px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* 操作栏 - 玻璃拟态 */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 24px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 16px;
+            position: sticky;
+            top: 16px;
+            z-index: 10;
+        }
+
+        .select-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .select-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent-purple);
+            cursor: pointer;
+        }
+
+        .select-group label {
+            cursor: pointer;
+            user-select: none;
+            font-weight: 500;
+        }
+
+        .stats-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .stats-text .count {
+            font-weight: 600;
+            color: var(--accent-purple);
+        }
+
+        .submit-btn {
+            padding: 12px 28px;
+            background: var(--accent-gradient);
+            color: #fff;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(139, 92, 246, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 分区标题 */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 36px 0 18px;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-title .badge {
+            padding: 5px 14px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-purple);
+        }
+
+        .section-title.filtered-title .badge {
+            background: rgba(138, 138, 154, 0.12);
+            color: var(--text-tertiary);
+        }
+
+        .section-title .hint {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-tertiary);
+            margin-left: auto;
+        }
+
+        /* 新闻列表 */
+        .news-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* 新闻卡片 - 玻璃拟态 */
+        .news-card {
+            display: flex;
+            gap: 16px;
+            padding: 20px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 2px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .news-card:hover {
+            background: var(--bg-glass-hover);
+            border-color: var(--glass-border-hover);
+            box-shadow: var(--shadow-md);
+        }
+
+        .news-card.selected {
+            border-color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.06);
+            box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.1), var(--shadow-md);
+        }
+
+        /* 已过滤卡片 - 稍微淡化但仍可交互 */
+        .news-card.filtered-card {
+            opacity: 0.75;
+        }
+
+        .news-card.filtered-card:hover {
+            opacity: 1;
+        }
+
+        .news-card.filtered-card.selected {
+            opacity: 1;
+            border-color: var(--success-color);
+            background: rgba(16, 185, 129, 0.06);
+        }
+
+        .news-checkbox {
+            flex-shrink: 0;
+            display: flex;
+            align-items: flex-start;
+            padding-top: 4px;
+        }
+
+        .news-checkbox input {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent-purple);
+            cursor: pointer;
+        }
+
+        .filtered-card .news-checkbox input {
+            accent-color: var(--success-color);
+        }
+
+        .news-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .news-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            line-height: 1.45;
+        }
+
+        .news-title a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .news-title a:hover {
+            color: var(--accent-purple);
+        }
+
+        .news-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        .category-badge {
+            display: inline-flex;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .category-badge.valid {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--success-color);
+        }
+
+        .category-badge.filtered {
+            background: rgba(138, 138, 154, 0.1);
+            border: 1px solid rgba(138, 138, 154, 0.15);
+            color: var(--text-tertiary);
+        }
+
+        /* 人工覆盖标记 */
+        .override-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: rgba(16, 185, 129, 0.12);
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--success-color);
+        }
+
+        .override-badge::before {
+            content: '✓';
+        }
+
+        .relevance-score {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .score-bar {
+            width: 56px;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: var(--accent-gradient);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .ai-reason {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: var(--border-radius-sm);
+            border-left: 3px solid var(--accent-purple);
+            line-height: 1.55;
+        }
+
+        .filtered-card .ai-reason {
+            border-left-color: var(--text-tertiary);
+        }
+
+        /* 折叠区域头部 */
+        .collapsible-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 16px 22px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            margin: 28px 0 16px;
+            transition: all 0.2s ease;
+        }
+
+        .collapsible-header:hover {
+            background: var(--bg-glass-hover);
+        }
+
+        .collapsible-header .title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .collapsible-header .count-badge {
+            padding: 4px 12px;
+            background: rgba(138, 138, 154, 0.1);
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-tertiary);
+        }
+
+        .collapsible-header .hint-text {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-tertiary);
+        }
+
+        .collapsible-header .arrow {
+            transition: transform 0.3s ease;
+            color: var(--text-tertiary);
+            font-size: 12px;
+        }
+
+        .collapsible-header.expanded .arrow {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            display: none;
+        }
+
+        .collapsible-content.show {
+            display: block;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-tertiary);
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        /* 提示信息框 */
+        .tip-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 18px;
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .tip-box .tip-icon {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(59, 130, 246, 0.15);
+            border-radius: 50%;
+            color: var(--accent-blue);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+                position: static;
+            }
+
+            .submit-btn {
+                width: 100%;
+            }
+
+            .news-card {
+                flex-direction: column;
+            }
+
+            .news-checkbox {
+                order: -1;
+            }
+
+            .section-title .hint {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-decoration"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1>{{ task.company_name }}</h1>
+            <div class="header-meta">
+                新闻审核 · 任务 #{{ task.id }} · {{ task.created_at }}
+            </div>
+        </header>
+
+        <!-- 统计卡片 -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value">{{ total_count }}</div>
+                <div class="stat-label">AI 推荐</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ filtered_count }}</div>
+                <div class="stat-label">AI 过滤</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="selectedValue">0</div>
+                <div class="stat-label">已选择</div>
+            </div>
+        </div>
+
+        <!-- 提示框 -->
+        <div class="tip-box">
+            <span class="tip-icon">i</span>
+            <span>您可以勾选任意新闻（包括 AI 过滤的）来生成最终报告。AI 分类仅供参考，最终决定权在您手中。</span>
+        </div>
+
+        <form id="reviewForm" action="/api/v2/news/review" method="POST">
+            <input type="hidden" name="task_id" value="{{ task.id }}">
+            <input type="hidden" name="approved_ids" id="approvedIds" value="">
+
+            <!-- 操作栏 -->
+            <div class="action-bar">
+                <div class="select-group">
+                    <input type="checkbox" id="selectAll" onchange="toggleAllRecommended(this)">
+                    <label for="selectAll">全选 AI 推荐</label>
+                    <span class="stats-text">
+                        已选 <span class="count" id="selectedCount">0</span> / {{ total_count + filtered_count }}
+                    </span>
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    确认选择并生成报告
+                </button>
+            </div>
+
+            <!-- AI 推荐的新闻 -->
+            {% if news_list %}
+            <div class="section-title">
+                <span>AI 推荐</span>
+                <span class="badge">符合产品/新模型/新功能标准</span>
+                <span class="hint">点击卡片或勾选框进行选择</span>
+            </div>
+
+            <div class="news-list" id="pendingList">
+                {% for news in news_list %}
+                <div class="news-card" data-id="{{ news.id }}" data-type="recommended" onclick="toggleCard(this, event)">
+                    <div class="news-checkbox">
+                        <input type="checkbox"
+                               class="news-item-checkbox recommended-checkbox"
+                               value="{{ news.id }}"
+                               onchange="updateSelection()"
+                               onclick="event.stopPropagation()">
+                    </div>
+                    <div class="news-content">
+                        <h3 class="news-title">
+                            <a href="{{ news.url }}" target="_blank" onclick="event.stopPropagation()">{{ news.title }}</a>
+                        </h3>
+                        <div class="news-meta">
+                            <span class="category-badge valid">
+                                {% if news.ai_category == 'product_release' %}产品发布
+                                {% elif news.ai_category == 'model_release' %}新模型
+                                {% elif news.ai_category == 'feature_update' %}功能更新
+                                {% else %}{{ news.ai_category }}
+                                {% endif %}
+                            </span>
+                            <div class="relevance-score">
+                                相关性:
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: {{ (news.ai_relevance * 100)|int }}%"></div>
+                                </div>
+                                {{ "%.0f"|format(news.ai_relevance * 100) }}%
+                            </div>
+                            {% if news.published_date %}
+                            <span>{{ news.published_date }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="ai-reason">
+                            AI 判断: {{ news.ai_reason }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <h3>没有 AI 推荐的新闻</h3>
+                <p>AI 判断所有新闻都不符合"产品发布/新模型/新功能"的标准，但您可以从下方的已过滤列表中手动选择</p>
+            </div>
+            {% endif %}
+        </form>
+
+        <!-- 已过滤新闻（可手动选择） -->
+        {% if filtered_list %}
+        <div class="collapsible-header" onclick="toggleCollapse(this)">
+            <div class="title">
+                <span>AI 过滤的新闻</span>
+                <span class="count-badge">{{ filtered_count }} 条</span>
+                <span class="hint-text">— 您仍可手动勾选加入报告</span>
+            </div>
+            <span class="arrow">▼</span>
+        </div>
+        <div class="collapsible-content" id="filteredSection">
+            <div class="news-list">
+                {% for news in filtered_list %}
+                <div class="news-card filtered-card" data-id="{{ news.id }}" data-type="filtered" onclick="toggleCard(this, event)">
+                    <div class="news-checkbox">
+                        <input type="checkbox"
+                               class="news-item-checkbox filtered-checkbox"
+                               value="{{ news.id }}"
+                               form="reviewForm"
+                               onchange="updateSelection()"
+                               onclick="event.stopPropagation()">
+                    </div>
+                    <div class="news-content">
+                        <h3 class="news-title">
+                            <a href="{{ news.url }}" target="_blank" onclick="event.stopPropagation()">{{ news.title }}</a>
+                        </h3>
+                        <div class="news-meta">
+                            <span class="category-badge filtered">
+                                {% if news.ai_category == 'interview' %}访谈
+                                {% elif news.ai_category == 'analysis' %}行业分析
+                                {% elif news.ai_category == 'recruitment' %}招聘/活动
+                                {% elif news.ai_category == 'financial' %}财报/股价
+                                {% else %}其他
+                                {% endif %}
+                            </span>
+                            <div class="relevance-score">
+                                相关性:
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: {{ (news.ai_relevance * 100)|int }}%"></div>
+                                </div>
+                                {{ "%.0f"|format(news.ai_relevance * 100) }}%
+                            </div>
+                            {% if news.published_date %}
+                            <span>{{ news.published_date }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="ai-reason">
+                            AI 判断: {{ news.ai_reason }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // 仅全选 AI 推荐的新闻
+        function toggleAllRecommended(checkbox) {
+            const items = document.querySelectorAll('.recommended-checkbox');
+            items.forEach(item => {
+                item.checked = checkbox.checked;
+                item.closest('.news-card').classList.toggle('selected', checkbox.checked);
+            });
+            updateSelection();
+        }
+
+        function toggleCard(card, event) {
+            if (event.target.tagName === 'A' || event.target.tagName === 'INPUT') {
+                return;
+            }
+            const checkbox = card.querySelector('.news-item-checkbox');
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                updateSelection();
+            }
+        }
+
+        function updateSelection() {
+            // 获取所有 checkbox（包括推荐和已过滤的）
+            const allItems = document.querySelectorAll('.news-item-checkbox');
+            const allChecked = document.querySelectorAll('.news-item-checkbox:checked');
+            const recommendedItems = document.querySelectorAll('.recommended-checkbox');
+            const recommendedChecked = document.querySelectorAll('.recommended-checkbox:checked');
+
+            // 更新卡片样式
+            allItems.forEach(item => {
+                item.closest('.news-card').classList.toggle('selected', item.checked);
+            });
+
+            // 更新总计数
+            const totalCount = allChecked.length;
+            document.getElementById('selectedCount').textContent = totalCount;
+            document.getElementById('selectedValue').textContent = totalCount;
+
+            // 更新全选状态（仅针对推荐的）
+            const selectAll = document.getElementById('selectAll');
+            if (recommendedItems.length > 0) {
+                selectAll.checked = recommendedChecked.length === recommendedItems.length;
+                selectAll.indeterminate = recommendedChecked.length > 0 && recommendedChecked.length < recommendedItems.length;
+            }
+
+            // 更新隐藏字段（包含所有已选中的 ID）
+            const ids = Array.from(allChecked).map(cb => cb.value);
+            document.getElementById('approvedIds').value = ids.join(',');
+        }
+
+        function toggleCollapse(header) {
+            header.classList.toggle('expanded');
+            const content = header.nextElementSibling;
+            content.classList.toggle('show');
+        }
+
+        // 初始化
+        updateSelection();
+    </script>
+</body>
+</html>

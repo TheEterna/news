@@ -7,15 +7,17 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Form
 from fastapi.responses import JSONResponse, HTMLResponse
 
 from config import DATA_DIR
-from models.schemas import NewsRequest, NewsResponse, ErrorResponse
+from models.schemas import NewsRequest, NewsResponse, NewsItem, ErrorResponse, Phase1Request, Phase1Response
 from services.keyword_generator import get_keyword_generator
 from services.news_crawler import get_news_crawler
 from services.summarizer import get_summarizer
 from services.renderer import get_renderer
+from services.news_classifier import get_news_classifier
+from database.repository import get_repository
 from utils.logger import logger
 
 app = FastAPI(
@@ -131,10 +133,288 @@ async def fetch_news(request: NewsRequest):
         raise HTTPException(status_code=500, detail=f"处理失败: {str(e)}")
 
 
-@app.get("/", summary="健康检查")
+@app.get("/", response_class=HTMLResponse, summary="首页")
+async def home():
+    """系统首页 - 可视化操作界面"""
+    renderer = get_renderer()
+    template = renderer._env.get_template("index.html")
+    return HTMLResponse(content=template.render())
+
+
+@app.get("/api/health", summary="健康检查")
 async def health_check():
     """API 健康检查"""
     return {"status": "ok", "message": "公司新闻爬取与摘要系统运行中"}
+
+
+
+
+# ========== 两阶段系统 API (v2) ==========
+
+@app.post(
+    "/api/v2/news/collect",
+    response_model=Phase1Response,
+    summary="阶段一：新闻搜集与AI初筛",
+    tags=["v2-两阶段系统"]
+)
+async def phase1_collect_news(request: Phase1Request):
+    """
+    阶段一：搜集新闻并进行AI初筛
+
+    流程：
+    1. 生成搜索关键词
+    2. 搜索新闻
+    3. AI 分类判断
+    4. 存入数据库
+    5. 返回统计信息
+    """
+    logger.info(f"======== 阶段一开始 | 公司: {request.company_name} ========")
+
+    repo = get_repository()
+
+    # 1. 生成关键词
+    logger.info("步骤 1/4: 生成搜索关键词...")
+    keyword_generator = get_keyword_generator()
+    keywords = keyword_generator.generate_keywords(request.company_name)
+
+    # 2. 创建任务
+    logger.info("步骤 2/4: 创建搜索任务...")
+    task_id = repo.create_task(request.company_name, keywords)
+
+    # 3. 搜索新闻
+    logger.info("步骤 3/4: 搜索新闻...")
+    crawler = get_news_crawler()
+    news_list = crawler.fetch_news_by_keywords(keywords, news_per_keyword=2)
+
+    if not news_list:
+        repo.update_task_status(task_id, status="completed", total_fetched=0)
+        return Phase1Response(
+            task_id=task_id,
+            company_name=request.company_name,
+            total_fetched=0,
+            pending_review_count=0,
+            filtered_count=0,
+            message="未找到相关新闻"
+        )
+
+    # 4. AI 分类并存储
+    logger.info("步骤 4/4: AI 分类...")
+    classifier = get_news_classifier()
+    pending_count = 0
+    filtered_count = 0
+    added_count = 0
+
+    for i, news in enumerate(news_list, 1):
+        logger.info(f"  [{i}/{len(news_list)}] 分类: {news.title[:40]}...")
+
+        # AI 分类
+        classification = classifier.classify(news.title, news.content)
+
+        # 判断是否符合要求
+        is_valid = classifier.is_valid_category(classification["category"])
+
+        # 构建存储数据
+        news_data = {
+            "title": news.title,
+            "url": news.url,
+            "published_date": news.published_date,
+            "content": news.content,
+            "ai_category": classification["category"],
+            "ai_relevance": classification["relevance"],
+            "ai_reason": classification["reason"],
+            "status": "pending_review" if is_valid else "filtered"
+        }
+
+        # 存入数据库
+        news_id = repo.add_news_item(task_id, news_data)
+        if news_id:
+            added_count += 1
+            if is_valid:
+                pending_count += 1
+            else:
+                filtered_count += 1
+
+    # 5. 更新任务状态
+    repo.update_task_status(
+        task_id,
+        status="reviewing",
+        total_fetched=added_count
+    )
+
+    logger.info(f"======== 阶段一完成 | 任务ID: {task_id} ========")
+    logger.info(f"  总计: {added_count} | 待审核: {pending_count} | 已过滤: {filtered_count}")
+
+    return Phase1Response(
+        task_id=task_id,
+        company_name=request.company_name,
+        total_fetched=added_count,
+        pending_review_count=pending_count,
+        filtered_count=filtered_count,
+        message=f"搜集完成，{pending_count} 条新闻待审核，{filtered_count} 条已过滤"
+    )
+
+
+@app.get(
+    "/api/v2/tasks/{task_id}/review",
+    response_class=HTMLResponse,
+    summary="获取审核页面",
+    tags=["v2-两阶段系统"]
+)
+async def get_review_page(task_id: int):
+    """返回人工审核页面"""
+    repo = get_repository()
+    task = repo.get_task(task_id)
+
+    if not task:
+        raise HTTPException(status_code=404, detail="任务不存在")
+
+    # 获取待审核新闻（AI 判断符合要求的）
+    news_list = repo.get_pending_review_news(task_id)
+    # 获取被过滤的新闻
+    filtered_list = repo.get_filtered_news(task_id)
+
+    renderer = get_renderer()
+    html = renderer.render_review_list(task, news_list, filtered_list)
+
+    return HTMLResponse(content=html)
+
+
+@app.post(
+    "/api/v2/news/review",
+    response_class=HTMLResponse,
+    summary="阶段二：提交审核结果并生成报告",
+    tags=["v2-两阶段系统"]
+)
+async def phase2_submit_review(
+    task_id: int = Form(...),
+    approved_ids: str = Form("")
+):
+    """
+    阶段二：处理人工审核结果
+
+    流程：
+    1. 更新新闻状态
+    2. 为通过的新闻生成摘要
+    3. 生成整体总结
+    4. 返回最终报告
+    """
+    logger.info(f"======== 阶段二开始 | 任务ID: {task_id} ========")
+
+    repo = get_repository()
+    task = repo.get_task(task_id)
+
+    if not task:
+        raise HTTPException(status_code=404, detail="任务不存在")
+
+    # 解析通过的新闻 ID
+    approved_news_ids = []
+    if approved_ids:
+        approved_news_ids = [int(x.strip()) for x in approved_ids.split(",") if x.strip()]
+
+    logger.info(f"用户选择了 {len(approved_news_ids)} 条新闻")
+
+    # 获取所有待审核新闻
+    all_pending = repo.get_pending_review_news(task_id)
+    all_pending_ids = [n["id"] for n in all_pending]
+
+    # 计算被拒绝的新闻
+    rejected_ids = [id for id in all_pending_ids if id not in approved_news_ids]
+
+    # 更新状态
+    repo.batch_update_news_status(approved_news_ids, "approved")
+    repo.batch_update_news_status(rejected_ids, "rejected")
+
+    # 如果没有选择任何新闻
+    if not approved_news_ids:
+        repo.update_task_status(task_id, status="completed", total_approved=0)
+        renderer = get_renderer()
+        html = renderer.render_final_report(task, [], "没有选择任何新闻进行总结。")
+        return HTMLResponse(content=html)
+
+    # 为通过的新闻生成摘要
+    logger.info("生成新闻摘要...")
+    summarizer = get_summarizer()
+    approved_news = repo.get_news_by_ids(approved_news_ids)
+
+    for i, news_dict in enumerate(approved_news, 1):
+        logger.info(f"  [{i}/{len(approved_news)}] 摘要: {news_dict['title'][:40]}...")
+
+        # 转换为 NewsItem 以便调用 summarizer
+        news_item = NewsItem(
+            title=news_dict["title"],
+            url=news_dict["url"],
+            published_date=news_dict["published_date"],
+            content=news_dict["content"],
+            summary=""
+        )
+        summary = summarizer.summarize_single(news_item)
+
+        # 更新数据库
+        repo.update_news_summary(news_dict["id"], summary)
+        news_dict["summary"] = summary
+
+    # 生成整体总结
+    logger.info("生成整体总结...")
+    news_items_for_summary = [
+        NewsItem(
+            title=n["title"],
+            url=n["url"],
+            published_date=n["published_date"],
+            content=n["content"],
+            summary=n["summary"]
+        ) for n in approved_news
+    ]
+    overall_summary = summarizer.summarize_all(news_items_for_summary, task["company_name"])
+
+    # 更新任务状态
+    repo.update_task_status(
+        task_id,
+        status="completed",
+        total_approved=len(approved_news_ids),
+        overall_summary=overall_summary
+    )
+
+    # 渲染最终报告
+    renderer = get_renderer()
+    html = renderer.render_final_report(task, approved_news, overall_summary)
+
+    logger.info(f"======== 阶段二完成 | 任务ID: {task_id} ========")
+    logger.info(f"  通过: {len(approved_news_ids)} | 拒绝: {len(rejected_ids)}")
+
+    return HTMLResponse(content=html)
+
+
+@app.get(
+    "/api/v2/tasks",
+    summary="获取所有任务列表",
+    tags=["v2-两阶段系统"]
+)
+async def get_all_tasks():
+    """获取所有搜索任务"""
+    repo = get_repository()
+    tasks = repo.get_all_tasks()
+    return {"tasks": tasks}
+
+
+@app.get(
+    "/api/v2/tasks/{task_id}",
+    summary="获取任务详情",
+    tags=["v2-两阶段系统"]
+)
+async def get_task_detail(task_id: int):
+    """获取任务详情及其新闻列表"""
+    repo = get_repository()
+    task = repo.get_task(task_id)
+
+    if not task:
+        raise HTTPException(status_code=404, detail="任务不存在")
+
+    news_list = repo.get_news_by_task(task_id)
+
+    return {
+        "task": task,
+        "news_list": news_list
+    }
 
 
 if __name__ == "__main__":

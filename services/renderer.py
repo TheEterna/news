@@ -127,6 +127,56 @@ class ReportRenderer:
 
         return detail_filepath, list_filepath
 
+    # ========== 两阶段系统新增方法 ==========
+
+    def render_review_list(self, task: dict, news_list: list[dict], filtered_list: list[dict] = None) -> str:
+        """
+        渲染审核列表页面（支持勾选）
+
+        Args:
+            task: 任务信息
+            news_list: 待审核新闻列表
+            filtered_list: 被过滤的新闻列表（可选）
+
+        Returns:
+            渲染后的 HTML 字符串
+        """
+        logger.info(f"渲染审核列表 | 任务ID: {task['id']} | 待审核: {len(news_list)}")
+        template = self._env.get_template("review_list.html")
+
+        return template.render(
+            task=task,
+            news_list=news_list,
+            filtered_list=filtered_list or [],
+            total_count=len(news_list),
+            filtered_count=len(filtered_list) if filtered_list else 0
+        )
+
+    def render_final_report(self, task: dict, approved_news: list[dict], overall_summary: str) -> str:
+        """
+        渲染最终报告页面
+
+        Args:
+            task: 任务信息
+            approved_news: 通过审核的新闻列表
+            overall_summary: 整体总结
+
+        Returns:
+            渲染后的 HTML 字符串
+        """
+        logger.info(f"渲染最终报告 | 任务ID: {task['id']} | 通过数: {len(approved_news)}")
+        template = self._env.get_template("final_report.html")
+
+        overall_summary_html = self._markdown_to_html(overall_summary)
+
+        return template.render(
+            task=task,
+            news_list=approved_news,
+            overall_summary=overall_summary_html,
+            news_count=len(approved_news),
+            fetch_time=task.get("created_at", "")
+        )
+
 
 # 单例实例，延迟初始化
 _renderer_instance: ReportRenderer | None = None

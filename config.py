@@ -28,3 +28,14 @@ MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
 # 新闻爬取配置
 NEWS_MAX_RESULTS = 10  # 最多返回的新闻条数
 NEWS_TIME_RANGE = "week"  # 时间范围：day, week, month, year
+
+# PostgreSQL 数据库配置
+DB_HOST = os.getenv("DB_HOST", "62.234.92.252")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "news_db")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "hfy")
+
+# 新闻分类配置
+VALID_CATEGORIES = ["product_release", "model_release", "feature_update"]
+FILTER_CATEGORIES = ["interview", "analysis", "recruitment", "financial", "other"]
