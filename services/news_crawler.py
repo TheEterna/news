@@ -1,117 +1,150 @@
 # -*- coding: utf-8 -*-
 """
 新闻爬取服务
-支持多搜索引擎的新闻爬取调度器
+使用 Serper.dev 单引擎模式
 """
-from config import TAVILY_API_KEY, SERPAPI_API_KEY, SEARCH_ENGINE_MODE, NEWS_MAX_RESULTS
+import re
+from difflib import SequenceMatcher
+
+from config import SERPER_API_KEY, NEWS_MAX_RESULTS
 from models.schemas import NewsItem
 from utils.logger import logger
 from services.search_engine import SearchEngine
 
 
 class NewsCrawler:
-    """新闻爬取调度器（支持多引擎）"""
+    """新闻爬取调度器（单引擎模式）"""
 
-    def __init__(self, engines: list[SearchEngine] = None):
+    # 标题相似度阈值（超过此值视为重复）
+    TITLE_SIMILARITY_THRESHOLD = 0.7
+
+    def __init__(self, engine: SearchEngine = None):
         """
         初始化爬取器
 
         Args:
-            engines: 搜索引擎列表，为空则根据配置自动创建
+            engine: 搜索引擎实例，为空则使用默认 Serper 引擎
         """
-        self._engines = engines if engines is not None else self._create_default_engines()
-        logger.info(f"NewsCrawler 初始化完成 | 引擎: {[e.name for e in self._engines]}")
+        self._engine = engine if engine is not None else self._create_default_engine()
+        logger.info(f"NewsCrawler 初始化完成 | 引擎: {self._engine.name}")
 
-    def _create_default_engines(self) -> list[SearchEngine]:
-        """根据配置创建默认搜索引擎列表"""
-        engines = []
+    def _create_default_engine(self) -> SearchEngine:
+        """创建默认搜索引擎（Serper）"""
+        if not SERPER_API_KEY:
+            raise ValueError("SERPER_API_KEY 未配置，请在 config.py 或 .env 文件中设置")
 
-        # Tavily 引擎（外国公司/英文搜索）
-        if SEARCH_ENGINE_MODE in ("tavily", "both") and TAVILY_API_KEY:
-            try:
-                from services.search_engine.tavily_engine import TavilyEngine
-                engines.append(TavilyEngine())
-            except Exception as e:
-                logger.warning(f"TavilyEngine 初始化失败: {e}")
+        try:
+            from services.search_engine.serper_engine import SerperNewsEngine
+            return SerperNewsEngine()
+        except Exception as e:
+            logger.error(f"SerperNewsEngine 初始化失败: {e}")
+            raise
 
-        # 百度新闻引擎（中国公司/中文搜索）
-        if SEARCH_ENGINE_MODE in ("baidu", "both") and SERPAPI_API_KEY:
-            try:
-                from services.search_engine.baidu_engine import BaiduNewsEngine
-                engines.append(BaiduNewsEngine())
-            except Exception as e:
-                logger.warning(f"BaiduNewsEngine 初始化失败: {e}")
+    def _normalize_title(self, title: str) -> str:
+        """
+        标准化标题用于比较
+        移除标点符号、空格，转小写
+        """
+        # 移除标点和特殊字符
+        normalized = re.sub(r'[^\w\u4e00-\u9fff]', '', title.lower())
+        return normalized
 
-        if not engines:
-            logger.warning("未配置任何搜索引擎，请检查 API Key 和 SEARCH_ENGINE_MODE 配置")
+    def _is_similar_title(self, title: str, existing_titles: list[str]) -> bool:
+        """
+        检查标题是否与已有标题相似
 
-        return engines
+        Args:
+            title: 待检查的标题
+            existing_titles: 已收录的标题列表
+
+        Returns:
+            True 如果存在相似标题
+        """
+        normalized_new = self._normalize_title(title)
+
+        for existing in existing_titles:
+            normalized_existing = self._normalize_title(existing)
+
+            # 计算相似度
+            similarity = SequenceMatcher(None, normalized_new, normalized_existing).ratio()
+
+            if similarity >= self.TITLE_SIMILARITY_THRESHOLD:
+                logger.debug(f"标题相似度 {similarity:.2f}: '{title[:30]}...' vs '{existing[:30]}...'")
+                return True
+
+        return False
 
     def search_by_keyword(self, keyword: str, max_results: int = 2) -> list[NewsItem]:
         """
-        根据单个关键词搜索新闻（使用所有可用引擎）
+        根据单个关键词搜索新闻
 
         Args:
             keyword: 搜索关键词
-            max_results: 每个引擎的最大结果数
+            max_results: 最大结果数
 
         Returns:
             新闻列表（已去重）
         """
-        logger.info(f"搜索关键词: {keyword} | 最大结果: {max_results} | 引擎数: {len(self._engines)}")
+        logger.info(f"搜索关键词: {keyword} | 最大结果: {max_results}")
 
-        all_news = []
-        seen_urls = set()
-
-        for engine in self._engines:
-            try:
-                results = engine.search(keyword, max_results)
-                for news in results:
-                    if news.url not in seen_urls:
-                        seen_urls.add(news.url)
-                        all_news.append(news)
-            except Exception as e:
-                logger.error(f"引擎 {engine.name} 搜索失败: {e}")
-
-        logger.info(f"  -> 找到 {len(all_news)} 条不重复新闻")
-        return all_news
+        try:
+            results = self._engine.search(keyword, max_results)
+            logger.info(f"  -> 找到 {len(results)} 条新闻")
+            return results
+        except Exception as e:
+            logger.error(f"引擎 {self._engine.name} 搜索失败: {e}")
+            return []
 
     def fetch_news_by_keywords(self, keywords: list[str], news_per_keyword: int = 2) -> list[NewsItem]:
         """
-        根据关键词列表搜索新闻，并去重
+        根据关键词列表搜索新闻，并去重（URL + 标题相似度）
 
         Args:
             keywords: 关键词列表
-            news_per_keyword: 每个关键词在每个引擎搜索的新闻数量
+            news_per_keyword: 每个关键词搜索的新闻数量
 
         Returns:
             去重后的新闻列表
         """
         logger.info(f"========== 开始多关键词搜索 ==========")
         logger.info(f"关键词数量: {len(keywords)} | 每个关键词搜索: {news_per_keyword} 条")
-        logger.info(f"可用引擎: {[e.name for e in self._engines]}")
+        logger.info(f"使用引擎: {self._engine.name}")
 
         all_news = []
         seen_urls = set()
+        seen_titles = []  # 用于标题相似度检测
 
         for i, keyword in enumerate(keywords, 1):
             logger.info(f"[{i}/{len(keywords)}] 搜索: {keyword}")
 
-            for engine in self._engines:
-                try:
-                    news_list = engine.search(keyword, news_per_keyword)
+            try:
+                news_list = self._engine.search(keyword, news_per_keyword)
 
-                    # 去重：根据 URL 判断
-                    for news in news_list:
-                        if news.url not in seen_urls:
-                            seen_urls.add(news.url)
-                            all_news.append(news)
-                            logger.info(f"    + [{engine.name}] {news.title[:50]}...")
-                        else:
-                            logger.debug(f"    - (重复) {news.title[:30]}...")
+                # 去重：URL + 标题相似度，并限制每个关键词的新闻数量
+                added_count = 0
+                for news in news_list:
+                    if added_count >= news_per_keyword:
+                        break  # 已达到该关键词的数量限制
 
-                except Exception as e:
-                    logger.error(f"引擎 {engine.name} 搜索失败 | 关键词: {keyword} | 错误: {e}")
+                    # 检查 URL 重复
+                    if news.url in seen_urls:
+                        logger.debug(f"    - (URL重复) {news.title[:30]}...")
+                        continue
+
+                    # 检查标题相似度
+                    if self._is_similar_title(news.title, seen_titles):
+                        logger.info(f"    - (标题相似) {news.title[:40]}...")
+                        continue
+
+                    # 通过去重检查，添加到结果
+                    seen_urls.add(news.url)
+                    seen_titles.append(news.title)
+                    all_news.append(news)
+                    added_count += 1
+                    logger.info(f"    + {news.title[:50]}...")
+
+            except Exception as e:
+                logger.error(f"搜索失败 | 关键词: {keyword} | 错误: {e}")
 
         logger.info(f"========== 搜索完成 ==========")
         logger.info(f"总计: {len(all_news)} 条不重复新闻")

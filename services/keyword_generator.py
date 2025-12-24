@@ -23,38 +23,32 @@ class KeywordGenerator:
         self._model = MODEL_NAME
         logger.info(f"KeywordGenerator 初始化完成 | 模型: {MODEL_NAME}")
 
-    def generate_keywords(self, company_name: str, news_per_keyword: int = 2) -> list[str]:
+    def generate_keywords(self, company_name: str) -> list[str]:
         """
         根据公司名称生成多维度搜索关键词
 
         Args:
             company_name: 公司名称
-            news_per_keyword: 每个关键词搜索的新闻数量
 
         Returns:
-            关键词列表
+            关键词列表（4-5个）
         """
         logger.info(f"开始生成搜索关键词 | 公司: {company_name}")
 
-        prompt = f"""你是一名专业的AI行业分析师。请为"{company_name}"生成全面的新闻搜索关键词列表。
+        prompt = f"""你是一名专业的AI行业分析师。请为"{company_name}"生成精准的新闻搜索关键词。
 
-## 搜索维度要求
-请从以下多个维度生成搜索关键词：
-
-1. **官方发布**：公司名 + 发布/推出/上线
-2. **产品更新**：公司名 + 更新/升级/新版本/新功能
-3. **技术动态**：公司名 + 技术/研发/突破/创新
-4. **商业合作**：公司名 + 合作/签约/战略/投资
-5. **行业影响**：公司名 + 市场/行业/竞争/份额
-6. **英文搜索**：公司英文名 + news/release/launch/update
-7. **媒体报道**：公司名 + 报道/新闻/动态
+## 搜索目标
+我们只关注【新产品/新模型】的发布新闻：
+- ✅ 新产品发布（全新的产品个体）
+- ✅ 新模型发布（如 gemini-2.5-flash、Claude 3.5 等新模型）
+- ❌ 不要：功能更新、版本升级、性能优化类
 
 ## 输出要求
-- 生成 8-12 个不同角度的搜索关键词
+- 只生成 2-3 个最有效的搜索关键词
 - 每行一个关键词，不要编号
-- 关键词要简洁有效，适合搜索引擎
-- 中英文关键词都要包含
-- 不要输出任何解释，只输出关键词列表
+- 关键词要简洁精准
+- 中英文各一个即可
+- 不要输出任何解释
 
 公司名称：{company_name}
 
@@ -100,16 +94,10 @@ class KeywordGenerator:
             return self._get_default_keywords(company_name)
 
     def _get_default_keywords(self, company_name: str) -> list[str]:
-        """获取默认关键词列表"""
+        """获取默认关键词列表（2-3个）"""
         return [
-            f"{company_name} 新闻",
             f"{company_name} 发布",
-            f"{company_name} 产品",
-            f"{company_name} 动态",
-            f"{company_name} news",
             f"{company_name} release",
-            f"{company_name} update",
-            f"{company_name} announcement",
         ]
 
 

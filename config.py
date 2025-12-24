@@ -17,14 +17,13 @@ BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data" / "news"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-# Tavily API 配置
-TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
+# Serper.dev API 配置（单引擎模式）
+SERPER_API_KEY = os.getenv("SERPER_API_KEY", "b5b706df415e0938a425cbd0426763b817ab4fe2")
 
-# SerpApi 配置（百度新闻）
-SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY", "")
-
-# 搜索引擎模式：tavily, baidu, both
-SEARCH_ENGINE_MODE = os.getenv("SEARCH_ENGINE_MODE", "both")
+# 以下配置已废弃，保留仅供参考
+# TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
+# SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY", "")
+# SEARCH_ENGINE_MODE = os.getenv("SEARCH_ENGINE_MODE", "both")
 
 # 自部署大模型配置 (OpenAI 兼容格式)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")

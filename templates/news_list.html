@@ -560,8 +560,8 @@
                 <div class="stat-label">Time Range</div>
             </div>
             <div class="stat-cell">
-                <div class="stat-value">2</div>
-                <div class="stat-label">Sources</div>
+                <div class="stat-value">Serper</div>
+                <div class="stat-label">Engine</div>
             </div>
         </div>
 
@@ -593,9 +593,6 @@
                                 <a href="{{ news.url }}" target="_blank">{{ news.title }}</a>
                             </div>
                             <div class="news-meta">
-                                {% if news.source_engine %}
-                                <span class="source-tag {% if '百度' in news.source_engine %}baidu{% elif '博查' in news.source_engine %}bocha{% else %}default{% endif %}">{{ news.source_engine }}</span>
-                                {% endif %}
                                 <span>{{ news.url | truncate(40) }}</span>
                             </div>
                         </td>
@@ -625,7 +622,7 @@
         <!-- Footer -->
         <footer class="footer">
             <span>AI Generated Report</span>
-            <span>Data: <a href="https://tavily.com" target="_blank">Tavily</a> + <a href="https://serpapi.com" target="_blank">Baidu News</a></span>
+            <span>Powered by <a href="https://serper.dev" target="_blank">Serper.dev</a></span>
         </footer>
     </div>
 

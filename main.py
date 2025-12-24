@@ -197,21 +197,39 @@ async def phase1_collect_news(request: Phase1Request):
             message="未找到相关新闻"
         )
 
-    # 4. AI 分类并存储
-    logger.info("步骤 4/4: AI 分类...")
+    # 4. AI 批量分类
+    logger.info("步骤 4/4: AI 批量分类...")
     classifier = get_news_classifier()
+
+    # 构建批量分类输入
+    news_for_classify = [
+        {"id": i + 1, "title": news.title, "content": news.content}
+        for i, news in enumerate(news_list)
+    ]
+
+    # 一次调用完成所有分类和去重
+    classify_results = classifier.classify_batch(news_for_classify)
+
+    # 处理分类结果并存储
     pending_count = 0
     filtered_count = 0
+    duplicate_count = 0
     added_count = 0
 
-    for i, news in enumerate(news_list, 1):
-        logger.info(f"  [{i}/{len(news_list)}] 分类: {news.title[:40]}...")
+    for i, news in enumerate(news_list):
+        result = classify_results[i]
+        category = result["category"]
 
-        # AI 分类
-        classification = classifier.classify(news.title, news.content)
-
-        # 判断是否符合要求
-        is_valid = classifier.is_valid_category(classification["category"])
+        # 判断状态
+        if category == "duplicate":
+            status = "filtered"
+            duplicate_count += 1
+        elif classifier.is_valid_category(category):
+            status = "pending_review"
+            pending_count += 1
+        else:
+            status = "filtered"
+            filtered_count += 1
 
         # 构建存储数据
         news_data = {
@@ -219,20 +237,18 @@ async def phase1_collect_news(request: Phase1Request):
             "url": news.url,
             "published_date": news.published_date,
             "content": news.content,
-            "ai_category": classification["category"],
-            "ai_relevance": classification["relevance"],
-            "ai_reason": classification["reason"],
-            "status": "pending_review" if is_valid else "filtered"
+            "ai_category": category,
+            "ai_relevance": 0.9 if status == "pending_review" else 0.3,
+            "ai_reason": result["reason"],
+            "status": status
         }
 
         # 存入数据库
         news_id = repo.add_news_item(task_id, news_data)
         if news_id:
             added_count += 1
-            if is_valid:
-                pending_count += 1
-            else:
-                filtered_count += 1
+
+        logger.info(f"  [{i+1}/{len(news_list)}] {category}: {news.title[:40]}...")
 
     # 5. 更新任务状态
     repo.update_task_status(
@@ -242,15 +258,15 @@ async def phase1_collect_news(request: Phase1Request):
     )
 
     logger.info(f"======== 阶段一完成 | 任务ID: {task_id} ========")
-    logger.info(f"  总计: {added_count} | 待审核: {pending_count} | 已过滤: {filtered_count}")
+    logger.info(f"  总计: {added_count} | 待审核: {pending_count} | 重复: {duplicate_count} | 过滤: {filtered_count}")
 
     return Phase1Response(
         task_id=task_id,
         company_name=request.company_name,
         total_fetched=added_count,
         pending_review_count=pending_count,
-        filtered_count=filtered_count,
-        message=f"搜集完成，{pending_count} 条新闻待审核，{filtered_count} 条已过滤"
+        filtered_count=filtered_count + duplicate_count,
+        message=f"搜集完成，{pending_count} 条待审核，{duplicate_count} 条重复，{filtered_count} 条过滤"
     )
 
 
