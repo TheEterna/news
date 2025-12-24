@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ task.company_name }} - 新闻报告</title>
     <style>
+        /* ========== Swiss Style Design System ========== */
         * {
             margin: 0;
             padding: 0;
@@ -12,209 +13,153 @@
         }
 
         :root {
-            /* Linear 风格配色 - 深色主题 */
-            --bg-primary: #0c0c10;
-            --bg-secondary: #141418;
-            --bg-glass: rgba(22, 22, 28, 0.75);
-            --bg-glass-hover: rgba(30, 30, 38, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-border-hover: rgba(139, 92, 246, 0.3);
-            --text-primary: #f5f5f7;
-            --text-secondary: #a0a0b0;
-            --text-tertiary: #606070;
-            --accent-purple: #8b5cf6;
-            --accent-blue: #3b82f6;
-            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%);
-            --border-radius: 16px;
-            --border-radius-sm: 10px;
-            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.3);
-            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
+            --white: #FFFFFF;
+            --light-gray: #F4F4F4;
+            --black: #000000;
+            --swiss-red: #FF3B30;
+            --gray-300: #D1D1D1;
+            --gray-500: #8A8A8A;
+            --gray-700: #4A4A4A;
+
+            --border-width: 1px;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            line-height: 1.7;
+            font-family: Inter, "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--white);
+            color: var(--black);
+            line-height: 1.6;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* 背景装饰 - Linear 风格渐变光斑 */
-        .bg-decoration {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: 0;
-        }
-
-        .bg-decoration::before {
-            content: '';
-            position: absolute;
-            top: -40%;
-            left: -30%;
-            width: 80%;
-            height: 80%;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.18) 0%, transparent 55%);
-            filter: blur(80px);
-        }
-
-        .bg-decoration::after {
-            content: '';
-            position: absolute;
-            bottom: -30%;
-            right: -20%;
-            width: 60%;
-            height: 60%;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 55%);
-            filter: blur(80px);
-        }
-
+        /* ========== Layout ========== */
         .container {
-            position: relative;
-            z-index: 1;
             max-width: 900px;
             margin: 0 auto;
-            padding: 60px 24px;
+            padding: 64px 24px;
         }
 
-        /* 头部 */
-        .header {
-            text-align: center;
-            margin-bottom: 48px;
+        /* ========== Page Header ========== */
+        .page-header {
+            margin-bottom: 64px;
+            padding-bottom: 32px;
+            border-bottom: 3px solid var(--black);
         }
 
-        .header-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 18px;
-            background: rgba(139, 92, 246, 0.12);
-            border: 1px solid rgba(139, 92, 246, 0.25);
-            border-radius: 100px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--accent-purple);
-            margin-bottom: 24px;
-            backdrop-filter: blur(10px);
-        }
-
-        .header-badge::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background: var(--accent-gradient);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(0.9); }
-        }
-
-        .header h1 {
-            font-size: 44px;
+        .page-header-badge {
+            display: inline-block;
+            font-size: 10px;
             font-weight: 700;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            background: var(--swiss-red);
+            color: var(--white);
+            padding: 8px 16px;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 72px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 0.9;
+            text-transform: uppercase;
             margin-bottom: 16px;
-            letter-spacing: -0.02em;
         }
 
-        .header-meta {
-            color: var(--text-tertiary);
-            font-size: 14px;
-            font-weight: 500;
+        .page-header-meta {
+            font-size: 12px;
+            color: var(--gray-500);
+            letter-spacing: 0.05em;
         }
 
-        .header-meta span {
-            margin: 0 8px;
+        .page-header-meta span {
+            margin-right: 16px;
         }
 
-        /* 统计卡片 - 玻璃拟态 */
-        .stats-row {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 44px;
-            flex-wrap: wrap;
+        /* ========== Stats Grid ========== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border: var(--border-width) solid var(--black);
+            margin-bottom: 64px;
         }
 
-        .stat-card {
-            flex: 1;
-            min-width: 120px;
-            padding: 24px;
-            background: var(--bg-glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
+        .stat-cell {
+            padding: 32px 24px;
+            border-right: var(--border-width) solid var(--black);
             text-align: center;
-            transition: all 0.2s ease;
         }
 
-        .stat-card:hover {
-            background: var(--bg-glass-hover);
-            border-color: var(--glass-border-hover);
-            transform: translateY(-2px);
+        .stat-cell:last-child {
+            border-right: none;
         }
 
         .stat-value {
-            font-size: 38px;
+            font-size: 56px;
             font-weight: 700;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.02em;
+            line-height: 1;
+            margin-bottom: 8px;
         }
 
         .stat-label {
-            font-size: 13px;
-            color: var(--text-tertiary);
-            margin-top: 6px;
-            font-weight: 500;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gray-500);
         }
 
-        /* 整体总结 - 玻璃拟态 */
-        .summary-section {
-            margin-bottom: 48px;
+        /* ========== Section ========== */
+        .section {
+            margin-bottom: 64px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: var(--border-width) solid var(--black);
+        }
+
+        .section-number {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--gray-300);
         }
 
         .section-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            font-size: 20px;
-            font-weight: 600;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
         }
 
-        .section-title::before {
-            content: '';
-            width: 4px;
-            height: 24px;
-            background: var(--accent-gradient);
-            border-radius: 2px;
+        .section-line {
+            flex: 1;
+            height: 1px;
+            background: var(--gray-300);
+            align-self: center;
         }
 
+        /* ========== Summary Card ========== */
         .summary-card {
-            padding: 32px;
-            background: var(--bg-glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
+            padding: 40px;
+            background: var(--light-gray);
+            border-left: 4px solid var(--swiss-red);
         }
 
-        .summary-card h1, .summary-card h2, .summary-card h3 {
-            color: var(--text-primary);
-            margin: 24px 0 16px;
+        .summary-card h1,
+        .summary-card h2,
+        .summary-card h3 {
+            font-weight: 700;
+            margin: 32px 0 16px;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
         }
 
         .summary-card h1:first-child,
@@ -225,283 +170,307 @@
 
         .summary-card h2 {
             font-size: 18px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 12px;
+            border-bottom: var(--border-width) solid var(--gray-300);
         }
 
         .summary-card h3 {
-            font-size: 16px;
-            color: var(--accent-purple);
+            font-size: 14px;
+            color: var(--swiss-red);
         }
 
         .summary-card p {
-            color: var(--text-secondary);
+            color: var(--gray-700);
             margin-bottom: 16px;
             line-height: 1.8;
         }
 
-        .summary-card ul, .summary-card ol {
+        .summary-card ul,
+        .summary-card ol {
             margin: 16px 0;
             padding-left: 24px;
-            color: var(--text-secondary);
+            color: var(--gray-700);
         }
 
         .summary-card li {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             line-height: 1.7;
         }
 
         .summary-card strong {
-            color: var(--text-primary);
+            color: var(--black);
         }
 
-        /* 新闻列表 */
-        .news-section {
-            margin-top: 48px;
-        }
-
+        /* ========== News List ========== */
         .news-list {
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 0;
         }
 
-        /* 新闻卡片 - 玻璃拟态 */
+        /* ========== News Card ========== */
         .news-card {
-            padding: 26px;
-            background: var(--bg-glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            transition: all 0.25s ease;
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 0;
+            border: var(--border-width) solid var(--black);
+            border-bottom: none;
+            transition: background 0.1s;
+        }
+
+        .news-card:last-child {
+            border-bottom: var(--border-width) solid var(--black);
         }
 
         .news-card:hover {
-            border-color: var(--glass-border-hover);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
+            background: var(--light-gray);
         }
 
-        .news-header {
+        .card-index {
             display: flex;
-            justify-content: space-between;
             align-items: flex-start;
-            gap: 16px;
+            justify-content: center;
+            padding: 32px 16px;
+            border-right: var(--border-width) solid var(--black);
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--gray-300);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .card-content {
+            padding: 32px;
+        }
+
+        .card-header {
             margin-bottom: 16px;
         }
 
-        .news-title {
+        .card-title {
             font-size: 18px;
-            font-weight: 600;
-            line-height: 1.45;
-        }
-
-        .news-title a {
-            color: var(--text-primary);
-            text-decoration: none;
-            transition: color 0.15s;
-        }
-
-        .news-title a:hover {
-            color: var(--accent-purple);
-        }
-
-        .news-index {
-            flex-shrink: 0;
-            width: 34px;
-            height: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--accent-gradient);
-            border-radius: 10px;
-            font-size: 14px;
             font-weight: 700;
-            color: #fff;
+            line-height: 1.4;
+            margin-bottom: 12px;
         }
 
-        .news-meta {
+        .card-title a {
+            color: var(--black);
+            text-decoration: none;
+            transition: color 0.1s;
+        }
+
+        .card-title a:hover {
+            color: var(--swiss-red);
+        }
+
+        .card-meta {
             display: flex;
             flex-wrap: wrap;
-            gap: 14px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            color: var(--text-tertiary);
+            gap: 16px;
+            align-items: center;
+            font-size: 12px;
+            color: var(--gray-500);
         }
 
-        .news-meta a {
-            color: var(--accent-blue);
+        .card-meta a {
+            font-weight: 700;
+            color: var(--black);
             text-decoration: none;
-            font-weight: 500;
-            transition: color 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: color 0.1s;
         }
 
-        .news-meta a:hover {
-            color: var(--accent-purple);
+        .card-meta a:hover {
+            color: var(--swiss-red);
         }
 
-        .news-summary {
-            padding: 18px 22px;
-            background: rgba(139, 92, 246, 0.06);
-            border-left: 3px solid var(--accent-purple);
-            border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
-            color: var(--text-secondary);
+        .card-summary {
+            padding: 20px;
+            background: var(--light-gray);
+            border-left: 3px solid var(--swiss-red);
             font-size: 14px;
-            line-height: 1.85;
+            color: var(--gray-700);
+            line-height: 1.8;
         }
 
-        /* 空状态 */
+        /* ========== Empty State ========== */
         .empty-state {
+            padding: 80px 32px;
             text-align: center;
-            padding: 80px 20px;
+            border: var(--border-width) dashed var(--gray-300);
         }
 
-        .empty-state h2 {
-            font-size: 24px;
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
             margin-bottom: 12px;
-            color: var(--text-secondary);
         }
 
-        .empty-state p {
-            color: var(--text-tertiary);
+        .empty-state-desc {
+            font-size: 14px;
+            color: var(--gray-500);
         }
 
-        /* 返回按钮 - 玻璃拟态 */
+        /* ========== Back Link ========== */
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            margin-top: 48px;
-            padding: 14px 26px;
-            background: rgba(139, 92, 246, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(139, 92, 246, 0.25);
-            border-radius: var(--border-radius-sm);
-            color: var(--accent-purple);
+            margin-top: 64px;
+            padding: 14px 28px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--black);
             text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s ease;
+            border: 2px solid var(--black);
+            transition: all 0.1s;
         }
 
         .back-link:hover {
-            background: rgba(139, 92, 246, 0.18);
-            transform: translateX(-4px);
+            background: var(--black);
+            color: var(--white);
         }
 
-        /* 响应式 */
+        /* ========== Responsive ========== */
         @media (max-width: 768px) {
             .container {
-                padding: 40px 16px;
+                padding: 32px 16px;
             }
 
-            .header h1 {
-                font-size: 32px;
+            .page-header h1 {
+                font-size: 42px;
             }
 
-            .stat-card {
-                min-width: 100px;
-                padding: 18px;
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-cell {
+                border-right: none;
+                border-bottom: var(--border-width) solid var(--black);
+                padding: 24px;
+            }
+
+            .stat-cell:last-child {
+                border-bottom: none;
             }
 
             .stat-value {
-                font-size: 30px;
+                font-size: 42px;
             }
 
-            .news-header {
-                flex-direction: column-reverse;
+            .news-card {
+                grid-template-columns: 1fr;
             }
 
-            .news-index {
-                align-self: flex-start;
+            .card-index {
+                border-right: none;
+                border-bottom: var(--border-width) solid var(--black);
+                padding: 16px;
+                justify-content: flex-start;
+                font-size: 24px;
+            }
+
+            .card-content {
+                padding: 24px;
             }
 
             .summary-card {
-                padding: 24px 20px;
+                padding: 24px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="bg-decoration"></div>
-
     <div class="container">
-        <header class="header">
-            <div class="header-badge">
-                <span>最终报告</span>
-            </div>
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="page-header-badge">Final Report</div>
             <h1>{{ task.company_name }}</h1>
-            <div class="header-meta">
-                <span>任务 #{{ task.id }}</span>
-                <span>·</span>
+            <div class="page-header-meta">
+                <span>Task #{{ task.id }}</span>
                 <span>{{ fetch_time }}</span>
-                <span>·</span>
-                <span>{{ news_count }} 条新闻</span>
+                <span>{{ news_count }} Articles</span>
             </div>
         </header>
 
-        <!-- 统计 -->
-        <div class="stats-row">
-            <div class="stat-card">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-cell">
                 <div class="stat-value">{{ task.total_fetched }}</div>
-                <div class="stat-label">总抓取</div>
+                <div class="stat-label">Total Fetched</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-cell">
                 <div class="stat-value">{{ news_count }}</div>
-                <div class="stat-label">最终通过</div>
+                <div class="stat-label">Approved</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-cell">
                 <div class="stat-value">{{ task.total_fetched - news_count }}</div>
-                <div class="stat-label">已过滤</div>
+                <div class="stat-label">Filtered</div>
             </div>
         </div>
 
         {% if news_list %}
-        <!-- 整体总结 -->
-        <section class="summary-section">
-            <h2 class="section-title">整体总结</h2>
+        <!-- Summary Section -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <span class="section-title">Executive Summary</span>
+                <span class="section-line"></span>
+            </div>
+
             <div class="summary-card">
                 {{ overall_summary | safe }}
             </div>
         </section>
 
-        <!-- 新闻详情 -->
-        <section class="news-section">
-            <h2 class="section-title">新闻详情</h2>
+        <!-- News Details Section -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <span class="section-title">News Details</span>
+                <span class="section-line"></span>
+            </div>
+
             <div class="news-list">
                 {% for news in news_list %}
-                <div class="news-card">
-                    <div class="news-header">
-                        <h3 class="news-title">
-                            <a href="{{ news.url }}" target="_blank">{{ news.title }}</a>
-                        </h3>
-                        <span class="news-index">{{ loop.index }}</span>
+                <article class="news-card">
+                    <div class="card-index">{{ "%02d"|format(loop.index) }}</div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <a href="{{ news.url }}" target="_blank">{{ news.title }}</a>
+                            </h3>
+                            <div class="card-meta">
+                                {% if news.published_date %}
+                                <span>{{ news.published_date }}</span>
+                                {% endif %}
+                                <a href="{{ news.url }}" target="_blank">View Original →</a>
+                            </div>
+                        </div>
+                        <div class="card-summary">
+                            {{ news.summary }}
+                        </div>
                     </div>
-                    <div class="news-meta">
-                        {% if news.published_date %}
-                        <span>{{ news.published_date }}</span>
-                        {% endif %}
-                        <a href="{{ news.url }}" target="_blank">查看原文 →</a>
-                    </div>
-                    <div class="news-summary">
-                        {{ news.summary }}
-                    </div>
-                </div>
+                </article>
                 {% endfor %}
             </div>
         </section>
 
         {% else %}
         <div class="empty-state">
-            <h2>没有选择任何新闻</h2>
-            <p>您在审核阶段没有选择任何新闻进行总结</p>
+            <div class="empty-state-title">No News Selected</div>
+            <div class="empty-state-desc">您在审核阶段没有选择任何新闻进行总结</div>
         </div>
         {% endif %}
 
         <a href="/" class="back-link">
-            ← 返回首页
+            ← Back to Dashboard
         </a>
     </div>
 </body>

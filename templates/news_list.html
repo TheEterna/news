@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ company_name }} - 新闻列表</title>
     <style>
-        /* ========== 瑞士风格设计系统 ========== */
+        /* ========== Swiss Style Design System ========== */
         * {
             margin: 0;
             padding: 0;
@@ -13,28 +13,20 @@
         }
 
         :root {
-            /* 瑞士风格配色 */
             --white: #FFFFFF;
+            --light-gray: #F4F4F4;
             --black: #000000;
-            --red: #E53935;
-            --gray-100: #F5F5F5;
-            --gray-200: #EEEEEE;
-            --gray-300: #E0E0E0;
-            --gray-500: #9E9E9E;
-            --gray-700: #616161;
-            --gray-900: #212121;
+            --swiss-red: #FF3B30;
+            --electric-blue: #0066FF;
+            --gray-300: #D1D1D1;
+            --gray-500: #8A8A8A;
+            --gray-700: #4A4A4A;
 
-            /* 网格间距 */
-            --space-xs: 4px;
-            --space-sm: 8px;
-            --space-md: 16px;
-            --space-lg: 24px;
-            --space-xl: 48px;
-            --space-2xl: 96px;
+            --border-width: 1px;
         }
 
         body {
-            font-family: "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            font-family: Inter, "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
             background: var(--white);
             color: var(--black);
             line-height: 1.5;
@@ -42,69 +34,70 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ========== 布局 ========== */
+        /* ========== Layout ========== */
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: var(--space-xl) var(--space-lg);
+            padding: 48px 24px;
         }
 
-        /* ========== 头部 ========== */
-        .header {
+        /* ========== Page Header ========== */
+        .page-header {
+            margin-bottom: 48px;
+            padding-bottom: 24px;
             border-bottom: 3px solid var(--black);
-            padding-bottom: var(--space-lg);
-            margin-bottom: var(--space-xl);
         }
 
-        .header-top {
+        .page-header-top {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            margin-bottom: var(--space-md);
+            margin-bottom: 12px;
         }
 
-        .header h1 {
+        .page-header h1 {
             font-size: 72px;
             font-weight: 700;
             letter-spacing: -0.03em;
-            line-height: 1;
+            line-height: 0.9;
             text-transform: uppercase;
         }
 
-        .header-badge {
-            font-size: 11px;
+        .page-badge {
+            font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.15em;
             text-transform: uppercase;
+            background: var(--swiss-red);
             color: var(--white);
-            background: var(--red);
-            padding: var(--space-xs) var(--space-sm);
+            padding: 8px 16px;
         }
 
-        .header-meta {
+        .page-header-meta {
             font-size: 12px;
-            color: var(--gray-700);
+            color: var(--gray-500);
             letter-spacing: 0.05em;
         }
 
-        .header-meta span {
-            margin-right: var(--space-lg);
+        .page-header-meta span {
+            margin-right: 24px;
         }
 
-        /* ========== 统计栏 ========== */
-        .stats-bar {
+        /* ========== Stats Grid ========== */
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            border-bottom: 1px solid var(--gray-300);
-            margin-bottom: var(--space-xl);
+            border: var(--border-width) solid var(--black);
+            margin-bottom: 48px;
         }
 
-        .stat-item {
-            padding: var(--space-lg) 0;
-            border-right: 1px solid var(--gray-300);
+        .stat-cell {
+            padding: 24px;
+            border-right: var(--border-width) solid var(--black);
+            text-align: center;
         }
 
-        .stat-item:last-child {
+        .stat-cell:last-child {
             border-right: none;
         }
 
@@ -112,7 +105,7 @@
             font-size: 48px;
             font-weight: 700;
             line-height: 1;
-            margin-bottom: var(--space-xs);
+            margin-bottom: 8px;
         }
 
         .stat-label {
@@ -123,9 +116,23 @@
             color: var(--gray-500);
         }
 
-        /* ========== 表格 ========== */
-        .table-section {
-            margin-bottom: var(--space-xl);
+        /* ========== Section Header ========== */
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: var(--border-width) solid var(--black);
+        }
+
+        .section-number {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            background: var(--black);
+            color: var(--white);
+            padding: 6px 12px;
         }
 
         .section-title {
@@ -133,64 +140,75 @@
             font-weight: 700;
             letter-spacing: 0.2em;
             text-transform: uppercase;
-            color: var(--gray-500);
-            margin-bottom: var(--space-md);
-            padding-bottom: var(--space-sm);
-            border-bottom: 1px solid var(--gray-300);
         }
 
-        .news-table {
+        /* ========== Data Table ========== */
+        .data-table {
             width: 100%;
             border-collapse: collapse;
+            border: var(--border-width) solid var(--black);
         }
 
-        .news-table thead {
+        .data-table thead {
             border-bottom: 2px solid var(--black);
         }
 
-        .news-table th {
-            padding: var(--space-md) var(--space-sm);
+        .data-table th {
+            padding: 16px 20px;
             text-align: left;
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.15em;
             text-transform: uppercase;
-            color: var(--black);
-            vertical-align: bottom;
+            background: var(--light-gray);
+            border-right: var(--border-width) solid var(--gray-300);
         }
 
-        .news-table th:first-child {
-            padding-left: 0;
-            width: 48px;
+        .data-table th:last-child {
+            border-right: none;
         }
 
-        .news-table tbody tr {
-            border-bottom: 1px solid var(--gray-200);
-            transition: background 0.15s;
+        .data-table th:first-child {
+            width: 60px;
+            text-align: center;
         }
 
-        .news-table tbody tr:hover {
-            background: var(--gray-100);
+        .data-table tbody tr {
+            border-bottom: var(--border-width) solid var(--gray-300);
+            transition: background 0.1s;
         }
 
-        .news-table td {
-            padding: var(--space-lg) var(--space-sm);
+        .data-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .data-table tbody tr:hover {
+            background: var(--light-gray);
+        }
+
+        .data-table td {
+            padding: 24px 20px;
             vertical-align: top;
+            border-right: var(--border-width) solid var(--gray-300);
         }
 
-        .news-table td:first-child {
-            padding-left: 0;
+        .data-table td:last-child {
+            border-right: none;
         }
 
-        /* 序号 */
-        .index-num {
+        .data-table td:first-child {
+            text-align: center;
+        }
+
+        /* Cell: Index */
+        .cell-index {
             font-size: 24px;
             font-weight: 700;
             color: var(--gray-300);
             font-variant-numeric: tabular-nums;
         }
 
-        /* 标题列 */
+        /* Cell: Title */
         .col-title {
             width: 40%;
         }
@@ -199,23 +217,23 @@
             font-size: 16px;
             font-weight: 700;
             line-height: 1.4;
-            margin-bottom: var(--space-xs);
+            margin-bottom: 8px;
         }
 
         .news-title a {
             color: var(--black);
             text-decoration: none;
-            transition: color 0.15s;
+            transition: color 0.1s;
         }
 
         .news-title a:hover {
-            color: var(--red);
+            color: var(--swiss-red);
         }
 
         .news-meta {
             display: flex;
             align-items: center;
-            gap: var(--space-sm);
+            gap: 8px;
             font-size: 11px;
             color: var(--gray-500);
         }
@@ -225,18 +243,27 @@
             font-weight: 700;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: var(--white);
-            background: var(--black);
-            padding: 2px 6px;
+            padding: 3px 8px;
         }
 
         .source-tag.baidu {
-            background: var(--red);
+            background: var(--swiss-red);
+            color: var(--white);
         }
 
-        /* 日期列 */
+        .source-tag.bocha {
+            background: var(--electric-blue);
+            color: var(--white);
+        }
+
+        .source-tag.default {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        /* Cell: Date */
         .col-date {
-            width: 120px;
+            width: 100px;
         }
 
         .date-text {
@@ -245,7 +272,7 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* 摘要列 */
+        /* Cell: Summary */
         .col-summary {
             width: 35%;
         }
@@ -260,10 +287,30 @@
             overflow: hidden;
         }
 
-        /* 操作列 */
+        .detail-btn {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--swiss-red);
+            text-decoration: underline;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            font-family: inherit;
+        }
+
+        .detail-btn:hover {
+            color: var(--black);
+        }
+
+        /* Cell: Action */
         .col-action {
-            width: 80px;
-            text-align: right;
+            width: 100px;
+            text-align: center;
         }
 
         .action-link {
@@ -276,9 +323,9 @@
             text-transform: uppercase;
             color: var(--black);
             text-decoration: none;
-            padding: var(--space-sm) var(--space-md);
-            border: 1px solid var(--black);
-            transition: all 0.15s;
+            padding: 10px 16px;
+            border: var(--border-width) solid var(--black);
+            transition: all 0.1s;
         }
 
         .action-link:hover {
@@ -291,31 +338,11 @@
             height: 12px;
         }
 
-        .detail-btn {
-            display: inline-block;
-            margin-top: var(--space-sm);
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--red);
-            text-decoration: underline;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-        }
-
-        .detail-btn:hover {
-            color: var(--black);
-        }
-
-        /* ========== 页脚 ========== */
+        /* ========== Footer ========== */
         .footer {
-            border-top: 1px solid var(--gray-300);
-            padding-top: var(--space-lg);
-            margin-top: var(--space-xl);
-        }
-
-        .footer-content {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: var(--border-width) solid var(--gray-300);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -330,10 +357,10 @@
         }
 
         .footer a:hover {
-            color: var(--red);
+            color: var(--swiss-red);
         }
 
-        /* ========== 模态框 ========== */
+        /* ========== Modal ========== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -341,11 +368,11 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
-            padding: var(--space-lg);
+            padding: 24px;
         }
 
         .modal-overlay.show {
@@ -358,27 +385,28 @@
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
+            border: 2px solid var(--black);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            padding: var(--space-lg);
+            padding: 24px;
             border-bottom: 2px solid var(--black);
         }
 
         .modal-title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
             line-height: 1.3;
             flex: 1;
-            padding-right: var(--space-lg);
+            padding-right: 24px;
         }
 
         .modal-close {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -387,19 +415,19 @@
             color: var(--white);
             cursor: pointer;
             flex-shrink: 0;
-            transition: background 0.15s;
+            transition: background 0.1s;
         }
 
         .modal-close:hover {
-            background: var(--red);
+            background: var(--swiss-red);
         }
 
         .modal-body {
-            padding: var(--space-lg);
+            padding: 24px;
         }
 
         .modal-section {
-            margin-bottom: var(--space-lg);
+            margin-bottom: 24px;
         }
 
         .modal-section:last-child {
@@ -411,133 +439,140 @@
             font-weight: 700;
             letter-spacing: 0.15em;
             text-transform: uppercase;
-            color: var(--red);
-            margin-bottom: var(--space-sm);
+            color: var(--swiss-red);
+            margin-bottom: 12px;
         }
 
         .modal-summary {
-            font-size: 16px;
+            font-size: 15px;
             line-height: 1.8;
             color: var(--black);
-            padding: var(--space-md);
-            background: var(--gray-100);
-            border-left: 3px solid var(--red);
+            padding: 20px;
+            background: var(--light-gray);
+            border-left: 3px solid var(--swiss-red);
         }
 
         .modal-content-text {
             font-size: 14px;
             line-height: 1.8;
             color: var(--gray-700);
-            padding: var(--space-md);
-            background: var(--gray-100);
+            padding: 20px;
+            background: var(--light-gray);
             max-height: 300px;
             overflow-y: auto;
         }
 
         .modal-footer {
-            padding: var(--space-lg);
-            border-top: 1px solid var(--gray-300);
+            padding: 24px;
+            border-top: var(--border-width) solid var(--gray-300);
         }
 
         .modal-link {
             display: inline-flex;
             align-items: center;
-            gap: var(--space-sm);
+            gap: 8px;
             font-size: 12px;
             font-weight: 700;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
             color: var(--white);
             background: var(--black);
-            padding: var(--space-md) var(--space-lg);
+            padding: 14px 24px;
             text-decoration: none;
-            transition: background 0.15s;
+            border: 2px solid var(--black);
+            transition: all 0.1s;
         }
 
         .modal-link:hover {
-            background: var(--red);
+            background: var(--swiss-red);
+            border-color: var(--swiss-red);
         }
 
-        /* ========== 响应式 ========== */
+        /* ========== Responsive ========== */
         @media (max-width: 900px) {
-            .container {
-                padding: var(--space-lg) var(--space-md);
-            }
-
-            .header h1 {
+            .page-header h1 {
                 font-size: 48px;
             }
 
-            .stats-bar {
+            .stats-grid {
                 grid-template-columns: 1fr;
             }
 
-            .stat-item {
+            .stat-cell {
                 border-right: none;
-                border-bottom: 1px solid var(--gray-300);
-                padding: var(--space-md) 0;
+                border-bottom: var(--border-width) solid var(--black);
             }
 
-            .stat-item:last-child {
+            .stat-cell:last-child {
                 border-bottom: none;
             }
 
-            .news-table thead {
+            .data-table thead {
                 display: none;
             }
 
-            .news-table tbody tr {
+            .data-table tbody tr {
                 display: block;
-                padding: var(--space-lg) 0;
+                padding: 24px;
+                border-bottom: var(--border-width) solid var(--black);
             }
 
-            .news-table td {
+            .data-table td {
                 display: block;
-                padding: var(--space-xs) 0;
+                padding: 8px 0;
+                border-right: none;
                 width: 100% !important;
+            }
+
+            .data-table td:first-child {
+                text-align: left;
             }
 
             .col-action {
                 text-align: left;
-                margin-top: var(--space-md);
+                margin-top: 16px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 头部 -->
-        <header class="header">
-            <div class="header-top">
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="page-header-top">
                 <h1>{{ company_name }}</h1>
-                <span class="header-badge">News Index</span>
+                <span class="page-badge">News Index</span>
             </div>
-            <div class="header-meta">
+            <div class="page-header-meta">
                 <span>生成时间 {{ fetch_time }}</span>
                 <span>共 {{ news_count }} 条</span>
             </div>
         </header>
 
-        <!-- 统计栏 -->
-        <div class="stats-bar">
-            <div class="stat-item">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-cell">
                 <div class="stat-value">{{ news_count }}</div>
                 <div class="stat-label">Total News</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-cell">
                 <div class="stat-value">{{ time_range }}</div>
                 <div class="stat-label">Time Range</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-cell">
                 <div class="stat-value">2</div>
                 <div class="stat-label">Sources</div>
             </div>
         </div>
 
-        <!-- 新闻表格 -->
-        <section class="table-section">
-            <div class="section-title">News Articles</div>
-            <table class="news-table">
+        <!-- News Table Section -->
+        <section>
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <span class="section-title">News Articles</span>
+            </div>
+
+            <table class="data-table">
                 <thead>
                     <tr>
                         <th>No.</th>
@@ -551,7 +586,7 @@
                     {% for news in news_list %}
                     <tr>
                         <td>
-                            <span class="index-num">{{ "%02d"|format(loop.index) }}</span>
+                            <span class="cell-index">{{ "%02d"|format(loop.index) }}</span>
                         </td>
                         <td class="col-title">
                             <div class="news-title">
@@ -559,7 +594,7 @@
                             </div>
                             <div class="news-meta">
                                 {% if news.source_engine %}
-                                <span class="source-tag {% if '百度' in news.source_engine %}baidu{% endif %}">{{ news.source_engine }}</span>
+                                <span class="source-tag {% if '百度' in news.source_engine %}baidu{% elif '博查' in news.source_engine %}bocha{% else %}default{% endif %}">{{ news.source_engine }}</span>
                                 {% endif %}
                                 <span>{{ news.url | truncate(40) }}</span>
                             </div>
@@ -587,16 +622,14 @@
             </table>
         </section>
 
-        <!-- 页脚 -->
+        <!-- Footer -->
         <footer class="footer">
-            <div class="footer-content">
-                <span>AI Generated Report</span>
-                <span>Data: <a href="https://tavily.com" target="_blank">Tavily</a> + <a href="https://serpapi.com" target="_blank">Baidu News</a></span>
-            </div>
+            <span>AI Generated Report</span>
+            <span>Data: <a href="https://tavily.com" target="_blank">Tavily</a> + <a href="https://serpapi.com" target="_blank">Baidu News</a></span>
         </footer>
     </div>
 
-    <!-- 详情模态框 -->
+    <!-- Detail Modal -->
     <div class="modal-overlay" id="modal" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">

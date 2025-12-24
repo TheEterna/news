@@ -15,7 +15,8 @@
       "Bash(iconv:*)",
       "Bash(.venv/Scripts/pip.exe install:*)",
       "WebFetch(domain:www.jisuapi.com)",
-      "WebFetch(domain:gnews.io)"
+      "WebFetch(domain:gnews.io)",
+      "WebFetch(domain:open.bochaai.com)"
     ]
   }
 }

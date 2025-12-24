@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ task.company_name }} - 新闻审核</title>
     <style>
+        /* ========== Swiss Style Design System ========== */
         * {
             margin: 0;
             padding: 0;
@@ -12,163 +13,152 @@
         }
 
         :root {
-            /* Linear 风格配色 */
-            --bg-primary: #f7f8fa;
-            --bg-glass: rgba(255, 255, 255, 0.72);
-            --bg-glass-hover: rgba(255, 255, 255, 0.85);
-            --glass-border: rgba(0, 0, 0, 0.06);
-            --glass-border-hover: rgba(139, 92, 246, 0.25);
-            --text-primary: #0a0a0f;
-            --text-secondary: #3d3d4e;
-            --text-tertiary: #8a8a9a;
-            --accent-purple: #8b5cf6;
-            --accent-blue: #3b82f6;
-            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%);
-            --border-radius: 16px;
-            --border-radius-sm: 10px;
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
+            --white: #FFFFFF;
+            --light-gray: #F4F4F4;
+            --black: #000000;
+            --swiss-red: #FF3B30;
+            --gray-300: #D1D1D1;
+            --gray-500: #8A8A8A;
+            --gray-700: #4A4A4A;
+
+            --border-width: 1px;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            line-height: 1.6;
+            font-family: Inter, "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--light-gray);
+            color: var(--black);
+            line-height: 1.5;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* 背景装饰 - Linear 风格渐变光斑 */
-        .bg-decoration {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: 0;
-        }
-
-        .bg-decoration::before {
-            content: '';
-            position: absolute;
-            top: -30%;
-            left: -20%;
-            width: 70%;
-            height: 70%;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 60%);
-            filter: blur(60px);
-        }
-
-        .bg-decoration::after {
-            content: '';
-            position: absolute;
-            bottom: -20%;
-            right: -10%;
-            width: 50%;
-            height: 50%;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 60%);
-            filter: blur(60px);
-        }
-
+        /* ========== Layout ========== */
         .container {
-            position: relative;
-            z-index: 1;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 40px 24px;
+            padding: 48px 24px;
         }
 
-        /* 头部 */
-        .header {
-            text-align: center;
-            margin-bottom: 36px;
+        /* ========== Page Header ========== */
+        .page-header {
+            margin-bottom: 48px;
+            padding-bottom: 24px;
+            border-bottom: 3px solid var(--black);
         }
 
-        .header h1 {
-            font-size: 38px;
-            font-weight: 700;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 12px;
-            letter-spacing: -0.02em;
-        }
-
-        .header-meta {
-            color: var(--text-tertiary);
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        /* 统计卡片 - 玻璃拟态 */
-        .stats-row {
+        .page-header-top {
             display: flex;
-            gap: 16px;
-            margin-bottom: 28px;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
         }
 
-        .stat-card {
-            flex: 1;
-            min-width: 140px;
-            padding: 22px 20px;
-            background: var(--bg-glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
+        .page-header h1 {
+            font-size: 64px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 0.9;
+            text-transform: uppercase;
+        }
+
+        .page-badge {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            background: var(--swiss-red);
+            color: var(--white);
+            padding: 8px 16px;
+        }
+
+        .page-header-meta {
+            font-size: 12px;
+            color: var(--gray-500);
+            letter-spacing: 0.05em;
+        }
+
+        /* ========== Stats Grid ========== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border: var(--border-width) solid var(--black);
+            background: var(--white);
+            margin-bottom: 32px;
+        }
+
+        .stat-cell {
+            padding: 24px;
+            border-right: var(--border-width) solid var(--black);
             text-align: center;
-            transition: all 0.2s ease;
         }
 
-        .stat-card:hover {
-            background: var(--bg-glass-hover);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+        .stat-cell:last-child {
+            border-right: none;
         }
 
         .stat-value {
-            font-size: 34px;
+            font-size: 48px;
             font-weight: 700;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.02em;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-value.accent {
+            color: var(--swiss-red);
         }
 
         .stat-label {
-            font-size: 13px;
-            color: var(--text-tertiary);
-            margin-top: 4px;
-            font-weight: 500;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gray-500);
         }
 
-        /* 操作栏 - 玻璃拟态 */
+        /* ========== Tip Box ========== */
+        .tip-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 20px 24px;
+            background: var(--white);
+            border: var(--border-width) solid var(--black);
+            border-left: 4px solid var(--swiss-red);
+            margin-bottom: 32px;
+        }
+
+        .tip-icon {
+            font-size: 12px;
+            font-weight: 700;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--black);
+            color: var(--white);
+            flex-shrink: 0;
+        }
+
+        .tip-text {
+            font-size: 13px;
+            color: var(--gray-700);
+            line-height: 1.6;
+        }
+
+        /* ========== Action Bar (Sticky) ========== */
         .action-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 18px 24px;
-            background: var(--bg-glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            margin-bottom: 28px;
-            flex-wrap: wrap;
-            gap: 16px;
+            padding: 20px 24px;
+            background: var(--white);
+            border: var(--border-width) solid var(--black);
+            margin-bottom: 32px;
             position: sticky;
-            top: 16px;
-            z-index: 10;
+            top: 0;
+            z-index: 100;
         }
 
         .select-group {
@@ -177,122 +167,156 @@
             gap: 16px;
         }
 
-        .select-group input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: var(--accent-purple);
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             cursor: pointer;
         }
 
-        .select-group label {
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--black);
             cursor: pointer;
-            user-select: none;
-            font-weight: 500;
+        }
+
+        .checkbox-wrapper label {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
         }
 
         .stats-text {
-            font-size: 14px;
-            color: var(--text-secondary);
+            font-size: 13px;
+            color: var(--gray-500);
         }
 
         .stats-text .count {
-            font-weight: 600;
-            color: var(--accent-purple);
+            font-weight: 700;
+            color: var(--swiss-red);
         }
 
-        .submit-btn {
-            padding: 12px 28px;
-            background: var(--accent-gradient);
-            color: #fff;
-            border: none;
-            border-radius: var(--border-radius-sm);
-            font-size: 15px;
-            font-weight: 600;
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            text-decoration: none;
+            border: 2px solid var(--black);
             cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+            transition: all 0.1s;
+            font-family: inherit;
         }
 
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(139, 92, 246, 0.4);
+        .btn-primary {
+            background: var(--black);
+            color: var(--white);
         }
 
-        .submit-btn:disabled {
-            opacity: 0.5;
+        .btn-primary:hover {
+            background: var(--swiss-red);
+            border-color: var(--swiss-red);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
             cursor: not-allowed;
-            transform: none;
         }
 
-        /* 分区标题 */
-        .section-title {
+        /* ========== Section Header ========== */
+        .section-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin: 36px 0 18px;
-            font-size: 17px;
-            font-weight: 600;
-            color: var(--text-primary);
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: var(--border-width) solid var(--black);
         }
 
-        .section-title .badge {
-            padding: 5px 14px;
-            background: rgba(139, 92, 246, 0.1);
-            border-radius: 100px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--accent-purple);
+        .section-number {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            background: var(--black);
+            color: var(--white);
+            padding: 6px 12px;
         }
 
-        .section-title.filtered-title .badge {
-            background: rgba(138, 138, 154, 0.12);
-            color: var(--text-tertiary);
+        .section-number.secondary {
+            background: var(--gray-500);
         }
 
-        .section-title .hint {
-            font-size: 13px;
-            font-weight: 400;
-            color: var(--text-tertiary);
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        .section-badge {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border: var(--border-width) solid var(--gray-300);
+            color: var(--gray-500);
+        }
+
+        .section-hint {
             margin-left: auto;
+            font-size: 11px;
+            color: var(--gray-500);
         }
 
-        /* 新闻列表 */
+        /* ========== News List ========== */
         .news-list {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 0;
+            margin-bottom: 48px;
         }
 
-        /* 新闻卡片 - 玻璃拟态 */
+        /* ========== News Card ========== */
         .news-card {
-            display: flex;
-            gap: 16px;
-            padding: 20px;
-            background: var(--bg-glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 2px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-sm);
-            transition: all 0.2s ease;
+            display: grid;
+            grid-template-columns: 48px 1fr;
+            gap: 0;
+            background: var(--white);
+            border: var(--border-width) solid var(--black);
+            border-bottom: none;
             cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .news-card:last-child {
+            border-bottom: var(--border-width) solid var(--black);
         }
 
         .news-card:hover {
-            background: var(--bg-glass-hover);
-            border-color: var(--glass-border-hover);
-            box-shadow: var(--shadow-md);
+            background: var(--light-gray);
         }
 
         .news-card.selected {
-            border-color: var(--accent-purple);
-            background: rgba(139, 92, 246, 0.06);
-            box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.1), var(--shadow-md);
+            background: var(--light-gray);
         }
 
-        /* 已过滤卡片 - 稍微淡化但仍可交互 */
+        .news-card.selected .card-checkbox {
+            background: var(--swiss-red);
+            border-color: var(--swiss-red);
+        }
+
+        /* Filtered cards */
         .news-card.filtered-card {
-            opacity: 0.75;
+            opacity: 0.6;
         }
 
         .news-card.filtered-card:hover {
@@ -301,179 +325,172 @@
 
         .news-card.filtered-card.selected {
             opacity: 1;
-            border-color: var(--success-color);
-            background: rgba(16, 185, 129, 0.06);
         }
 
-        .news-checkbox {
-            flex-shrink: 0;
+        .card-checkbox {
             display: flex;
-            align-items: flex-start;
-            padding-top: 4px;
+            align-items: center;
+            justify-content: center;
+            border-right: var(--border-width) solid var(--black);
+            transition: all 0.1s;
         }
 
-        .news-checkbox input {
-            width: 20px;
-            height: 20px;
-            accent-color: var(--accent-purple);
+        .card-checkbox input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--swiss-red);
             cursor: pointer;
         }
 
-        .filtered-card .news-checkbox input {
-            accent-color: var(--success-color);
+        .card-content {
+            padding: 24px;
         }
 
-        .news-content {
-            flex: 1;
-            min-width: 0;
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 12px;
         }
 
-        .news-title {
+        .card-title {
             font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            line-height: 1.45;
+            font-weight: 700;
+            line-height: 1.4;
         }
 
-        .news-title a {
-            color: var(--text-primary);
+        .card-title a {
+            color: var(--black);
             text-decoration: none;
-            transition: color 0.15s;
+            transition: color 0.1s;
         }
 
-        .news-title a:hover {
-            color: var(--accent-purple);
+        .card-title a:hover {
+            color: var(--swiss-red);
         }
 
-        .news-meta {
+        .card-meta {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
             align-items: center;
-            margin-bottom: 12px;
-            font-size: 13px;
-            color: var(--text-tertiary);
+            margin-bottom: 16px;
         }
 
-        .category-badge {
-            display: inline-flex;
-            padding: 4px 12px;
-            border-radius: 100px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .category-badge.valid {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: var(--success-color);
-        }
-
-        .category-badge.filtered {
-            background: rgba(138, 138, 154, 0.1);
-            border: 1px solid rgba(138, 138, 154, 0.15);
-            color: var(--text-tertiary);
-        }
-
-        /* 人工覆盖标记 */
-        .override-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
+        .category-tag {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
             padding: 4px 10px;
-            background: rgba(16, 185, 129, 0.12);
-            border-radius: 100px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--success-color);
         }
 
-        .override-badge::before {
-            content: '✓';
+        .category-tag.valid {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        .category-tag.filtered {
+            background: var(--light-gray);
+            color: var(--gray-500);
+            border: var(--border-width) solid var(--gray-300);
         }
 
         .relevance-score {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--gray-500);
         }
 
         .score-bar {
-            width: 56px;
-            height: 5px;
-            background: rgba(0, 0, 0, 0.08);
-            border-radius: 3px;
-            overflow: hidden;
+            width: 60px;
+            height: 4px;
+            background: var(--gray-300);
         }
 
         .score-fill {
             height: 100%;
-            background: var(--accent-gradient);
-            border-radius: 3px;
-            transition: width 0.3s;
+            background: var(--black);
+        }
+
+        .date-text {
+            font-size: 11px;
+            color: var(--gray-500);
         }
 
         .ai-reason {
             font-size: 13px;
-            color: var(--text-secondary);
-            padding: 12px 16px;
-            background: rgba(0, 0, 0, 0.03);
-            border-radius: var(--border-radius-sm);
-            border-left: 3px solid var(--accent-purple);
-            line-height: 1.55;
+            color: var(--gray-700);
+            padding: 16px;
+            background: var(--light-gray);
+            border-left: 3px solid var(--black);
+            line-height: 1.6;
         }
 
         .filtered-card .ai-reason {
-            border-left-color: var(--text-tertiary);
+            border-left-color: var(--gray-500);
         }
 
-        /* 折叠区域头部 */
+        /* Override badge */
+        .override-badge {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            background: var(--swiss-red);
+            color: var(--white);
+        }
+
+        /* ========== Collapsible Section ========== */
         .collapsible-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            padding: 20px 24px;
+            background: var(--white);
+            border: var(--border-width) solid var(--gray-300);
             cursor: pointer;
-            padding: 16px 22px;
-            background: var(--bg-glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            margin: 28px 0 16px;
-            transition: all 0.2s ease;
+            margin-bottom: 16px;
+            transition: all 0.1s;
         }
 
         .collapsible-header:hover {
-            background: var(--bg-glass-hover);
+            border-color: var(--black);
         }
 
         .collapsible-header .title {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
+            gap: 16px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray-700);
         }
 
         .collapsible-header .count-badge {
-            padding: 4px 12px;
-            background: rgba(138, 138, 154, 0.1);
-            border-radius: 100px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-tertiary);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            background: var(--light-gray);
+            color: var(--gray-500);
         }
 
         .collapsible-header .hint-text {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 400;
-            color: var(--text-tertiary);
+            color: var(--gray-500);
         }
 
         .collapsible-header .arrow {
-            transition: transform 0.3s ease;
-            color: var(--text-tertiary);
-            font-size: 12px;
+            font-size: 10px;
+            color: var(--gray-500);
+            transition: transform 0.2s;
         }
 
         .collapsible-header.expanded .arrow {
@@ -488,172 +505,175 @@
             display: block;
         }
 
-        /* 空状态 */
+        /* ========== Empty State ========== */
         .empty-state {
+            padding: 64px 32px;
             text-align: center;
-            padding: 60px 20px;
-            color: var(--text-tertiary);
+            background: var(--white);
+            border: var(--border-width) dashed var(--gray-300);
         }
 
-        .empty-state h3 {
-            font-size: 18px;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
-        }
-
-        /* 提示信息框 */
-        .tip-box {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 14px 18px;
-            background: rgba(59, 130, 246, 0.08);
-            border: 1px solid rgba(59, 130, 246, 0.15);
-            border-radius: var(--border-radius-sm);
-            margin-bottom: 20px;
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        .tip-box .tip-icon {
-            flex-shrink: 0;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(59, 130, 246, 0.15);
-            border-radius: 50%;
-            color: var(--accent-blue);
-            font-size: 12px;
+        .empty-state-title {
+            font-size: 14px;
             font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
         }
 
-        /* 响应式 */
+        .empty-state-desc {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+
+        /* ========== Responsive ========== */
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 28px;
+            .page-header h1 {
+                font-size: 36px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-cell {
+                border-right: none;
+                border-bottom: var(--border-width) solid var(--black);
+            }
+
+            .stat-cell:last-child {
+                border-bottom: none;
             }
 
             .action-bar {
                 flex-direction: column;
+                gap: 16px;
                 align-items: stretch;
                 position: static;
             }
 
-            .submit-btn {
+            .btn {
                 width: 100%;
             }
 
             .news-card {
-                flex-direction: column;
+                grid-template-columns: 1fr;
             }
 
-            .news-checkbox {
-                order: -1;
+            .card-checkbox {
+                border-right: none;
+                border-bottom: var(--border-width) solid var(--black);
+                padding: 12px;
+                justify-content: flex-start;
             }
 
-            .section-title .hint {
+            .section-hint {
                 display: none;
             }
         }
     </style>
 </head>
 <body>
-    <div class="bg-decoration"></div>
-
     <div class="container">
-        <header class="header">
-            <h1>{{ task.company_name }}</h1>
-            <div class="header-meta">
-                新闻审核 · 任务 #{{ task.id }} · {{ task.created_at }}
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="page-header-top">
+                <h1>{{ task.company_name }}</h1>
+                <span class="page-badge">Review</span>
+            </div>
+            <div class="page-header-meta">
+                Task #{{ task.id }} · {{ task.created_at }}
             </div>
         </header>
 
-        <!-- 统计卡片 -->
-        <div class="stats-row">
-            <div class="stat-card">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-cell">
                 <div class="stat-value">{{ total_count }}</div>
-                <div class="stat-label">AI 推荐</div>
+                <div class="stat-label">AI Recommended</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-cell">
                 <div class="stat-value">{{ filtered_count }}</div>
-                <div class="stat-label">AI 过滤</div>
+                <div class="stat-label">AI Filtered</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value" id="selectedValue">0</div>
-                <div class="stat-label">已选择</div>
+            <div class="stat-cell">
+                <div class="stat-value accent" id="selectedValue">0</div>
+                <div class="stat-label">Selected</div>
             </div>
         </div>
 
-        <!-- 提示框 -->
+        <!-- Tip Box -->
         <div class="tip-box">
             <span class="tip-icon">i</span>
-            <span>您可以勾选任意新闻（包括 AI 过滤的）来生成最终报告。AI 分类仅供参考，最终决定权在您手中。</span>
+            <span class="tip-text">您可以勾选任意新闻（包括 AI 过滤的）来生成最终报告。AI 分类仅供参考，最终决定权在您手中。</span>
         </div>
 
         <form id="reviewForm" action="/api/v2/news/review" method="POST">
             <input type="hidden" name="task_id" value="{{ task.id }}">
             <input type="hidden" name="approved_ids" id="approvedIds" value="">
 
-            <!-- 操作栏 -->
+            <!-- Action Bar -->
             <div class="action-bar">
                 <div class="select-group">
-                    <input type="checkbox" id="selectAll" onchange="toggleAllRecommended(this)">
-                    <label for="selectAll">全选 AI 推荐</label>
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="selectAll" onchange="toggleAllRecommended(this)">
+                        <label for="selectAll">Select All Recommended</label>
+                    </div>
                     <span class="stats-text">
-                        已选 <span class="count" id="selectedCount">0</span> / {{ total_count + filtered_count }}
+                        Selected <span class="count" id="selectedCount">0</span> / {{ total_count + filtered_count }}
                     </span>
                 </div>
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    确认选择并生成报告
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    Confirm & Generate Report
                 </button>
             </div>
 
-            <!-- AI 推荐的新闻 -->
+            <!-- AI Recommended News -->
             {% if news_list %}
-            <div class="section-title">
-                <span>AI 推荐</span>
-                <span class="badge">符合产品/新模型/新功能标准</span>
-                <span class="hint">点击卡片或勾选框进行选择</span>
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <span class="section-title">AI Recommended</span>
+                <span class="section-badge">Product / Model / Feature</span>
+                <span class="section-hint">点击卡片或勾选框进行选择</span>
             </div>
 
             <div class="news-list" id="pendingList">
                 {% for news in news_list %}
                 <div class="news-card" data-id="{{ news.id }}" data-type="recommended" onclick="toggleCard(this, event)">
-                    <div class="news-checkbox">
+                    <div class="card-checkbox">
                         <input type="checkbox"
                                class="news-item-checkbox recommended-checkbox"
                                value="{{ news.id }}"
                                onchange="updateSelection()"
                                onclick="event.stopPropagation()">
                     </div>
-                    <div class="news-content">
-                        <h3 class="news-title">
-                            <a href="{{ news.url }}" target="_blank" onclick="event.stopPropagation()">{{ news.title }}</a>
-                        </h3>
-                        <div class="news-meta">
-                            <span class="category-badge valid">
-                                {% if news.ai_category == 'product_release' %}产品发布
-                                {% elif news.ai_category == 'model_release' %}新模型
-                                {% elif news.ai_category == 'feature_update' %}功能更新
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <a href="{{ news.url }}" target="_blank" onclick="event.stopPropagation()">{{ news.title }}</a>
+                            </h3>
+                        </div>
+                        <div class="card-meta">
+                            <span class="category-tag valid">
+                                {% if news.ai_category == 'product_release' %}Product
+                                {% elif news.ai_category == 'model_release' %}Model
+                                {% elif news.ai_category == 'feature_update' %}Feature
                                 {% else %}{{ news.ai_category }}
                                 {% endif %}
                             </span>
                             <div class="relevance-score">
-                                相关性:
+                                Relevance:
                                 <div class="score-bar">
                                     <div class="score-fill" style="width: {{ (news.ai_relevance * 100)|int }}%"></div>
                                 </div>
                                 {{ "%.0f"|format(news.ai_relevance * 100) }}%
                             </div>
                             {% if news.published_date %}
-                            <span>{{ news.published_date }}</span>
+                            <span class="date-text">{{ news.published_date }}</span>
                             {% endif %}
                         </div>
                         <div class="ai-reason">
-                            AI 判断: {{ news.ai_reason }}
+                            AI: {{ news.ai_reason }}
                         </div>
                     </div>
                 </div>
@@ -661,18 +681,18 @@
             </div>
             {% else %}
             <div class="empty-state">
-                <h3>没有 AI 推荐的新闻</h3>
-                <p>AI 判断所有新闻都不符合"产品发布/新模型/新功能"的标准，但您可以从下方的已过滤列表中手动选择</p>
+                <div class="empty-state-title">No AI Recommendations</div>
+                <div class="empty-state-desc">AI 判断所有新闻都不符合标准，您可以从下方的已过滤列表中手动选择</div>
             </div>
             {% endif %}
         </form>
 
-        <!-- 已过滤新闻（可手动选择） -->
+        <!-- Filtered News (Collapsible) -->
         {% if filtered_list %}
         <div class="collapsible-header" onclick="toggleCollapse(this)">
             <div class="title">
-                <span>AI 过滤的新闻</span>
-                <span class="count-badge">{{ filtered_count }} 条</span>
+                <span>AI Filtered</span>
+                <span class="count-badge">{{ filtered_count }}</span>
                 <span class="hint-text">— 您仍可手动勾选加入报告</span>
             </div>
             <span class="arrow">▼</span>
@@ -681,7 +701,7 @@
             <div class="news-list">
                 {% for news in filtered_list %}
                 <div class="news-card filtered-card" data-id="{{ news.id }}" data-type="filtered" onclick="toggleCard(this, event)">
-                    <div class="news-checkbox">
+                    <div class="card-checkbox">
                         <input type="checkbox"
                                class="news-item-checkbox filtered-checkbox"
                                value="{{ news.id }}"
@@ -689,32 +709,34 @@
                                onchange="updateSelection()"
                                onclick="event.stopPropagation()">
                     </div>
-                    <div class="news-content">
-                        <h3 class="news-title">
-                            <a href="{{ news.url }}" target="_blank" onclick="event.stopPropagation()">{{ news.title }}</a>
-                        </h3>
-                        <div class="news-meta">
-                            <span class="category-badge filtered">
-                                {% if news.ai_category == 'interview' %}访谈
-                                {% elif news.ai_category == 'analysis' %}行业分析
-                                {% elif news.ai_category == 'recruitment' %}招聘/活动
-                                {% elif news.ai_category == 'financial' %}财报/股价
-                                {% else %}其他
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <a href="{{ news.url }}" target="_blank" onclick="event.stopPropagation()">{{ news.title }}</a>
+                            </h3>
+                        </div>
+                        <div class="card-meta">
+                            <span class="category-tag filtered">
+                                {% if news.ai_category == 'interview' %}Interview
+                                {% elif news.ai_category == 'analysis' %}Analysis
+                                {% elif news.ai_category == 'recruitment' %}Recruitment
+                                {% elif news.ai_category == 'financial' %}Financial
+                                {% else %}Other
                                 {% endif %}
                             </span>
                             <div class="relevance-score">
-                                相关性:
+                                Relevance:
                                 <div class="score-bar">
                                     <div class="score-fill" style="width: {{ (news.ai_relevance * 100)|int }}%"></div>
                                 </div>
                                 {{ "%.0f"|format(news.ai_relevance * 100) }}%
                             </div>
                             {% if news.published_date %}
-                            <span>{{ news.published_date }}</span>
+                            <span class="date-text">{{ news.published_date }}</span>
                             {% endif %}
                         </div>
                         <div class="ai-reason">
-                            AI 判断: {{ news.ai_reason }}
+                            AI: {{ news.ai_reason }}
                         </div>
                     </div>
                 </div>
@@ -725,7 +747,6 @@
     </div>
 
     <script>
-        // 仅全选 AI 推荐的新闻
         function toggleAllRecommended(checkbox) {
             const items = document.querySelectorAll('.recommended-checkbox');
             items.forEach(item => {
@@ -747,30 +768,25 @@
         }
 
         function updateSelection() {
-            // 获取所有 checkbox（包括推荐和已过滤的）
             const allItems = document.querySelectorAll('.news-item-checkbox');
             const allChecked = document.querySelectorAll('.news-item-checkbox:checked');
             const recommendedItems = document.querySelectorAll('.recommended-checkbox');
             const recommendedChecked = document.querySelectorAll('.recommended-checkbox:checked');
 
-            // 更新卡片样式
             allItems.forEach(item => {
                 item.closest('.news-card').classList.toggle('selected', item.checked);
             });
 
-            // 更新总计数
             const totalCount = allChecked.length;
             document.getElementById('selectedCount').textContent = totalCount;
             document.getElementById('selectedValue').textContent = totalCount;
 
-            // 更新全选状态（仅针对推荐的）
             const selectAll = document.getElementById('selectAll');
             if (recommendedItems.length > 0) {
                 selectAll.checked = recommendedChecked.length === recommendedItems.length;
                 selectAll.indeterminate = recommendedChecked.length > 0 && recommendedChecked.length < recommendedItems.length;
             }
 
-            // 更新隐藏字段（包含所有已选中的 ID）
             const ids = Array.from(allChecked).map(cb => cb.value);
             document.getElementById('approvedIds').value = ids.join(',');
         }
@@ -781,7 +797,6 @@
             content.classList.toggle('show');
         }
 
-        // 初始化
         updateSelection();
     </script>
 </body>

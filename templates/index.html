@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 新闻搜集系统</title>
     <style>
+        /* ========== Swiss Style Design System ========== */
         * {
             margin: 0;
             padding: 0;
@@ -12,205 +13,449 @@
         }
 
         :root {
-            /* Linear 风格配色 */
-            --bg-primary: #f7f8fa;
-            --bg-glass: rgba(255, 255, 255, 0.72);
-            --bg-glass-hover: rgba(255, 255, 255, 0.88);
-            --glass-border: rgba(0, 0, 0, 0.06);
-            --glass-border-hover: rgba(139, 92, 246, 0.25);
-            --text-primary: #0a0a0f;
-            --text-secondary: #3d3d4e;
-            --text-tertiary: #8a8a9a;
-            --accent-purple: #8b5cf6;
-            --accent-blue: #3b82f6;
-            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%);
-            --border-radius: 16px;
-            --border-radius-sm: 10px;
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
+            --white: #FFFFFF;
+            --light-gray: #F4F4F4;
+            --black: #000000;
+            --swiss-red: #FF3B30;
+            --gray-300: #D1D1D1;
+            --gray-500: #8A8A8A;
+            --gray-700: #4A4A4A;
+
+            --grid-gap: 24px;
+            --border-width: 1px;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            font-family: Inter, "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--white);
+            color: var(--black);
+            line-height: 1.5;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ========== Layout: Sidebar + Main ========== */
+        .layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
             min-height: 100vh;
-            line-height: 1.6;
         }
 
-        /* 背景装饰 - Linear 风格渐变光斑 */
-        .bg-decoration {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: 0;
+        /* ========== Sidebar ========== */
+        .sidebar {
+            border-right: var(--border-width) solid var(--black);
+            padding: 48px 32px;
+            display: flex;
+            flex-direction: column;
         }
 
-        .bg-decoration::before {
-            content: '';
-            position: absolute;
-            top: -30%;
-            left: -20%;
-            width: 70%;
-            height: 70%;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 60%);
-            filter: blur(60px);
+        .sidebar-brand {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 64px;
         }
 
-        .bg-decoration::after {
-            content: '';
-            position: absolute;
-            bottom: -20%;
-            right: -10%;
-            width: 50%;
-            height: 50%;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 60%);
-            filter: blur(60px);
+        .sidebar-nav {
+            flex: 1;
         }
 
-        .container {
-            position: relative;
-            z-index: 1;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 60px 24px;
-        }
-
-        /* 头部 */
-        .header {
-            text-align: center;
+        .nav-section {
             margin-bottom: 48px;
         }
 
-        .header h1 {
-            font-size: 44px;
+        .nav-section-title {
+            font-size: 10px;
             font-weight: 700;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 14px;
-            letter-spacing: -0.02em;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--gray-500);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: var(--border-width) solid var(--gray-300);
         }
 
-        .header p {
-            color: var(--text-tertiary);
-            font-size: 16px;
+        .nav-item {
+            display: block;
+            padding: 12px 0;
+            font-size: 14px;
             font-weight: 500;
-            max-width: 500px;
-            margin: 0 auto;
+            color: var(--black);
+            text-decoration: none;
+            border-bottom: var(--border-width) solid var(--light-gray);
+            transition: all 0.1s;
+        }
+
+        .nav-item:hover {
+            padding-left: 8px;
+            border-bottom-color: var(--black);
+        }
+
+        .nav-item.active {
+            font-weight: 700;
+            border-bottom-color: var(--swiss-red);
+            color: var(--swiss-red);
+        }
+
+        .sidebar-footer {
+            font-size: 11px;
+            color: var(--gray-500);
+            padding-top: 24px;
+            border-top: var(--border-width) solid var(--gray-300);
+        }
+
+        /* ========== Main Content ========== */
+        .main {
+            padding: 48px;
+            background: var(--light-gray);
+        }
+
+        /* ========== Typographic Header ========== */
+        .page-header {
+            margin-bottom: 64px;
+            padding-bottom: 32px;
+            border-bottom: 3px solid var(--black);
+        }
+
+        .page-header h1 {
+            font-size: 72px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 0.9;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .page-header-sub {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-700);
+            max-width: 480px;
             line-height: 1.6;
         }
 
-        /* 搜索卡片 - 玻璃拟态 */
-        .search-card {
-            padding: 40px;
-            background: var(--bg-glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            margin-bottom: 40px;
+        /* ========== Search Section ========== */
+        .section {
+            margin-bottom: 64px;
         }
 
-        .search-card h2 {
-            font-size: 20px;
-            margin-bottom: 26px;
+        .section-header {
             display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: var(--border-width) solid var(--black);
         }
 
-        .search-card h2::before {
-            content: '1';
-            width: 30px;
-            height: 30px;
+        .section-number {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--gray-300);
+        }
+
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        .section-line {
+            flex: 1;
+            height: 1px;
+            background: var(--gray-300);
+            align-self: center;
+        }
+
+        /* ========== Search Form ========== */
+        .search-panel {
+            background: var(--white);
+            border: var(--border-width) solid var(--black);
+            padding: 32px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 24px;
+            align-items: end;
+        }
+
+        .form-group {
             display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--gray-500);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 16px;
+            font-family: inherit;
+            border: 2px solid var(--black);
+            background: var(--white);
+            outline: none;
+            transition: all 0.1s;
+        }
+
+        .form-input:focus {
+            border-color: var(--swiss-red);
+        }
+
+        .form-input::placeholder {
+            color: var(--gray-500);
+        }
+
+        /* ========== Buttons ========== */
+        .btn {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: var(--accent-gradient);
-            color: #fff;
-            border-radius: 50%;
+            gap: 8px;
+            padding: 16px 32px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            text-decoration: none;
+            border: 2px solid var(--black);
+            cursor: pointer;
+            transition: all 0.1s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--swiss-red);
+            border-color: var(--swiss-red);
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--black);
+        }
+
+        .btn-secondary:hover {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ========== Data Grid (Tasks) ========== */
+        .data-grid {
+            background: var(--white);
+            border: var(--border-width) solid var(--black);
+        }
+
+        .data-grid-header {
+            display: grid;
+            grid-template-columns: 80px 1fr 120px 120px 160px;
+            border-bottom: 2px solid var(--black);
+        }
+
+        .data-grid-header-cell {
+            padding: 16px 20px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            border-right: var(--border-width) solid var(--gray-300);
+        }
+
+        .data-grid-header-cell:last-child {
+            border-right: none;
+        }
+
+        .data-grid-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 120px 120px 160px;
+            border-bottom: var(--border-width) solid var(--gray-300);
+            transition: background 0.1s;
+        }
+
+        .data-grid-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-grid-row:hover {
+            background: var(--light-gray);
+        }
+
+        .data-grid-cell {
+            padding: 20px;
+            font-size: 14px;
+            border-right: var(--border-width) solid var(--gray-300);
+            display: flex;
+            align-items: center;
+        }
+
+        .data-grid-cell:last-child {
+            border-right: none;
+        }
+
+        .cell-id {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gray-300);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .cell-title {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .task-name {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .task-meta {
+            font-size: 11px;
+            color: var(--gray-500);
+        }
+
+        .cell-count {
+            font-weight: 700;
+            font-size: 18px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ========== Status Tags ========== */
+        .status-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .status-tag.collecting {
+            background: var(--light-gray);
+            border: var(--border-width) solid var(--black);
+        }
+
+        .status-tag.reviewing {
+            background: var(--swiss-red);
+            color: var(--white);
+        }
+
+        .status-tag.completed {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        /* ========== Action Links ========== */
+        .action-link {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--black);
+            text-decoration: none;
+            padding: 8px 16px;
+            border: var(--border-width) solid var(--black);
+            transition: all 0.1s;
+        }
+
+        .action-link:hover {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        .action-link.primary {
+            background: var(--swiss-red);
+            border-color: var(--swiss-red);
+            color: var(--white);
+        }
+
+        .action-link.primary:hover {
+            background: var(--black);
+            border-color: var(--black);
+        }
+
+        /* ========== Flow Steps ========== */
+        .flow-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border: var(--border-width) solid var(--black);
+            background: var(--white);
+        }
+
+        .flow-step {
+            padding: 32px 24px;
+            border-right: var(--border-width) solid var(--black);
+        }
+
+        .flow-step:last-child {
+            border-right: none;
+        }
+
+        .flow-step-number {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--gray-300);
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+
+        .flow-step-title {
             font-size: 14px;
             font-weight: 700;
-        }
-
-        .search-form {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .input-group {
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 13px;
-            color: var(--text-tertiary);
             margin-bottom: 8px;
-            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .input-group input {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid var(--glass-border);
-            border-radius: var(--border-radius-sm);
-            font-size: 16px;
-            transition: all 0.2s ease;
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(10px);
+        .flow-step-desc {
+            font-size: 13px;
+            color: var(--gray-700);
+            line-height: 1.5;
         }
 
-        .input-group input:focus {
-            outline: none;
-            border-color: var(--accent-purple);
-            background: #fff;
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        /* ========== Empty State ========== */
+        .empty-state {
+            padding: 64px 32px;
+            text-align: center;
+            border: var(--border-width) dashed var(--gray-300);
+            background: var(--white);
         }
 
-        .input-group input::placeholder {
-            color: var(--text-tertiary);
+        .empty-state-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
         }
 
-        .search-btn {
-            padding: 15px 36px;
-            background: var(--accent-gradient);
-            color: #fff;
-            border: none;
-            border-radius: var(--border-radius-sm);
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
-            align-self: flex-end;
+        .empty-state-desc {
+            font-size: 13px;
+            color: var(--gray-500);
         }
 
-        .search-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(139, 92, 246, 0.4);
-        }
-
-        .search-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* 加载状态 - 玻璃拟态 */
+        /* ========== Loading Overlay ========== */
         .loading-overlay {
             display: none;
             position: fixed;
@@ -218,10 +463,8 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(247, 248, 250, 0.85);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 1000;
             justify-content: center;
             align-items: center;
             flex-direction: column;
@@ -232,13 +475,12 @@
             display: flex;
         }
 
-        .spinner {
-            width: 52px;
-            height: 52px;
-            border: 4px solid var(--glass-border);
-            border-top-color: var(--accent-purple);
-            border-radius: 50%;
-            animation: spin 0.9s linear infinite;
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--gray-300);
+            border-top-color: var(--black);
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
@@ -246,331 +488,232 @@
         }
 
         .loading-text {
-            font-size: 16px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        /* 任务列表 */
-        .tasks-section {
-            margin-top: 44px;
-        }
-
-        .tasks-section h2 {
-            font-size: 20px;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-        }
-
-        .tasks-section h2::before {
-            content: '2';
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--accent-gradient);
-            color: #fff;
-            border-radius: 50%;
-            font-size: 14px;
-            font-weight: 700;
-        }
-
-        .task-list {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        /* 任务卡片 - 玻璃拟态 */
-        .task-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 22px 26px;
-            background: var(--bg-glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-sm);
-            transition: all 0.2s ease;
-        }
-
-        .task-card:hover {
-            background: var(--bg-glass-hover);
-            border-color: var(--glass-border-hover);
-            box-shadow: var(--shadow-md);
-            transform: translateY(-2px);
-        }
-
-        .task-info {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .task-title {
-            font-size: 17px;
-            font-weight: 600;
-        }
-
-        .task-meta {
-            font-size: 13px;
-            color: var(--text-tertiary);
-            display: flex;
-            gap: 16px;
-            font-weight: 500;
-        }
-
-        .task-status {
-            padding: 5px 14px;
-            border-radius: 100px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .task-status.reviewing {
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid rgba(245, 158, 11, 0.2);
-            color: var(--warning-color);
-        }
-
-        .task-status.completed {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: var(--success-color);
-        }
-
-        .task-status.collecting {
-            background: rgba(139, 92, 246, 0.1);
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            color: var(--accent-purple);
-        }
-
-        .task-actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .btn-review, .btn-view {
-            padding: 11px 22px;
-            border-radius: var(--border-radius-sm);
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-
-        .btn-review {
-            background: var(--accent-gradient);
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
-        }
-
-        .btn-review:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
-        }
-
-        .btn-view {
-            background: rgba(255, 255, 255, 0.6);
-            color: var(--text-secondary);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(10px);
-        }
-
-        .btn-view:hover {
-            border-color: var(--accent-purple);
-            color: var(--accent-purple);
-            background: rgba(139, 92, 246, 0.05);
-        }
-
-        /* 空状态 */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-tertiary);
-        }
-
-        .empty-state p {
-            margin-top: 8px;
-        }
-
-        /* 流程说明 - 玻璃拟态 */
-        .flow-guide {
-            margin-top: 60px;
-            padding: 34px;
-            background: var(--bg-glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-        }
-
-        .flow-guide h3 {
-            font-size: 16px;
-            margin-bottom: 22px;
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-
-        .flow-steps {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .flow-step {
-            flex: 1;
-            min-width: 180px;
-            padding: 18px;
-            background: rgba(255, 255, 255, 0.5);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius-sm);
-            transition: all 0.2s ease;
-        }
-
-        .flow-step:hover {
-            background: rgba(255, 255, 255, 0.7);
-            transform: translateY(-2px);
-        }
-
-        .flow-step-num {
-            width: 26px;
-            height: 26px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--accent-gradient);
-            color: #fff;
-            border-radius: 50%;
             font-size: 12px;
             font-weight: 700;
-            margin-bottom: 14px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
         }
 
-        .flow-step-title {
-            font-weight: 600;
-            margin-bottom: 6px;
-            font-size: 15px;
-        }
-
-        .flow-step-desc {
-            font-size: 13px;
-            color: var(--text-tertiary);
-            line-height: 1.5;
-        }
-
-        /* 响应式 */
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 32px;
+        /* ========== Responsive ========== */
+        @media (max-width: 1024px) {
+            .layout {
+                grid-template-columns: 1fr;
             }
 
-            .search-form {
-                flex-direction: column;
+            .sidebar {
+                border-right: none;
+                border-bottom: var(--border-width) solid var(--black);
+                padding: 24px;
             }
 
-            .search-btn {
+            .sidebar-brand {
+                margin-bottom: 24px;
+            }
+
+            .nav-section {
+                margin-bottom: 24px;
+            }
+
+            .page-header h1 {
+                font-size: 48px;
+            }
+
+            .data-grid-header,
+            .data-grid-row {
+                grid-template-columns: 60px 1fr 100px 140px;
+            }
+
+            .data-grid-header-cell:nth-child(3),
+            .data-grid-cell:nth-child(3) {
+                display: none;
+            }
+
+            .flow-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .flow-step:nth-child(2) {
+                border-right: none;
+            }
+
+            .flow-step:nth-child(1),
+            .flow-step:nth-child(2) {
+                border-bottom: var(--border-width) solid var(--black);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .main {
+                padding: 24px;
+            }
+
+            .page-header h1 {
+                font-size: 36px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
                 width: 100%;
             }
 
-            .task-card {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
+            .data-grid-header,
+            .data-grid-row {
+                grid-template-columns: 1fr;
             }
 
-            .task-actions {
-                width: 100%;
+            .data-grid-header {
+                display: none;
             }
 
-            .task-actions a {
-                flex: 1;
-                text-align: center;
+            .data-grid-cell {
+                border-right: none;
+                border-bottom: var(--border-width) solid var(--light-gray);
+                padding: 12px 20px;
+            }
+
+            .data-grid-cell:first-child {
+                display: none;
+            }
+
+            .data-grid-row {
+                padding: 8px 0;
+            }
+
+            .flow-grid {
+                grid-template-columns: 1fr;
             }
 
             .flow-step {
-                min-width: 100%;
+                border-right: none;
+                border-bottom: var(--border-width) solid var(--black);
+            }
+
+            .flow-step:last-child {
+                border-bottom: none;
             }
         }
     </style>
 </head>
 <body>
-    <div class="bg-decoration"></div>
-
     <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-        <div class="loading-text" id="loadingText">正在搜集新闻...</div>
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">Processing</div>
     </div>
 
-    <div class="container">
-        <header class="header">
-            <h1>AI 新闻搜集系统</h1>
-            <p>自动搜索科技公司新闻，AI 智能筛选，人工审核后生成摘要报告</p>
-        </header>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">News Crawler</div>
 
-        <!-- 搜索卡片 -->
-        <div class="search-card">
-            <h2>开始搜集新闻</h2>
-            <form class="search-form" id="searchForm" onsubmit="startCollect(event)">
-                <div class="input-group">
-                    <label for="companyName">输入公司名称</label>
-                    <input type="text" id="companyName" name="company_name"
-                           placeholder="例如：百度、OpenAI、字节跳动" required>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Navigation</div>
+                    <a href="/" class="nav-item active">Dashboard</a>
+                    <a href="#tasks" class="nav-item">Tasks</a>
                 </div>
-                <button type="submit" class="search-btn" id="searchBtn">
-                    开始搜集
-                </button>
-            </form>
-        </div>
 
-        <!-- 任务列表 -->
-        <div class="tasks-section">
-            <h2>任务列表</h2>
-            <div class="task-list" id="taskList">
-                <div class="empty-state">
-                    <p>暂无任务记录</p>
-                    <p>输入公司名称开始搜集新闻</p>
+                <div class="nav-section">
+                    <div class="nav-section-title">System</div>
+                    <a href="#" class="nav-item">Settings</a>
                 </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                AI News Collection System<br>
+                Version 2.0
             </div>
-        </div>
+        </aside>
 
-        <!-- 流程说明 -->
-        <div class="flow-guide">
-            <h3>使用流程</h3>
-            <div class="flow-steps">
-                <div class="flow-step">
-                    <div class="flow-step-num">1</div>
-                    <div class="flow-step-title">输入公司名称</div>
-                    <div class="flow-step-desc">系统自动生成搜索关键词并抓取新闻</div>
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Page Header -->
+            <header class="page-header">
+                <h1>News<br>Crawler</h1>
+                <p class="page-header-sub">
+                    自动搜索科技公司新闻，AI 智能筛选，人工审核后生成摘要报告
+                </p>
+            </header>
+
+            <!-- Search Section -->
+            <section class="section">
+                <div class="section-header">
+                    <span class="section-number">01</span>
+                    <span class="section-title">Start Collection</span>
+                    <span class="section-line"></span>
                 </div>
-                <div class="flow-step">
-                    <div class="flow-step-num">2</div>
-                    <div class="flow-step-title">AI 自动分类</div>
-                    <div class="flow-step-desc">过滤访谈、财报等非产品类新闻</div>
+
+                <div class="search-panel">
+                    <form class="form-row" id="searchForm" onsubmit="startCollect(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="companyName">Company Name</label>
+                            <input type="text"
+                                   class="form-input"
+                                   id="companyName"
+                                   name="company_name"
+                                   placeholder="例如：百度、OpenAI、字节跳动"
+                                   required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="searchBtn">
+                            Start
+                        </button>
+                    </form>
                 </div>
-                <div class="flow-step">
-                    <div class="flow-step-num">3</div>
-                    <div class="flow-step-title">人工审核</div>
-                    <div class="flow-step-desc">在审核页面勾选确认要保留的新闻</div>
+            </section>
+
+            <!-- Tasks Section -->
+            <section class="section" id="tasks">
+                <div class="section-header">
+                    <span class="section-number">02</span>
+                    <span class="section-title">Task List</span>
+                    <span class="section-line"></span>
                 </div>
-                <div class="flow-step">
-                    <div class="flow-step-num">4</div>
-                    <div class="flow-step-title">生成报告</div>
-                    <div class="flow-step-desc">AI 为选中的新闻生成摘要和总结</div>
+
+                <div class="data-grid" id="taskList">
+                    <div class="empty-state">
+                        <div class="empty-state-title">No Tasks</div>
+                        <div class="empty-state-desc">输入公司名称开始搜集新闻</div>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </section>
+
+            <!-- Flow Guide -->
+            <section class="section">
+                <div class="section-header">
+                    <span class="section-number">03</span>
+                    <span class="section-title">Workflow</span>
+                    <span class="section-line"></span>
+                </div>
+
+                <div class="flow-grid">
+                    <div class="flow-step">
+                        <div class="flow-step-number">01</div>
+                        <div class="flow-step-title">Input</div>
+                        <div class="flow-step-desc">输入公司名称，系统自动生成搜索关键词并抓取新闻</div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-step-number">02</div>
+                        <div class="flow-step-title">Classify</div>
+                        <div class="flow-step-desc">AI 自动分类，过滤访谈、财报等非产品类新闻</div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-step-number">03</div>
+                        <div class="flow-step-title">Review</div>
+                        <div class="flow-step-desc">在审核页面勾选确认要保留的新闻条目</div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-step-number">04</div>
+                        <div class="flow-step-title">Report</div>
+                        <div class="flow-step-desc">AI 为选中的新闻生成摘要和整体总结报告</div>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
     <script>
-        // 页面加载时获取任务列表
         document.addEventListener('DOMContentLoaded', loadTasks);
 
         async function loadTasks() {
@@ -589,48 +732,65 @@
             if (tasks.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <p>暂无任务记录</p>
-                        <p>输入公司名称开始搜集新闻</p>
+                        <div class="empty-state-title">No Tasks</div>
+                        <div class="empty-state-desc">输入公司名称开始搜集新闻</div>
                     </div>
                 `;
                 return;
             }
 
-            container.innerHTML = tasks.map(task => {
+            const header = `
+                <div class="data-grid-header">
+                    <div class="data-grid-header-cell">ID</div>
+                    <div class="data-grid-header-cell">Company</div>
+                    <div class="data-grid-header-cell">Fetched</div>
+                    <div class="data-grid-header-cell">Status</div>
+                    <div class="data-grid-header-cell">Action</div>
+                </div>
+            `;
+
+            const rows = tasks.map(task => {
                 const statusClass = task.status;
                 const statusText = {
-                    'collecting': '搜集中',
-                    'reviewing': '待审核',
-                    'completed': '已完成'
+                    'collecting': 'Collecting',
+                    'reviewing': 'Review',
+                    'completed': 'Done'
                 }[task.status] || task.status;
 
-                const createdAt = new Date(task.created_at).toLocaleString('zh-CN');
+                const createdAt = new Date(task.created_at).toLocaleDateString('zh-CN');
 
-                let actions = '';
+                let action = '';
                 if (task.status === 'reviewing') {
-                    actions = `<a href="/api/v2/tasks/${task.id}/review" class="btn-review">去审核</a>`;
+                    action = `<a href="/api/v2/tasks/${task.id}/review" class="action-link primary">Review</a>`;
                 } else if (task.status === 'completed') {
-                    actions = `<a href="/api/v2/tasks/${task.id}/report" class="btn-view">查看报告</a>`;
+                    action = `<a href="/api/v2/tasks/${task.id}/report" class="action-link">View</a>`;
+                } else {
+                    action = '<span style="color: var(--gray-500);">—</span>';
                 }
 
                 return `
-                    <div class="task-card">
-                        <div class="task-info">
-                            <div class="task-title">${task.company_name}</div>
-                            <div class="task-meta">
-                                <span>任务 #${task.id}</span>
-                                <span>${createdAt}</span>
-                                <span>抓取 ${task.total_fetched} 条</span>
-                                ${task.total_approved > 0 ? `<span>通过 ${task.total_approved} 条</span>` : ''}
-                            </div>
+                    <div class="data-grid-row">
+                        <div class="data-grid-cell">
+                            <span class="cell-id">${String(task.id).padStart(2, '0')}</span>
                         </div>
-                        <div class="task-actions">
-                            <span class="task-status ${statusClass}">${statusText}</span>
-                            ${actions}
+                        <div class="data-grid-cell cell-title">
+                            <span class="task-name">${task.company_name}</span>
+                            <span class="task-meta">${createdAt}</span>
+                        </div>
+                        <div class="data-grid-cell">
+                            <span class="cell-count">${task.total_fetched}</span>
+                        </div>
+                        <div class="data-grid-cell">
+                            <span class="status-tag ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="data-grid-cell">
+                            ${action}
                         </div>
                     </div>
                 `;
             }).join('');
+
+            container.innerHTML = header + rows;
         }
 
         async function startCollect(event) {
@@ -645,21 +805,18 @@
 
             btn.disabled = true;
             overlay.classList.add('show');
-            loadingText.textContent = `正在搜集 "${companyName}" 相关新闻...`;
+            loadingText.textContent = `Collecting: ${companyName}`;
 
             try {
                 const response = await fetch('/api/v2/news/collect', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ company_name: companyName })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    // 跳转到审核页面
                     window.location.href = `/api/v2/tasks/${data.task_id}/review`;
                 } else {
                     alert('搜集失败: ' + (data.detail || '未知错误'));
