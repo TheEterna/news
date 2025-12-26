@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 新闻搜集系统</title>
+    <title>批量任务 - AI 新闻搜集系统</title>
     <style>
         /* ========== Swiss Style Design System ========== */
         * {
@@ -55,6 +55,11 @@
             letter-spacing: 0.2em;
             text-transform: uppercase;
             margin-bottom: 64px;
+        }
+
+        .sidebar-brand a {
+            color: inherit;
+            text-decoration: none;
         }
 
         .sidebar-nav {
@@ -111,33 +116,31 @@
             background: var(--light-gray);
         }
 
-        /* ========== Typographic Header ========== */
+        /* ========== Page Header ========== */
         .page-header {
-            margin-bottom: 64px;
-            padding-bottom: 32px;
+            margin-bottom: 48px;
+            padding-bottom: 24px;
             border-bottom: 3px solid var(--black);
         }
 
         .page-header h1 {
-            font-size: 72px;
+            font-size: 48px;
             font-weight: 700;
-            letter-spacing: -0.03em;
-            line-height: 0.9;
+            letter-spacing: -0.02em;
+            line-height: 1;
             text-transform: uppercase;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .page-header-sub {
             font-size: 14px;
             font-weight: 500;
             color: var(--gray-700);
-            max-width: 480px;
-            line-height: 1.6;
         }
 
-        /* ========== Search Section ========== */
+        /* ========== Section ========== */
         .section {
-            margin-bottom: 64px;
+            margin-bottom: 48px;
         }
 
         .section-header {
@@ -150,7 +153,7 @@
         }
 
         .section-number {
-            font-size: 48px;
+            font-size: 36px;
             font-weight: 700;
             line-height: 1;
             color: var(--gray-300);
@@ -170,8 +173,8 @@
             align-self: center;
         }
 
-        /* ========== Search Form ========== */
-        .search-panel {
+        /* ========== Upload Panel ========== */
+        .upload-panel {
             background: var(--white);
             border: var(--border-width) solid var(--black);
             padding: 32px;
@@ -198,22 +201,45 @@
             color: var(--gray-500);
         }
 
-        .form-input {
+        /* ========== File Input ========== */
+        .file-input-wrapper {
+            position: relative;
+        }
+
+        .file-input {
+            position: absolute;
             width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .file-input-display {
             padding: 16px 20px;
             font-size: 16px;
-            font-family: inherit;
             border: 2px solid var(--black);
             background: var(--white);
-            outline: none;
             transition: all 0.1s;
         }
 
-        .form-input:focus {
+        .file-input:focus + .file-input-display,
+        .file-input:hover + .file-input-display {
             border-color: var(--swiss-red);
         }
 
-        .form-input::placeholder {
+        .file-placeholder {
+            color: var(--gray-500);
+        }
+
+        .file-name {
+            color: var(--black);
+            font-weight: 500;
+        }
+
+        .form-hint {
+            margin-top: 8px;
+            font-size: 11px;
             color: var(--gray-500);
         }
 
@@ -245,100 +271,146 @@
             border-color: var(--swiss-red);
         }
 
-        .btn-secondary {
-            background: var(--white);
-            color: var(--black);
-        }
-
-        .btn-secondary:hover {
-            background: var(--black);
-            color: var(--white);
-        }
-
         .btn:disabled {
             opacity: 0.4;
             cursor: not-allowed;
         }
 
-        /* ========== Data Grid (Tasks) ========== */
-        .data-grid {
+        /* ========== Batch Card ========== */
+        .batch-card {
             background: var(--white);
             border: var(--border-width) solid var(--black);
+            margin-bottom: 16px;
         }
 
-        .data-grid-header {
-            display: grid;
-            grid-template-columns: 80px 1fr 120px 120px 160px;
-            border-bottom: 2px solid var(--black);
-        }
-
-        .data-grid-header-cell {
-            padding: 16px 20px;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            border-right: var(--border-width) solid var(--gray-300);
-        }
-
-        .data-grid-header-cell:last-child {
-            border-right: none;
-        }
-
-        .data-grid-row {
-            display: grid;
-            grid-template-columns: 80px 1fr 120px 120px 160px;
-            border-bottom: var(--border-width) solid var(--gray-300);
+        .batch-header {
+            display: flex;
+            align-items: center;
+            padding: 20px 24px;
+            cursor: pointer;
             transition: background 0.1s;
         }
 
-        .data-grid-row:last-child {
-            border-bottom: none;
-        }
-
-        .data-grid-row:hover {
+        .batch-header:hover {
             background: var(--light-gray);
         }
 
-        .data-grid-cell {
-            padding: 20px;
-            font-size: 14px;
-            border-right: var(--border-width) solid var(--gray-300);
+        .batch-toggle {
+            width: 24px;
+            height: 24px;
+            margin-right: 16px;
             display: flex;
             align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
         }
 
-        .data-grid-cell:last-child {
-            border-right: none;
+        .batch-toggle.expanded {
+            transform: rotate(90deg);
         }
 
-        .cell-id {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--gray-300);
-            font-variant-numeric: tabular-nums;
+        .batch-toggle svg {
+            width: 12px;
+            height: 12px;
         }
 
-        .cell-title {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
+        .batch-info {
+            flex: 1;
         }
 
-        .task-name {
-            font-weight: 700;
+        .batch-name {
             font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
         }
 
-        .task-meta {
+        .batch-meta {
             font-size: 11px;
             color: var(--gray-500);
         }
 
-        .cell-count {
+        .batch-stats {
+            display: flex;
+            gap: 24px;
+            margin-right: 24px;
+        }
+
+        .batch-stat {
+            text-align: center;
+        }
+
+        .batch-stat-value {
+            font-size: 24px;
             font-weight: 700;
+            color: var(--gray-300);
+            line-height: 1;
+        }
+
+        .batch-stat-label {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        .batch-body {
+            display: none;
+            border-top: var(--border-width) solid var(--gray-300);
+        }
+
+        .batch-body.show {
+            display: block;
+        }
+
+        /* ========== Task Row ========== */
+        .task-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 100px 100px 120px;
+            border-bottom: var(--border-width) solid var(--light-gray);
+            transition: background 0.1s;
+        }
+
+        .task-row:last-child {
+            border-bottom: none;
+        }
+
+        .task-row:hover {
+            background: var(--light-gray);
+        }
+
+        .task-cell {
+            padding: 16px 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .task-id {
             font-size: 18px;
-            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            color: var(--gray-300);
+        }
+
+        .task-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+        }
+
+        .task-company {
+            font-weight: 600;
+        }
+
+        .task-date {
+            font-size: 11px;
+            color: var(--gray-500);
+        }
+
+        .task-count {
+            font-weight: 700;
+            font-size: 16px;
         }
 
         /* ========== Status Tags ========== */
@@ -393,45 +465,6 @@
         .action-link.primary:hover {
             background: var(--black);
             border-color: var(--black);
-        }
-
-        /* ========== Flow Steps ========== */
-        .flow-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            border: var(--border-width) solid var(--black);
-            background: var(--white);
-        }
-
-        .flow-step {
-            padding: 32px 24px;
-            border-right: var(--border-width) solid var(--black);
-        }
-
-        .flow-step:last-child {
-            border-right: none;
-        }
-
-        .flow-step-number {
-            font-size: 48px;
-            font-weight: 700;
-            color: var(--gray-300);
-            line-height: 1;
-            margin-bottom: 16px;
-        }
-
-        .flow-step-title {
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .flow-step-desc {
-            font-size: 13px;
-            color: var(--gray-700);
-            line-height: 1.5;
         }
 
         /* ========== Empty State ========== */
@@ -515,40 +548,21 @@
             }
 
             .page-header h1 {
-                font-size: 48px;
+                font-size: 36px;
             }
 
-            .data-grid-header,
-            .data-grid-row {
-                grid-template-columns: 60px 1fr 100px 140px;
+            .task-row {
+                grid-template-columns: 50px 1fr 80px 120px;
             }
 
-            .data-grid-header-cell:nth-child(3),
-            .data-grid-cell:nth-child(3) {
+            .task-cell:nth-child(3) {
                 display: none;
-            }
-
-            .flow-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .flow-step:nth-child(2) {
-                border-right: none;
-            }
-
-            .flow-step:nth-child(1),
-            .flow-step:nth-child(2) {
-                border-bottom: var(--border-width) solid var(--black);
             }
         }
 
         @media (max-width: 640px) {
             .main {
                 padding: 24px;
-            }
-
-            .page-header h1 {
-                font-size: 36px;
             }
 
             .form-row {
@@ -559,40 +573,17 @@
                 width: 100%;
             }
 
-            .data-grid-header,
-            .data-grid-row {
+            .task-row {
                 grid-template-columns: 1fr;
             }
 
-            .data-grid-header {
-                display: none;
-            }
-
-            .data-grid-cell {
-                border-right: none;
+            .task-cell {
                 border-bottom: var(--border-width) solid var(--light-gray);
                 padding: 12px 20px;
             }
 
-            .data-grid-cell:first-child {
+            .task-cell:first-child {
                 display: none;
-            }
-
-            .data-grid-row {
-                padding: 8px 0;
-            }
-
-            .flow-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .flow-step {
-                border-right: none;
-                border-bottom: var(--border-width) solid var(--black);
-            }
-
-            .flow-step:last-child {
-                border-bottom: none;
             }
         }
     </style>
@@ -606,13 +597,13 @@
     <div class="layout">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-brand">News Crawler</div>
+            <div class="sidebar-brand"><a href="/">News Crawler</a></div>
 
             <nav class="sidebar-nav">
                 <div class="nav-section">
                     <div class="nav-section-title">Navigation</div>
-                    <a href="/" class="nav-item active">Dashboard</a>
-                    <a href="/batch" class="nav-item">Batch Tasks</a>
+                    <a href="/" class="nav-item">Dashboard</a>
+                    <a href="/batch" class="nav-item active">Batch Tasks</a>
                 </div>
 
                 <div class="nav-section">
@@ -631,82 +622,60 @@
         <main class="main">
             <!-- Page Header -->
             <header class="page-header">
-                <h1>News<br>Crawler</h1>
+                <h1>Batch Tasks</h1>
                 <p class="page-header-sub">
-                    自动搜索科技公司新闻，AI 智能筛选，人工审核后生成摘要报告
+                    上传 Excel/CSV 表格，批量创建新闻搜集任务
                 </p>
             </header>
 
-            <!-- Search Section -->
+            <!-- Upload Section -->
             <section class="section">
                 <div class="section-header">
                     <span class="section-number">01</span>
-                    <span class="section-title">Start Collection</span>
+                    <span class="section-title">Upload Spreadsheet</span>
                     <span class="section-line"></span>
                 </div>
 
-                <div class="search-panel">
-                    <form class="form-row" id="searchForm" onsubmit="startCollect(event)">
-                        <div class="form-group">
-                            <label class="form-label" for="companyName">Company Name</label>
-                            <input type="text"
-                                   class="form-input"
-                                   id="companyName"
-                                   name="company_name"
-                                   placeholder="例如：百度、OpenAI、字节跳动"
-                                   required>
+                <div class="upload-panel">
+                    <form id="uploadForm" onsubmit="batchUpload(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="batchFile">Select File</label>
+                                <div class="file-input-wrapper">
+                                    <input type="file"
+                                           class="file-input"
+                                           id="batchFile"
+                                           name="file"
+                                           accept=".xlsx,.xls,.csv"
+                                           required>
+                                    <div class="file-input-display" id="fileDisplay">
+                                        <span class="file-placeholder">选择 Excel (.xlsx) 或 CSV 文件</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="uploadBtn">
+                                Upload & Start
+                            </button>
                         </div>
-                        <button type="submit" class="btn btn-primary" id="searchBtn">
-                            Start
-                        </button>
+                        <div class="form-hint">
+                            表格格式：第一行为标题行（跳过），第一列为公司名称，自动去重
+                        </div>
                     </form>
                 </div>
             </section>
 
-            <!-- Tasks Section -->
-            <section class="section" id="tasks">
-                <div class="section-header">
-                    <span class="section-number">02</span>
-                    <span class="section-title">Recent Tasks</span>
-                    <span class="section-line"></span>
-                </div>
-
-                <div class="data-grid" id="taskList">
-                    <div class="empty-state">
-                        <div class="empty-state-title">No Tasks</div>
-                        <div class="empty-state-desc">输入公司名称开始搜集新闻</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Flow Guide -->
+            <!-- Batch List Section -->
             <section class="section">
                 <div class="section-header">
-                    <span class="section-number">03</span>
-                    <span class="section-title">Workflow</span>
+                    <span class="section-number">02</span>
+                    <span class="section-title">Batch History</span>
                     <span class="section-line"></span>
                 </div>
 
-                <div class="flow-grid">
-                    <div class="flow-step">
-                        <div class="flow-step-number">01</div>
-                        <div class="flow-step-title">Input</div>
-                        <div class="flow-step-desc">输入公司名称，系统自动生成搜索关键词并抓取新闻</div>
-                    </div>
-                    <div class="flow-step">
-                        <div class="flow-step-number">02</div>
-                        <div class="flow-step-title">Classify</div>
-                        <div class="flow-step-desc">AI 自动分类，过滤访谈、财报等非产品类新闻</div>
-                    </div>
-                    <div class="flow-step">
-                        <div class="flow-step-number">03</div>
-                        <div class="flow-step-title">Review</div>
-                        <div class="flow-step-desc">在审核页面勾选确认要保留的新闻条目</div>
-                    </div>
-                    <div class="flow-step">
-                        <div class="flow-step-number">04</div>
-                        <div class="flow-step-title">Report</div>
-                        <div class="flow-step-desc">AI 为选中的新闻生成摘要和整体总结报告</div>
+                <div id="batchList">
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-state-title">No Batches</div>
+                        <div class="empty-state-desc">上传表格开始批量创建任务</div>
                     </div>
                 </div>
             </section>
@@ -714,117 +683,181 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', loadTasks);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBatches();
+            setupFileInput();
+        });
 
-        async function loadTasks() {
+        function setupFileInput() {
+            const fileInput = document.getElementById('batchFile');
+            const fileDisplay = document.getElementById('fileDisplay');
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    fileDisplay.innerHTML = `<span class="file-name">${file.name}</span>`;
+                } else {
+                    fileDisplay.innerHTML = `<span class="file-placeholder">选择 Excel (.xlsx) 或 CSV 文件</span>`;
+                }
+            });
+        }
+
+        async function loadBatches() {
             try {
                 const response = await fetch('/api/v2/batches');
                 const data = await response.json();
-                // 只显示独立任务（不属于批次的）
-                renderTaskList(data.standalone_tasks || []);
+                renderBatches(data.batches || []);
             } catch (error) {
-                console.error('加载任务列表失败:', error);
+                console.error('加载批次失败:', error);
             }
         }
 
-        function renderTaskList(tasks) {
-            const container = document.getElementById('taskList');
+        function renderBatches(batches) {
+            const container = document.getElementById('batchList');
+            const emptyState = document.getElementById('emptyState');
 
-            if (tasks.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-title">No Tasks</div>
-                        <div class="empty-state-desc">输入公司名称开始搜集新闻</div>
-                    </div>
-                `;
+            if (batches.length === 0) {
+                emptyState.style.display = 'block';
                 return;
             }
 
-            const header = `
-                <div class="data-grid-header">
-                    <div class="data-grid-header-cell">ID</div>
-                    <div class="data-grid-header-cell">Company</div>
-                    <div class="data-grid-header-cell">Fetched</div>
-                    <div class="data-grid-header-cell">Status</div>
-                    <div class="data-grid-header-cell">Action</div>
-                </div>
-            `;
-
-            const rows = tasks.map(task => {
-                const statusClass = task.status;
-                const statusText = {
-                    'collecting': 'Collecting',
-                    'reviewing': 'Review',
-                    'completed': 'Done'
-                }[task.status] || task.status;
-
-                const createdAt = new Date(task.created_at).toLocaleDateString('zh-CN');
-
-                let action = '';
-                if (task.status === 'reviewing') {
-                    action = `<a href="/api/v2/tasks/${task.id}/review" class="action-link primary">Review</a>`;
-                } else if (task.status === 'completed') {
-                    action = `<a href="/api/v2/tasks/${task.id}/report" class="action-link">View</a>`;
-                } else {
-                    action = '<span style="color: var(--gray-500);">—</span>';
-                }
-
-                return `
-                    <div class="data-grid-row">
-                        <div class="data-grid-cell">
-                            <span class="cell-id">${String(task.id).padStart(2, '0')}</span>
-                        </div>
-                        <div class="data-grid-cell cell-title">
-                            <span class="task-name">${task.company_name}</span>
-                            <span class="task-meta">${createdAt}</span>
-                        </div>
-                        <div class="data-grid-cell">
-                            <span class="cell-count">${task.total_fetched}</span>
-                        </div>
-                        <div class="data-grid-cell">
-                            <span class="status-tag ${statusClass}">${statusText}</span>
-                        </div>
-                        <div class="data-grid-cell">
-                            ${action}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            container.innerHTML = header + rows;
+            emptyState.style.display = 'none';
+            container.innerHTML = batches.map(batch => renderBatchCard(batch)).join('');
         }
 
-        async function startCollect(event) {
+        function renderBatchCard(batch) {
+            const createdAt = new Date(batch.created_at).toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            const tasks = batch.tasks || [];
+            const reviewingCount = tasks.filter(t => t.status === 'reviewing').length;
+            const completedCount = tasks.filter(t => t.status === 'completed').length;
+
+            return `
+                <div class="batch-card" data-batch-id="${batch.id}">
+                    <div class="batch-header" onclick="toggleBatch(${batch.id})">
+                        <div class="batch-toggle" id="toggle-${batch.id}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                        </div>
+                        <div class="batch-info">
+                            <div class="batch-name">${batch.name}</div>
+                            <div class="batch-meta">${createdAt}</div>
+                        </div>
+                        <div class="batch-stats">
+                            <div class="batch-stat">
+                                <div class="batch-stat-value">${batch.total_companies}</div>
+                                <div class="batch-stat-label">Total</div>
+                            </div>
+                            <div class="batch-stat">
+                                <div class="batch-stat-value" style="color: ${reviewingCount > 0 ? 'var(--swiss-red)' : 'var(--gray-300)'}">${reviewingCount}</div>
+                                <div class="batch-stat-label">Review</div>
+                            </div>
+                            <div class="batch-stat">
+                                <div class="batch-stat-value" style="color: ${completedCount > 0 ? 'var(--black)' : 'var(--gray-300)'}">${completedCount}</div>
+                                <div class="batch-stat-label">Done</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="batch-body" id="body-${batch.id}">
+                        ${tasks.length > 0 ? tasks.map(task => renderTaskRow(task)).join('') : '<div style="padding: 24px; color: var(--gray-500); text-align: center;">暂无任务</div>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTaskRow(task) {
+            const createdAt = new Date(task.created_at).toLocaleDateString('zh-CN');
+            const statusText = {
+                'collecting': 'Collecting',
+                'reviewing': 'Review',
+                'completed': 'Done'
+            }[task.status] || task.status;
+
+            let action = '';
+            if (task.status === 'reviewing') {
+                action = `<a href="/api/v2/tasks/${task.id}/review" class="action-link primary">Review</a>`;
+            } else if (task.status === 'completed') {
+                action = `<a href="/api/v2/tasks/${task.id}/report" class="action-link">View</a>`;
+            } else {
+                action = '<span style="color: var(--gray-500);">—</span>';
+            }
+
+            return `
+                <div class="task-row">
+                    <div class="task-cell">
+                        <span class="task-id">${String(task.id).padStart(2, '0')}</span>
+                    </div>
+                    <div class="task-cell task-info">
+                        <span class="task-company">${task.company_name}</span>
+                        <span class="task-date">${createdAt}</span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="task-count">${task.total_fetched}</span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="status-tag ${task.status}">${statusText}</span>
+                    </div>
+                    <div class="task-cell">
+                        ${action}
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleBatch(batchId) {
+            const toggle = document.getElementById(`toggle-${batchId}`);
+            const body = document.getElementById(`body-${batchId}`);
+
+            toggle.classList.toggle('expanded');
+            body.classList.toggle('show');
+        }
+
+        async function batchUpload(event) {
             event.preventDefault();
 
-            const companyName = document.getElementById('companyName').value.trim();
-            if (!companyName) return;
+            const fileInput = document.getElementById('batchFile');
+            const file = fileInput.files[0];
+            if (!file) return;
 
-            const btn = document.getElementById('searchBtn');
+            const btn = document.getElementById('uploadBtn');
             const overlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
 
             btn.disabled = true;
             overlay.classList.add('show');
-            loadingText.textContent = `Collecting: ${companyName}`;
+            loadingText.textContent = `Processing: ${file.name}`;
 
             try {
-                const response = await fetch('/api/v2/news/collect', {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/api/v2/batch/upload', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ company_name: companyName })
+                    body: formData
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    window.location.href = `/api/v2/tasks/${data.task_id}/review`;
+                    // 刷新批次列表
+                    loadBatches();
+                    // 清空文件选择
+                    fileInput.value = '';
+                    document.getElementById('fileDisplay').innerHTML = `<span class="file-placeholder">选择 Excel (.xlsx) 或 CSV 文件</span>`;
+                    // 提示成功
+                    alert(`上传成功！\n\n批次名称: ${data.batch_name}\n成功: ${data.success_count} 个任务\n失败: ${data.failed_count} 个`);
                 } else {
-                    alert('搜集失败: ' + (data.detail || '未知错误'));
+                    alert('上传失败: ' + (data.detail || '未知错误'));
                 }
             } catch (error) {
-                console.error('请求失败:', error);
-                alert('请求失败，请检查网络连接');
+                console.error('上传失败:', error);
+                alert('上传失败，请检查网络连接');
             } finally {
                 btn.disabled = false;
                 overlay.classList.remove('show');

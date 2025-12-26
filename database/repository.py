@@ -14,19 +14,81 @@ from utils.logger import logger
 class NewsRepository:
     """新闻数据仓库"""
 
+    # ========== 批次组相关 ==========
+
+    def create_batch(self, name: str, filename: str, total_companies: int) -> int:
+        """创建批次组，返回批次ID"""
+        db = get_database()
+        with db.get_cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO batch_groups (name, filename, total_companies, status)
+                VALUES (%s, %s, %s, 'processing')
+                RETURNING id
+            """, (name, filename, total_companies))
+            batch_id = cursor.fetchone()['id']
+            logger.info(f"创建批次 | ID: {batch_id} | 名称: {name} | 公司数: {total_companies}")
+            return batch_id
+
+    def update_batch_status(self, batch_id: int, status: str, success_count: int = 0, failed_count: int = 0):
+        """更新批次状态"""
+        db = get_database()
+        with db.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE batch_groups
+                SET status = %s, success_count = %s, failed_count = %s
+                WHERE id = %s
+            """, (status, success_count, failed_count, batch_id))
+
+    def get_batch(self, batch_id: int) -> Optional[dict]:
+        """获取批次详情"""
+        db = get_database()
+        with db.get_cursor() as cursor:
+            cursor.execute("SELECT * FROM batch_groups WHERE id = %s", (batch_id,))
+            row = cursor.fetchone()
+            return dict(row) if row else None
+
+    def get_all_batches(self) -> list[dict]:
+        """获取所有批次列表"""
+        db = get_database()
+        with db.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM batch_groups
+                ORDER BY created_at DESC
+            """)
+            return [dict(row) for row in cursor.fetchall()]
+
+    def get_tasks_by_batch(self, batch_id: int) -> list[dict]:
+        """获取批次下的所有任务"""
+        db = get_database()
+        with db.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM search_tasks
+                WHERE batch_id = %s
+                ORDER BY created_at DESC
+            """, (batch_id,))
+            return [dict(row) for row in cursor.fetchall()]
+
+    def get_batches_with_tasks(self) -> list[dict]:
+        """获取所有批次及其任务列表（用于前端折叠显示）"""
+        batches = self.get_all_batches()
+        for batch in batches:
+            batch['tasks'] = self.get_tasks_by_batch(batch['id'])
+        return batches
+
     # ========== 搜索任务相关 ==========
 
-    def create_task(self, company_name: str, keywords: list[str]) -> int:
+    def create_task(self, company_name: str, keywords: list[str], batch_id: Optional[int] = None) -> int:
         """创建搜索任务，返回任务ID"""
         db = get_database()
         with db.get_cursor() as cursor:
             cursor.execute("""
-                INSERT INTO search_tasks (company_name, keywords_used, status)
-                VALUES (%s, %s, 'collecting')
+                INSERT INTO search_tasks (company_name, keywords_used, status, batch_id)
+                VALUES (%s, %s, 'collecting', %s)
                 RETURNING id
-            """, (company_name, json.dumps(keywords, ensure_ascii=False)))
+            """, (company_name, json.dumps(keywords, ensure_ascii=False), batch_id))
             task_id = cursor.fetchone()['id']
-            logger.info(f"创建搜索任务 | ID: {task_id} | 公司: {company_name}")
+            batch_info = f" | 批次: {batch_id}" if batch_id else ""
+            logger.info(f"创建搜索任务 | ID: {task_id} | 公司: {company_name}{batch_info}")
             return task_id
 
     def update_task_status(self, task_id: int, status: str, **kwargs):
@@ -47,6 +109,25 @@ class NewsRepository:
                 WHERE id = %s
             """, values)
 
+    def save_task_report(self, task_id: int, report_html: str, overall_summary: str):
+        """保存任务报告"""
+        db = get_database()
+        with db.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE search_tasks
+                SET report_html = %s, overall_summary = %s
+                WHERE id = %s
+            """, (report_html, overall_summary, task_id))
+            logger.info(f"报告已保存 | 任务ID: {task_id} | HTML长度: {len(report_html)}")
+
+    def get_task_report(self, task_id: int) -> Optional[str]:
+        """获取任务报告 HTML"""
+        db = get_database()
+        with db.get_cursor() as cursor:
+            cursor.execute("SELECT report_html FROM search_tasks WHERE id = %s", (task_id,))
+            row = cursor.fetchone()
+            return row['report_html'] if row else None
+
     def get_task(self, task_id: int) -> Optional[dict]:
         """获取任务详情"""
         db = get_database()
@@ -60,6 +141,17 @@ class NewsRepository:
         db = get_database()
         with db.get_cursor() as cursor:
             cursor.execute("SELECT * FROM search_tasks ORDER BY created_at DESC")
+            return [dict(row) for row in cursor.fetchall()]
+
+    def get_standalone_tasks(self) -> list[dict]:
+        """获取独立任务（不属于任何批次的任务）"""
+        db = get_database()
+        with db.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM search_tasks
+                WHERE batch_id IS NULL
+                ORDER BY created_at DESC
+            """)
             return [dict(row) for row in cursor.fetchall()]
 
     # ========== 新闻条目相关 ==========

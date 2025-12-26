@@ -48,17 +48,33 @@ class DatabaseManager:
         """创建数据库表"""
         cursor = self._connection.cursor()
 
+        # 批次组表（每次上传表格创建一个批次）
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS batch_groups (
+                id              SERIAL PRIMARY KEY,
+                name            TEXT NOT NULL,
+                filename        TEXT,
+                total_companies INTEGER DEFAULT 0,
+                success_count   INTEGER DEFAULT 0,
+                failed_count    INTEGER DEFAULT 0,
+                created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                status          TEXT DEFAULT 'processing'
+            )
+        """)
+
         # 搜索任务表
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS search_tasks (
                 id              SERIAL PRIMARY KEY,
+                batch_id        INTEGER REFERENCES batch_groups(id),
                 company_name    TEXT NOT NULL,
                 created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 status          TEXT DEFAULT 'collecting',
                 keywords_used   TEXT,
                 total_fetched   INTEGER DEFAULT 0,
                 total_approved  INTEGER DEFAULT 0,
-                overall_summary TEXT
+                overall_summary TEXT,
+                report_html     TEXT
             )
         """)
 
@@ -90,6 +106,37 @@ class DatabaseManager:
         """)
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_news_url ON news_items(url)
+        """)
+
+        # 迁移：为已存在的表添加 report_html 字段
+        cursor.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'search_tasks' AND column_name = 'report_html'
+                ) THEN
+                    ALTER TABLE search_tasks ADD COLUMN report_html TEXT;
+                END IF;
+            END $$;
+        """)
+
+        # 迁移：为已存在的 search_tasks 表添加 batch_id 字段
+        cursor.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'search_tasks' AND column_name = 'batch_id'
+                ) THEN
+                    ALTER TABLE search_tasks ADD COLUMN batch_id INTEGER REFERENCES batch_groups(id);
+                END IF;
+            END $$;
+        """)
+
+        # 创建批次索引
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_task_batch_id ON search_tasks(batch_id)
         """)
 
         self._connection.commit()

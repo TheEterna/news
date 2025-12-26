@@ -78,3 +78,36 @@ class TaskInfo(BaseModel):
     status: str
     total_fetched: int
     total_approved: int
+
+
+# ========== 批量任务相关模型 ==========
+
+class BatchTaskResult(BaseModel):
+    """单个批量任务的结果"""
+    company_name: str = Field(..., description="公司名称")
+    task_id: Optional[int] = Field(None, description="任务ID（成功时）")
+    success: bool = Field(..., description="是否成功")
+    message: str = Field("", description="结果信息")
+
+
+class BatchUploadResponse(BaseModel):
+    """批量上传响应"""
+    batch_id: int = Field(..., description="批次ID")
+    batch_name: str = Field("", description="批次名称")
+    total_companies: int = Field(0, description="解析到的公司总数")
+    success_count: int = Field(0, description="成功创建任务数")
+    failed_count: int = Field(0, description="失败数")
+    results: list[BatchTaskResult] = Field(default_factory=list, description="详细结果列表")
+
+
+class BatchInfo(BaseModel):
+    """批次信息"""
+    id: int
+    name: str
+    filename: Optional[str] = None
+    total_companies: int = 0
+    success_count: int = 0
+    failed_count: int = 0
+    created_at: str
+    status: str
+    tasks: list[TaskInfo] = Field(default_factory=list, description="批次下的任务列表")

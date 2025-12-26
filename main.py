@@ -6,17 +6,19 @@ FastAPI 应用入口
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Form
+from fastapi import FastAPI, HTTPException, Form, UploadFile, File
 from fastapi.responses import JSONResponse, HTMLResponse
 
 from config import DATA_DIR
-from models.schemas import NewsRequest, NewsResponse, NewsItem, ErrorResponse, Phase1Request, Phase1Response
+from models.schemas import NewsRequest, NewsResponse, NewsItem, ErrorResponse, Phase1Request, Phase1Response, BatchUploadResponse, BatchTaskResult, BatchInfo
 from services.keyword_generator import get_keyword_generator
 from services.news_crawler import get_news_crawler
 from services.summarizer import get_summarizer
 from services.renderer import get_renderer
 from services.news_classifier import get_news_classifier
+from services.spreadsheet_parser import get_spreadsheet_parser
 from database.repository import get_repository
 from utils.logger import logger
 
@@ -138,6 +140,14 @@ async def home():
     """系统首页 - 可视化操作界面"""
     renderer = get_renderer()
     template = renderer._env.get_template("index.html")
+    return HTMLResponse(content=template.render())
+
+
+@app.get("/batch", response_class=HTMLResponse, summary="批量任务页面")
+async def batch_page():
+    """批量任务管理页面"""
+    renderer = get_renderer()
+    template = renderer._env.get_template("batch.html")
     return HTMLResponse(content=template.render())
 
 
@@ -386,18 +396,50 @@ async def phase2_submit_review(
     repo.update_task_status(
         task_id,
         status="completed",
-        total_approved=len(approved_news_ids),
-        overall_summary=overall_summary
+        total_approved=len(approved_news_ids)
     )
 
     # 渲染最终报告
     renderer = get_renderer()
     html = renderer.render_final_report(task, approved_news, overall_summary)
 
+    # 保存报告到数据库（持久化存储）
+    repo.save_task_report(task_id, html, overall_summary)
+
     logger.info(f"======== 阶段二完成 | 任务ID: {task_id} ========")
     logger.info(f"  通过: {len(approved_news_ids)} | 拒绝: {len(rejected_ids)}")
+    logger.info(f"  报告已保存，可通过 /api/v2/tasks/{task_id}/report 访问")
 
     return HTMLResponse(content=html)
+
+
+@app.get(
+    "/api/v2/tasks/{task_id}/report",
+    response_class=HTMLResponse,
+    summary="查看任务报告",
+    tags=["v2-两阶段系统"]
+)
+async def get_task_report(task_id: int):
+    """
+    查看已完成任务的报告
+
+    报告在阶段二完成后自动保存到数据库，可通过此接口随时访问
+    """
+    repo = get_repository()
+    task = repo.get_task(task_id)
+
+    if not task:
+        raise HTTPException(status_code=404, detail="任务不存在")
+
+    if task["status"] != "completed":
+        raise HTTPException(status_code=400, detail=f"任务尚未完成，当前状态: {task['status']}")
+
+    report_html = repo.get_task_report(task_id)
+
+    if not report_html:
+        raise HTTPException(status_code=404, detail="报告不存在，请先完成阶段二审核")
+
+    return HTMLResponse(content=report_html)
 
 
 @app.get(
@@ -431,6 +473,221 @@ async def get_task_detail(task_id: int):
         "task": task,
         "news_list": news_list
     }
+
+
+# ========== 批量任务 API ==========
+
+async def _create_single_task(company_name: str, batch_id: Optional[int] = None) -> BatchTaskResult:
+    """
+    为单个公司创建新闻搜集任务（内部函数）
+    复用 phase1_collect_news 的核心逻辑
+    """
+    try:
+        logger.info(f"批量任务 | 开始处理: {company_name}")
+
+        repo = get_repository()
+
+        # 1. 生成关键词
+        keyword_generator = get_keyword_generator()
+        keywords = keyword_generator.generate_keywords(company_name)
+
+        # 2. 创建任务（关联批次）
+        task_id = repo.create_task(company_name, keywords, batch_id=batch_id)
+
+        # 3. 搜索新闻
+        crawler = get_news_crawler()
+        news_list = crawler.fetch_news_by_keywords(keywords, news_per_keyword=2)
+
+        if not news_list:
+            repo.update_task_status(task_id, status="completed", total_fetched=0)
+            return BatchTaskResult(
+                company_name=company_name,
+                task_id=task_id,
+                success=True,
+                message="未找到相关新闻"
+            )
+
+        # 4. AI 批量分类
+        classifier = get_news_classifier()
+        news_for_classify = [
+            {"id": i + 1, "title": news.title, "content": news.content}
+            for i, news in enumerate(news_list)
+        ]
+        classify_results = classifier.classify_batch(news_for_classify)
+
+        # 5. 处理分类结果并存储
+        pending_count = 0
+        filtered_count = 0
+        added_count = 0
+
+        for i, news in enumerate(news_list):
+            result = classify_results[i]
+            category = result["category"]
+
+            if category == "duplicate":
+                status = "filtered"
+            elif classifier.is_valid_category(category):
+                status = "pending_review"
+                pending_count += 1
+            else:
+                status = "filtered"
+                filtered_count += 1
+
+            news_data = {
+                "title": news.title,
+                "url": news.url,
+                "published_date": news.published_date,
+                "content": news.content,
+                "ai_category": category,
+                "ai_relevance": 0.9 if status == "pending_review" else 0.3,
+                "ai_reason": result["reason"],
+                "status": status
+            }
+
+            news_id = repo.add_news_item(task_id, news_data)
+            if news_id:
+                added_count += 1
+
+        # 6. 更新任务状态
+        repo.update_task_status(
+            task_id,
+            status="reviewing",
+            total_fetched=added_count
+        )
+
+        logger.info(f"批量任务 | 完成: {company_name} | 任务ID: {task_id} | 待审核: {pending_count}")
+
+        return BatchTaskResult(
+            company_name=company_name,
+            task_id=task_id,
+            success=True,
+            message=f"成功，{pending_count} 条待审核"
+        )
+
+    except Exception as e:
+        logger.error(f"批量任务 | 失败: {company_name} | 错误: {str(e)}")
+        return BatchTaskResult(
+            company_name=company_name,
+            task_id=None,
+            success=False,
+            message=f"失败: {str(e)}"
+        )
+
+
+@app.post(
+    "/api/v2/batch/upload",
+    response_model=BatchUploadResponse,
+    summary="批量上传：表格扫描创建任务",
+    tags=["v2-批量任务"]
+)
+async def batch_upload_spreadsheet(
+    file: UploadFile = File(..., description="Excel (.xlsx) 或 CSV 文件"),
+    batch_name: str = Form(None, description="批次名称（可选，默认使用文件名）")
+):
+    """
+    上传表格文件，扫描第一列（跳过标题行），为每个公司名创建搜索任务
+
+    支持的文件格式：
+    - Excel (.xlsx, .xls)
+    - CSV (.csv)
+
+    表格格式要求：
+    - 第一行为标题行（会被跳过）
+    - 第一列为公司名称
+    - 会自动去除空值和重复值
+
+    所有任务将归属于同一个批次，方便管理和查看。
+    """
+    logger.info(f"======== 批量上传开始 | 文件: {file.filename} ========")
+
+    # 1. 解析表格
+    parser = get_spreadsheet_parser()
+    try:
+        companies = parser.parse(file.file, file.filename)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    if not companies:
+        raise HTTPException(status_code=400, detail="表格中未找到有效的公司名称")
+
+    logger.info(f"解析到 {len(companies)} 个公司: {companies}")
+
+    # 2. 创建批次
+    repo = get_repository()
+    final_batch_name = batch_name or file.filename.rsplit('.', 1)[0]
+    batch_id = repo.create_batch(
+        name=final_batch_name,
+        filename=file.filename,
+        total_companies=len(companies)
+    )
+
+    # 3. 逐个创建任务（关联到批次）
+    results = []
+    success_count = 0
+    failed_count = 0
+
+    for i, company_name in enumerate(companies, 1):
+        logger.info(f"[{i}/{len(companies)}] 处理: {company_name}")
+
+        result = await _create_single_task(company_name, batch_id=batch_id)
+        results.append(result)
+
+        if result.success:
+            success_count += 1
+        else:
+            failed_count += 1
+
+    # 4. 更新批次状态
+    repo.update_batch_status(batch_id, 'completed', success_count, failed_count)
+
+    logger.info(f"======== 批量上传完成 | 批次ID: {batch_id} | 成功: {success_count} | 失败: {failed_count} ========")
+
+    return BatchUploadResponse(
+        batch_id=batch_id,
+        batch_name=final_batch_name,
+        total_companies=len(companies),
+        success_count=success_count,
+        failed_count=failed_count,
+        results=results
+    )
+
+
+# ========== 批次管理 API ==========
+
+@app.get(
+    "/api/v2/batches",
+    summary="获取所有批次列表",
+    tags=["v2-批量任务"]
+)
+async def get_all_batches():
+    """获取所有批次及其任务列表"""
+    repo = get_repository()
+    batches = repo.get_batches_with_tasks()
+    # 同时获取独立任务（不属于任何批次的）
+    standalone_tasks = repo.get_standalone_tasks()
+    return {
+        "batches": batches,
+        "standalone_tasks": standalone_tasks
+    }
+
+
+@app.get(
+    "/api/v2/batches/{batch_id}",
+    summary="获取批次详情",
+    tags=["v2-批量任务"]
+)
+async def get_batch_detail(batch_id: int):
+    """获取批次详情及其任务列表"""
+    repo = get_repository()
+    batch = repo.get_batch(batch_id)
+
+    if not batch:
+        raise HTTPException(status_code=404, detail="批次不存在")
+
+    tasks = repo.get_tasks_by_batch(batch_id)
+    batch['tasks'] = tasks
+
+    return batch
 
 
 if __name__ == "__main__":
