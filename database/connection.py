@@ -58,7 +58,9 @@ class DatabaseManager:
                 success_count   INTEGER DEFAULT 0,
                 failed_count    INTEGER DEFAULT 0,
                 created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                status          TEXT DEFAULT 'processing'
+                status          TEXT DEFAULT 'processing',
+                keyword_count   INTEGER DEFAULT 3,
+                news_per_keyword INTEGER DEFAULT 2
             )
         """)
 
@@ -137,6 +139,36 @@ class DatabaseManager:
         # 创建批次索引
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_task_batch_id ON search_tasks(batch_id)
+        """)
+
+        # 迁移：为 batch_groups 添加搜索配置字段
+        cursor.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'batch_groups' AND column_name = 'keyword_count'
+                ) THEN
+                    ALTER TABLE batch_groups ADD COLUMN keyword_count INTEGER DEFAULT 3;
+                END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'batch_groups' AND column_name = 'news_per_keyword'
+                ) THEN
+                    ALTER TABLE batch_groups ADD COLUMN news_per_keyword INTEGER DEFAULT 2;
+                END IF;
+            END $$;
+        """)
+
+        # 新闻浏览功能优化索引
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_news_fetched_at ON news_items(fetched_at DESC)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_news_ai_category ON news_items(ai_category)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_task_company_name ON search_tasks(company_name)
         """)
 
         self._connection.commit()

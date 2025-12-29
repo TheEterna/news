@@ -47,12 +47,27 @@ class Summarizer:
                     max_tokens=max_tokens
                 )
 
-                content = response.choices[0].message.content
+                # 检查响应结构
+                if not response.choices:
+                    logger.warning(f"模型响应无 choices | 尝试: {attempt + 1}/{max_retries + 1}")
+                    if attempt < max_retries:
+                        time.sleep(1)
+                        continue
+                    return ""
+
+                choice = response.choices[0]
+                finish_reason = getattr(choice, 'finish_reason', 'unknown')
+                content = choice.message.content
+
+                # 记录完成原因（用于调试）
+                if finish_reason != 'stop':
+                    logger.warning(f"模型完成原因异常 | finish_reason: {finish_reason}")
+
                 if content:
                     return content.strip()
 
-                # 返回为空，记录警告
-                logger.warning(f"模型返回空内容 | 尝试: {attempt + 1}/{max_retries + 1}")
+                # 返回为空，记录详细信息
+                logger.warning(f"模型返回空内容 | 尝试: {attempt + 1}/{max_retries + 1} | finish_reason: {finish_reason}")
 
                 if attempt < max_retries:
                     time.sleep(1)

@@ -47,6 +47,10 @@
             padding: 48px 32px;
             display: flex;
             flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
         }
 
         .sidebar-brand {
@@ -241,6 +245,54 @@
             margin-top: 8px;
             font-size: 11px;
             color: var(--gray-500);
+        }
+
+        /* ========== Config Row ========== */
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: var(--border-width) solid var(--gray-300);
+        }
+
+        .config-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .config-input {
+            width: 80px;
+            padding: 10px 12px;
+            font-size: 16px;
+            font-family: inherit;
+            font-weight: 700;
+            text-align: center;
+            border: 2px solid var(--black);
+            background: var(--white);
+            outline: none;
+        }
+
+        .config-input:focus {
+            border-color: var(--swiss-red);
+        }
+
+        .config-hint {
+            font-size: 10px;
+            color: var(--gray-500);
+        }
+
+        .config-summary {
+            margin-left: auto;
+            font-size: 13px;
+            color: var(--gray-700);
+        }
+
+        .config-summary strong {
+            font-size: 18px;
+            color: var(--black);
         }
 
         /* ========== Buttons ========== */
@@ -604,11 +656,12 @@
                     <div class="nav-section-title">Navigation</div>
                     <a href="/" class="nav-item">Dashboard</a>
                     <a href="/batch" class="nav-item active">Batch Tasks</a>
+                    <a href="/news" class="nav-item">News Browser</a>
                 </div>
 
                 <div class="nav-section">
                     <div class="nav-section-title">System</div>
-                    <a href="/api/v2/tasks" class="nav-item">All Tasks</a>
+                    <a href="/tasks" class="nav-item">All Tasks</a>
                 </div>
             </nav>
 
@@ -657,6 +710,36 @@
                                 Upload & Start
                             </button>
                         </div>
+
+                        <!-- 搜索配置 -->
+                        <div class="config-row">
+                            <div class="config-group">
+                                <label class="form-label" for="keywordCount">Keywords</label>
+                                <input type="number"
+                                       class="config-input"
+                                       id="keywordCount"
+                                       name="keyword_count"
+                                       value="3"
+                                       min="1"
+                                       max="10">
+                                <span class="config-hint">关键词数量</span>
+                            </div>
+                            <div class="config-group">
+                                <label class="form-label" for="newsPerKeyword">News/Keyword</label>
+                                <input type="number"
+                                       class="config-input"
+                                       id="newsPerKeyword"
+                                       name="news_per_keyword"
+                                       value="2"
+                                       min="1"
+                                       max="10">
+                                <span class="config-hint">每词新闻数</span>
+                            </div>
+                            <div class="config-summary">
+                                预计搜索: <strong id="estimatedTotal">6</strong> 条/公司
+                            </div>
+                        </div>
+
                         <div class="form-hint">
                             表格格式：第一行为标题行（跳过），第一列为公司名称，自动去重
                         </div>
@@ -686,6 +769,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadBatches();
             setupFileInput();
+            setupConfigInputs();
         });
 
         function setupFileInput() {
@@ -700,6 +784,23 @@
                     fileDisplay.innerHTML = `<span class="file-placeholder">选择 Excel (.xlsx) 或 CSV 文件</span>`;
                 }
             });
+        }
+
+        function setupConfigInputs() {
+            const keywordInput = document.getElementById('keywordCount');
+            const newsInput = document.getElementById('newsPerKeyword');
+
+            keywordInput.addEventListener('input', updateEstimate);
+            newsInput.addEventListener('input', updateEstimate);
+
+            // 初始计算
+            updateEstimate();
+        }
+
+        function updateEstimate() {
+            const keywords = parseInt(document.getElementById('keywordCount').value) || 3;
+            const newsPerKw = parseInt(document.getElementById('newsPerKeyword').value) || 2;
+            document.getElementById('estimatedTotal').textContent = keywords * newsPerKw;
         }
 
         async function loadBatches() {
@@ -836,6 +937,8 @@
             try {
                 const formData = new FormData();
                 formData.append('file', file);
+                formData.append('keyword_count', document.getElementById('keywordCount').value);
+                formData.append('news_per_keyword', document.getElementById('newsPerKeyword').value);
 
                 const response = await fetch('/api/v2/batch/upload', {
                     method: 'POST',

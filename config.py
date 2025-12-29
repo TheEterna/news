@@ -34,6 +34,10 @@ MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
 NEWS_MAX_RESULTS = 10  # 最多返回的新闻条数
 NEWS_TIME_RANGE = "week"  # 时间范围：day, week, month, year
 
+# 搜索粒度配置（默认值）
+DEFAULT_KEYWORD_COUNT = 3      # 默认生成关键词数量
+DEFAULT_NEWS_PER_KEYWORD = 2   # 默认每个关键词搜索的新闻数量
+
 # PostgreSQL 数据库配置
 DB_HOST = os.getenv("DB_HOST", "62.234.92.252")
 DB_PORT = os.getenv("DB_PORT", "5432")

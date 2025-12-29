@@ -16,17 +16,18 @@ class NewsRepository:
 
     # ========== 批次组相关 ==========
 
-    def create_batch(self, name: str, filename: str, total_companies: int) -> int:
+    def create_batch(self, name: str, filename: str, total_companies: int,
+                     keyword_count: int = 3, news_per_keyword: int = 2) -> int:
         """创建批次组，返回批次ID"""
         db = get_database()
         with db.get_cursor() as cursor:
             cursor.execute("""
-                INSERT INTO batch_groups (name, filename, total_companies, status)
-                VALUES (%s, %s, %s, 'processing')
+                INSERT INTO batch_groups (name, filename, total_companies, status, keyword_count, news_per_keyword)
+                VALUES (%s, %s, %s, 'processing', %s, %s)
                 RETURNING id
-            """, (name, filename, total_companies))
+            """, (name, filename, total_companies, keyword_count, news_per_keyword))
             batch_id = cursor.fetchone()['id']
-            logger.info(f"创建批次 | ID: {batch_id} | 名称: {name} | 公司数: {total_companies}")
+            logger.info(f"创建批次 | ID: {batch_id} | 名称: {name} | 公司数: {total_companies} | 关键词: {keyword_count} | 每词新闻: {news_per_keyword}")
             return batch_id
 
     def update_batch_status(self, batch_id: int, status: str, success_count: int = 0, failed_count: int = 0):
@@ -268,6 +269,153 @@ class NewsRepository:
                 ORDER BY ai_relevance DESC
             """, (news_ids,))
             return [dict(row) for row in cursor.fetchall()]
+
+    # ========== 新闻浏览功能 ==========
+
+    def browse_news(self,
+                    page: int = 1,
+                    page_size: int = 20,
+                    company: str = None,
+                    batch_id: int = None,
+                    status_list: list = None,
+                    category_list: list = None,
+                    date_from: str = None,
+                    date_to: str = None,
+                    keyword: str = None) -> tuple[list[dict], int]:
+        """
+        多条件查询新闻列表（带分页）
+
+        Args:
+            page: 页码（从1开始）
+            page_size: 每页数量
+            company: 公司名称筛选
+            batch_id: 批次ID筛选
+            status_list: 状态列表筛选
+            category_list: AI分类列表筛选
+            date_from: 开始日期 (YYYY-MM-DD)
+            date_to: 结束日期 (YYYY-MM-DD)
+            keyword: 标题关键词搜索
+
+        Returns:
+            (新闻列表, 总数)
+        """
+        db = get_database()
+
+        # 构建基础查询
+        base_select = """
+            SELECT
+                n.id,
+                n.title,
+                n.url,
+                n.published_date,
+                n.ai_category,
+                n.ai_relevance,
+                n.ai_reason,
+                n.status,
+                n.summary,
+                n.fetched_at,
+                n.task_id,
+                t.company_name,
+                t.batch_id,
+                b.name as batch_name
+            FROM news_items n
+            INNER JOIN search_tasks t ON n.task_id = t.id
+            LEFT JOIN batch_groups b ON t.batch_id = b.id
+        """
+
+        # 构建 WHERE 子句
+        conditions = []
+        params = []
+
+        if company:
+            conditions.append("t.company_name = %s")
+            params.append(company)
+
+        if batch_id:
+            conditions.append("t.batch_id = %s")
+            params.append(batch_id)
+
+        if status_list:
+            conditions.append("n.status = ANY(%s)")
+            params.append(status_list)
+
+        if category_list:
+            conditions.append("n.ai_category = ANY(%s)")
+            params.append(category_list)
+
+        if date_from:
+            conditions.append("n.fetched_at >= %s")
+            params.append(date_from)
+
+        if date_to:
+            conditions.append("n.fetched_at <= %s")
+            params.append(date_to + " 23:59:59")
+
+        if keyword:
+            conditions.append("n.title ILIKE %s")
+            params.append(f"%{keyword}%")
+
+        where_clause = ""
+        if conditions:
+            where_clause = "WHERE " + " AND ".join(conditions)
+
+        with db.get_cursor() as cursor:
+            # 计算总数
+            count_query = f"""
+                SELECT COUNT(*) as total
+                FROM news_items n
+                INNER JOIN search_tasks t ON n.task_id = t.id
+                LEFT JOIN batch_groups b ON t.batch_id = b.id
+                {where_clause}
+            """
+            cursor.execute(count_query, params)
+            total = cursor.fetchone()['total']
+
+            # 分页查询
+            offset = (page - 1) * page_size
+            data_query = f"""
+                {base_select}
+                {where_clause}
+                ORDER BY n.fetched_at DESC, n.id DESC
+                LIMIT %s OFFSET %s
+            """
+            cursor.execute(data_query, params + [page_size, offset])
+            items = [dict(row) for row in cursor.fetchall()]
+
+        return items, total
+
+    def get_filter_options(self) -> dict:
+        """
+        获取筛选选项（公司列表、批次列表）
+
+        Returns:
+            {
+                "companies": ["公司A", "公司B", ...],
+                "batches": [{"id": 1, "name": "批次名"}, ...]
+            }
+        """
+        db = get_database()
+        with db.get_cursor() as cursor:
+            # 获取所有公司名
+            cursor.execute("""
+                SELECT DISTINCT company_name
+                FROM search_tasks
+                ORDER BY company_name
+            """)
+            companies = [row['company_name'] for row in cursor.fetchall()]
+
+            # 获取所有批次
+            cursor.execute("""
+                SELECT id, name
+                FROM batch_groups
+                ORDER BY created_at DESC
+            """)
+            batches = [{"id": row['id'], "name": row['name']} for row in cursor.fetchall()]
+
+        return {
+            "companies": companies,
+            "batches": batches
+        }
 
 
 # 单例获取函数

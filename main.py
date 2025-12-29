@@ -3,15 +3,16 @@
 公司新闻爬取与摘要生成系统
 FastAPI 应用入口
 """
+import asyncio
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Form, UploadFile, File
+from fastapi import FastAPI, HTTPException, Form, UploadFile, File, Query
 from fastapi.responses import JSONResponse, HTMLResponse
 
-from config import DATA_DIR
+from config import DATA_DIR, DEFAULT_KEYWORD_COUNT, DEFAULT_NEWS_PER_KEYWORD
 from models.schemas import NewsRequest, NewsResponse, NewsItem, ErrorResponse, Phase1Request, Phase1Response, BatchUploadResponse, BatchTaskResult, BatchInfo
 from services.keyword_generator import get_keyword_generator
 from services.news_crawler import get_news_crawler
@@ -151,12 +152,112 @@ async def batch_page():
     return HTMLResponse(content=template.render())
 
 
+@app.get("/tasks", response_class=HTMLResponse, summary="所有任务页面")
+async def tasks_page():
+    """所有任务列表页面"""
+    renderer = get_renderer()
+    template = renderer._env.get_template("tasks.html")
+    return HTMLResponse(content=template.render())
+
+
+@app.get("/news", response_class=HTMLResponse, summary="新闻浏览页面")
+async def news_browser_page():
+    """新闻汇总与筛选页面"""
+    renderer = get_renderer()
+    template = renderer._env.get_template("news_browser.html")
+    return HTMLResponse(content=template.render())
+
+
 @app.get("/api/health", summary="健康检查")
 async def health_check():
     """API 健康检查"""
     return {"status": "ok", "message": "公司新闻爬取与摘要系统运行中"}
 
 
+# ========== 新闻浏览 API ==========
+
+@app.get(
+    "/api/v2/news/browse",
+    summary="浏览所有新闻（带筛选和分页）",
+    tags=["v2-新闻浏览"]
+)
+async def browse_news(
+    page: int = Query(1, ge=1, description="页码"),
+    page_size: int = Query(20, ge=10, le=50, description="每页数量"),
+    company: Optional[str] = Query(None, description="公司名称"),
+    batch_id: Optional[int] = Query(None, description="批次ID"),
+    status: Optional[str] = Query(None, description="状态（逗号分隔多选）"),
+    category: Optional[str] = Query(None, description="分类（逗号分隔多选）"),
+    date_range: Optional[str] = Query(None, description="时间范围: today/7d/30d"),
+    date_from: Optional[str] = Query(None, description="开始日期 YYYY-MM-DD"),
+    date_to: Optional[str] = Query(None, description="结束日期 YYYY-MM-DD"),
+    keyword: Optional[str] = Query(None, max_length=100, description="标题搜索")
+):
+    """
+    多条件筛选新闻列表
+
+    支持的筛选维度：
+    - company: 公司名称
+    - batch_id: 批次ID
+    - status: 新闻状态（pending_review/approved/rejected/filtered，逗号分隔多选）
+    - category: AI分类（product_release/model_release等，逗号分隔多选）
+    - date_range: 预设时间范围（today/7d/30d）
+    - date_from/date_to: 自定义日期范围
+    - keyword: 标题关键词搜索
+    """
+    repo = get_repository()
+
+    # 解析多选参数
+    status_list = [s.strip() for s in status.split(",")] if status else None
+    category_list = [c.strip() for c in category.split(",")] if category else None
+
+    # 处理预设时间范围
+    final_date_from = date_from
+    final_date_to = date_to
+    if date_range:
+        today = datetime.now().date()
+        if date_range == "today":
+            final_date_from = str(today)
+            final_date_to = str(today)
+        elif date_range == "7d":
+            final_date_from = str(today - timedelta(days=7))
+            final_date_to = str(today)
+        elif date_range == "30d":
+            final_date_from = str(today - timedelta(days=30))
+            final_date_to = str(today)
+
+    # 查询数据
+    items, total = repo.browse_news(
+        page=page,
+        page_size=page_size,
+        company=company,
+        batch_id=batch_id,
+        status_list=status_list,
+        category_list=category_list,
+        date_from=final_date_from,
+        date_to=final_date_to,
+        keyword=keyword
+    )
+
+    # 获取筛选选项
+    filter_options = repo.get_filter_options()
+
+    # 计算分页信息
+    total_pages = (total + page_size - 1) // page_size if total > 0 else 1
+
+    return {
+        "success": True,
+        "data": {
+            "items": items,
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total": total,
+                "total_pages": total_pages
+            },
+            "filters": filter_options
+        }
+    }
 
 
 # ========== 两阶段系统 API (v2) ==========
@@ -178,14 +279,18 @@ async def phase1_collect_news(request: Phase1Request):
     4. 存入数据库
     5. 返回统计信息
     """
-    logger.info(f"======== 阶段一开始 | 公司: {request.company_name} ========")
+    # 使用请求参数或默认配置
+    keyword_count = request.keyword_count or DEFAULT_KEYWORD_COUNT
+    news_per_keyword = request.news_per_keyword or DEFAULT_NEWS_PER_KEYWORD
+
+    logger.info(f"======== 阶段一开始 | 公司: {request.company_name} | 关键词: {keyword_count} | 每词新闻: {news_per_keyword} ========")
 
     repo = get_repository()
 
     # 1. 生成关键词
     logger.info("步骤 1/4: 生成搜索关键词...")
     keyword_generator = get_keyword_generator()
-    keywords = keyword_generator.generate_keywords(request.company_name)
+    keywords = keyword_generator.generate_keywords(request.company_name, keyword_count=keyword_count)
 
     # 2. 创建任务
     logger.info("步骤 2/4: 创建搜索任务...")
@@ -194,7 +299,7 @@ async def phase1_collect_news(request: Phase1Request):
     # 3. 搜索新闻
     logger.info("步骤 3/4: 搜索新闻...")
     crawler = get_news_crawler()
-    news_list = crawler.fetch_news_by_keywords(keywords, news_per_keyword=2)
+    news_list = crawler.fetch_news_by_keywords(keywords, news_per_keyword=news_per_keyword)
 
     if not news_list:
         repo.update_task_status(task_id, status="completed", total_fetched=0)
@@ -477,26 +582,31 @@ async def get_task_detail(task_id: int):
 
 # ========== 批量任务 API ==========
 
-async def _create_single_task(company_name: str, batch_id: Optional[int] = None) -> BatchTaskResult:
+async def _create_single_task(company_name: str, batch_id: Optional[int] = None,
+                              keyword_count: int = None, news_per_keyword: int = None) -> BatchTaskResult:
     """
     为单个公司创建新闻搜集任务（内部函数）
     复用 phase1_collect_news 的核心逻辑
     """
+    # 使用传入参数或默认配置
+    kw_count = keyword_count or DEFAULT_KEYWORD_COUNT
+    news_count = news_per_keyword or DEFAULT_NEWS_PER_KEYWORD
+
     try:
-        logger.info(f"批量任务 | 开始处理: {company_name}")
+        logger.info(f"批量任务 | 开始处理: {company_name} | 关键词: {kw_count} | 每词新闻: {news_count}")
 
         repo = get_repository()
 
         # 1. 生成关键词
         keyword_generator = get_keyword_generator()
-        keywords = keyword_generator.generate_keywords(company_name)
+        keywords = keyword_generator.generate_keywords(company_name, keyword_count=kw_count)
 
         # 2. 创建任务（关联批次）
         task_id = repo.create_task(company_name, keywords, batch_id=batch_id)
 
         # 3. 搜索新闻
         crawler = get_news_crawler()
-        news_list = crawler.fetch_news_by_keywords(keywords, news_per_keyword=2)
+        news_list = crawler.fetch_news_by_keywords(keywords, news_per_keyword=news_count)
 
         if not news_list:
             repo.update_task_status(task_id, status="completed", total_fetched=0)
@@ -582,7 +692,9 @@ async def _create_single_task(company_name: str, batch_id: Optional[int] = None)
 )
 async def batch_upload_spreadsheet(
     file: UploadFile = File(..., description="Excel (.xlsx) 或 CSV 文件"),
-    batch_name: str = Form(None, description="批次名称（可选，默认使用文件名）")
+    batch_name: str = Form(None, description="批次名称（可选，默认使用文件名）"),
+    keyword_count: int = Form(None, description="关键词数量（1-10）"),
+    news_per_keyword: int = Form(None, description="每个关键词搜索的新闻数（1-10）")
 ):
     """
     上传表格文件，扫描第一列（跳过标题行），为每个公司名创建搜索任务
@@ -596,9 +708,17 @@ async def batch_upload_spreadsheet(
     - 第一列为公司名称
     - 会自动去除空值和重复值
 
+    搜索配置：
+    - keyword_count: 每个公司生成的关键词数量（默认3）
+    - news_per_keyword: 每个关键词搜索的新闻数（默认2）
+
     所有任务将归属于同一个批次，方便管理和查看。
     """
-    logger.info(f"======== 批量上传开始 | 文件: {file.filename} ========")
+    # 使用传入参数或默认配置
+    kw_count = keyword_count or DEFAULT_KEYWORD_COUNT
+    news_count = news_per_keyword or DEFAULT_NEWS_PER_KEYWORD
+
+    logger.info(f"======== 批量上传开始 | 文件: {file.filename} | 关键词: {kw_count} | 每词新闻: {news_count} ========")
 
     # 1. 解析表格
     parser = get_spreadsheet_parser()
@@ -612,30 +732,58 @@ async def batch_upload_spreadsheet(
 
     logger.info(f"解析到 {len(companies)} 个公司: {companies}")
 
-    # 2. 创建批次
+    # 2. 创建批次（保存配置）
     repo = get_repository()
     final_batch_name = batch_name or file.filename.rsplit('.', 1)[0]
     batch_id = repo.create_batch(
         name=final_batch_name,
         filename=file.filename,
-        total_companies=len(companies)
+        total_companies=len(companies),
+        keyword_count=kw_count,
+        news_per_keyword=news_count
     )
 
-    # 3. 逐个创建任务（关联到批次）
-    results = []
+    # 3. 并行创建所有任务（任务间相互隔离）
+    logger.info(f"开始并行处理 {len(companies)} 个公司...")
+
+    # 创建所有任务的协程（传入搜索配置）
+    tasks = [
+        _create_single_task(
+            company_name,
+            batch_id=batch_id,
+            keyword_count=kw_count,
+            news_per_keyword=news_count
+        )
+        for company_name in companies
+    ]
+
+    # 并行执行所有任务
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    # 统计结果
+    final_results = []
     success_count = 0
     failed_count = 0
 
-    for i, company_name in enumerate(companies, 1):
-        logger.info(f"[{i}/{len(companies)}] 处理: {company_name}")
+    for i, result in enumerate(results):
+        company_name = companies[i]
 
-        result = await _create_single_task(company_name, batch_id=batch_id)
-        results.append(result)
-
-        if result.success:
-            success_count += 1
-        else:
+        if isinstance(result, Exception):
+            # 处理异常情况
+            logger.error(f"任务异常 | 公司: {company_name} | 错误: {str(result)}")
+            final_results.append(BatchTaskResult(
+                company_name=company_name,
+                task_id=None,
+                success=False,
+                message=f"异常: {str(result)}"
+            ))
             failed_count += 1
+        else:
+            final_results.append(result)
+            if result.success:
+                success_count += 1
+            else:
+                failed_count += 1
 
     # 4. 更新批次状态
     repo.update_batch_status(batch_id, 'completed', success_count, failed_count)
@@ -648,7 +796,7 @@ async def batch_upload_spreadsheet(
         total_companies=len(companies),
         success_count=success_count,
         failed_count=failed_count,
-        results=results
+        results=final_results
     )
 
 

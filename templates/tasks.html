@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>所有任务 - AI 新闻搜集系统</title>
+    <style>
+        /* ========== Swiss Style Design System ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --white: #FFFFFF;
+            --light-gray: #F4F4F4;
+            --black: #000000;
+            --swiss-red: #FF3B30;
+            --gray-300: #D1D1D1;
+            --gray-500: #8A8A8A;
+            --gray-700: #4A4A4A;
+            --border-width: 1px;
+        }
+
+        body {
+            font-family: Inter, "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--white);
+            color: var(--black);
+            line-height: 1.5;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ========== Layout ========== */
+        .layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+
+        /* ========== Sidebar ========== */
+        .sidebar {
+            border-right: var(--border-width) solid var(--black);
+            padding: 48px 32px;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 64px;
+        }
+
+        .sidebar-brand a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .sidebar-nav { flex: 1; }
+
+        .nav-section { margin-bottom: 48px; }
+
+        .nav-section-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--gray-500);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: var(--border-width) solid var(--gray-300);
+        }
+
+        .nav-item {
+            display: block;
+            padding: 12px 0;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--black);
+            text-decoration: none;
+            border-bottom: var(--border-width) solid var(--light-gray);
+            transition: all 0.1s;
+        }
+
+        .nav-item:hover {
+            padding-left: 8px;
+            border-bottom-color: var(--black);
+        }
+
+        .nav-item.active {
+            font-weight: 700;
+            border-bottom-color: var(--swiss-red);
+            color: var(--swiss-red);
+        }
+
+        .sidebar-footer {
+            font-size: 11px;
+            color: var(--gray-500);
+            padding-top: 24px;
+            border-top: var(--border-width) solid var(--gray-300);
+        }
+
+        /* ========== Main ========== */
+        .main {
+            padding: 48px;
+            background: var(--light-gray);
+        }
+
+        .page-header {
+            margin-bottom: 48px;
+            padding-bottom: 24px;
+            border-bottom: 3px solid var(--black);
+        }
+
+        .page-header h1 {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .page-header-sub {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        /* ========== Stats Bar ========== */
+        .stats-bar {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 32px;
+            padding: 24px;
+            background: var(--white);
+            border: var(--border-width) solid var(--black);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gray-500);
+            margin-top: 8px;
+        }
+
+        /* ========== Data Grid ========== */
+        .data-grid {
+            background: var(--white);
+            border: var(--border-width) solid var(--black);
+        }
+
+        .data-grid-header {
+            display: grid;
+            grid-template-columns: 60px 1fr 120px 100px 100px 120px;
+            border-bottom: 2px solid var(--black);
+        }
+
+        .data-grid-header-cell {
+            padding: 16px 20px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            border-right: var(--border-width) solid var(--gray-300);
+        }
+
+        .data-grid-header-cell:last-child {
+            border-right: none;
+        }
+
+        .data-grid-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 120px 100px 100px 120px;
+            border-bottom: var(--border-width) solid var(--gray-300);
+            transition: background 0.1s;
+        }
+
+        .data-grid-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-grid-row:hover {
+            background: var(--light-gray);
+        }
+
+        .data-grid-cell {
+            padding: 16px 20px;
+            font-size: 14px;
+            border-right: var(--border-width) solid var(--gray-300);
+            display: flex;
+            align-items: center;
+        }
+
+        .data-grid-cell:last-child {
+            border-right: none;
+        }
+
+        .cell-id {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gray-300);
+        }
+
+        .cell-title {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .task-name {
+            font-weight: 700;
+        }
+
+        .task-meta {
+            font-size: 11px;
+            color: var(--gray-500);
+        }
+
+        .cell-count {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* ========== Status Tags ========== */
+        .status-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .status-tag.collecting {
+            background: var(--light-gray);
+            border: var(--border-width) solid var(--black);
+        }
+
+        .status-tag.reviewing {
+            background: var(--swiss-red);
+            color: var(--white);
+        }
+
+        .status-tag.completed {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        /* ========== Batch Tag ========== */
+        .batch-tag {
+            font-size: 10px;
+            padding: 4px 8px;
+            background: var(--light-gray);
+            border: var(--border-width) solid var(--gray-300);
+            color: var(--gray-700);
+        }
+
+        /* ========== Action Links ========== */
+        .action-link {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--black);
+            text-decoration: none;
+            padding: 8px 16px;
+            border: var(--border-width) solid var(--black);
+            transition: all 0.1s;
+        }
+
+        .action-link:hover {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        .action-link.primary {
+            background: var(--swiss-red);
+            border-color: var(--swiss-red);
+            color: var(--white);
+        }
+
+        .action-link.primary:hover {
+            background: var(--black);
+            border-color: var(--black);
+        }
+
+        /* ========== Empty State ========== */
+        .empty-state {
+            padding: 64px 32px;
+            text-align: center;
+            border: var(--border-width) dashed var(--gray-300);
+            background: var(--white);
+        }
+
+        .empty-state-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-desc {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+
+        /* ========== Responsive ========== */
+        @media (max-width: 1024px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar {
+                border-right: none;
+                border-bottom: var(--border-width) solid var(--black);
+                padding: 24px;
+            }
+            .sidebar-brand { margin-bottom: 24px; }
+            .page-header h1 { font-size: 36px; }
+            .data-grid-header, .data-grid-row {
+                grid-template-columns: 50px 1fr 100px 100px 100px;
+            }
+            .data-grid-header-cell:nth-child(3),
+            .data-grid-cell:nth-child(3) {
+                display: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .main { padding: 24px; }
+            .stats-bar { flex-wrap: wrap; gap: 16px; }
+            .data-grid-header { display: none; }
+            .data-grid-row {
+                grid-template-columns: 1fr;
+                padding: 16px;
+            }
+            .data-grid-cell {
+                border-right: none;
+                padding: 8px 0;
+            }
+            .data-grid-cell:first-child { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand"><a href="/">News Crawler</a></div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Navigation</div>
+                    <a href="/" class="nav-item">Dashboard</a>
+                    <a href="/batch" class="nav-item">Batch Tasks</a>
+                    <a href="/news" class="nav-item">News Browser</a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">System</div>
+                    <a href="/tasks" class="nav-item active">All Tasks</a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                AI News Collection System<br>
+                Version 2.0
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <header class="page-header">
+                <h1>All Tasks</h1>
+                <p class="page-header-sub">查看所有新闻搜集任务</p>
+            </header>
+
+            <!-- Stats Bar -->
+            <div class="stats-bar" id="statsBar">
+                <div class="stat-item">
+                    <div class="stat-value" id="statTotal">-</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statReviewing" style="color: var(--swiss-red)">-</div>
+                    <div class="stat-label">Reviewing</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statCompleted">-</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </div>
+
+            <!-- Task List -->
+            <div class="data-grid" id="taskList">
+                <div class="empty-state">
+                    <div class="empty-state-title">Loading...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadAllTasks);
+
+        async function loadAllTasks() {
+            try {
+                const response = await fetch('/api/v2/tasks');
+                const data = await response.json();
+                const tasks = data.tasks || [];
+
+                updateStats(tasks);
+                renderTaskList(tasks);
+            } catch (error) {
+                console.error('加载任务失败:', error);
+                document.getElementById('taskList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-title">加载失败</div>
+                        <div class="empty-state-desc">${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateStats(tasks) {
+            const total = tasks.length;
+            const reviewing = tasks.filter(t => t.status === 'reviewing').length;
+            const completed = tasks.filter(t => t.status === 'completed').length;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statReviewing').textContent = reviewing;
+            document.getElementById('statCompleted').textContent = completed;
+        }
+
+        function renderTaskList(tasks) {
+            const container = document.getElementById('taskList');
+
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-title">No Tasks</div>
+                        <div class="empty-state-desc">还没有任何任务</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const header = `
+                <div class="data-grid-header">
+                    <div class="data-grid-header-cell">ID</div>
+                    <div class="data-grid-header-cell">Company</div>
+                    <div class="data-grid-header-cell">Batch</div>
+                    <div class="data-grid-header-cell">Fetched</div>
+                    <div class="data-grid-header-cell">Status</div>
+                    <div class="data-grid-header-cell">Action</div>
+                </div>
+            `;
+
+            const rows = tasks.map(task => {
+                const statusText = {
+                    'collecting': 'Collecting',
+                    'reviewing': 'Review',
+                    'completed': 'Done'
+                }[task.status] || task.status;
+
+                const createdAt = new Date(task.created_at).toLocaleDateString('zh-CN');
+
+                let action = '';
+                if (task.status === 'reviewing') {
+                    action = `<a href="/api/v2/tasks/${task.id}/review" class="action-link primary">Review</a>`;
+                } else if (task.status === 'completed') {
+                    action = `<a href="/api/v2/tasks/${task.id}/report" class="action-link">View</a>`;
+                } else {
+                    action = '<span style="color: var(--gray-500);">—</span>';
+                }
+
+                const batchInfo = task.batch_id
+                    ? `<span class="batch-tag">Batch #${task.batch_id}</span>`
+                    : '<span style="color: var(--gray-500);">—</span>';
+
+                return `
+                    <div class="data-grid-row">
+                        <div class="data-grid-cell">
+                            <span class="cell-id">${String(task.id).padStart(2, '0')}</span>
+                        </div>
+                        <div class="data-grid-cell cell-title">
+                            <span class="task-name">${task.company_name}</span>
+                            <span class="task-meta">${createdAt}</span>
+                        </div>
+                        <div class="data-grid-cell">
+                            ${batchInfo}
+                        </div>
+                        <div class="data-grid-cell">
+                            <span class="cell-count">${task.total_fetched}</span>
+                        </div>
+                        <div class="data-grid-cell">
+                            <span class="status-tag ${task.status}">${statusText}</span>
+                        </div>
+                        <div class="data-grid-cell">
+                            ${action}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = header + rows;
+        }
+    </script>
+</body>
+</html>

@@ -43,6 +43,8 @@ class ErrorResponse(BaseModel):
 class Phase1Request(BaseModel):
     """阶段一请求：新闻搜集"""
     company_name: str = Field(..., description="公司名称", min_length=1)
+    keyword_count: Optional[int] = Field(None, description="关键词数量（可选）", ge=1, le=10)
+    news_per_keyword: Optional[int] = Field(None, description="每个关键词搜索的新闻数（可选）", ge=1, le=10)
 
 
 class Phase1Response(BaseModel):

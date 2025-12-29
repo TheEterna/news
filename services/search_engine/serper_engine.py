@@ -96,8 +96,8 @@ class SerperNewsEngine(SearchEngine):
             data = response.json()
             news_list = []
 
-            # 解析新闻结果
-            news_results = data.get("news", [])
+            # 解析新闻结果（限制最大数量）
+            news_results = data.get("news", [])[:max_results]
 
             for item in news_results:
                 news = NewsItem(
