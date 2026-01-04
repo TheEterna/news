@@ -11,8 +11,9 @@ from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Form, UploadFile, File, Query
 from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
-from config import DATA_DIR, DEFAULT_KEYWORD_COUNT, DEFAULT_NEWS_PER_KEYWORD
+from config import DATA_DIR, DEFAULT_KEYWORD_COUNT, DEFAULT_NEWS_PER_KEYWORD, BASE_DIR
 from models.schemas import NewsRequest, NewsResponse, NewsItem, ErrorResponse, Phase1Request, Phase1Response, BatchUploadResponse, BatchTaskResult, BatchInfo
 from services.keyword_generator import get_keyword_generator
 from services.news_crawler import get_news_crawler
@@ -26,8 +27,14 @@ from utils.logger import logger
 app = FastAPI(
     title="公司新闻爬取与摘要系统",
     description="输入公司名称，自动爬取近期新闻并生成AI摘要",
-    version="1.0.0"
+    version="2.0.0"
 )
+
+# 挂载静态文件目录
+STATIC_DIR = BASE_DIR / "static"
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+    logger.info(f"静态文件目录已挂载 | 路径: {STATIC_DIR}")
 
 
 def save_to_json(response: NewsResponse) -> Path:
@@ -138,7 +145,15 @@ async def fetch_news(request: NewsRequest):
 
 @app.get("/", response_class=HTMLResponse, summary="首页")
 async def home():
-    """系统首页 - 可视化操作界面"""
+    """系统首页 - 现代化 Bento Grid 界面"""
+    renderer = get_renderer()
+    template = renderer._env.get_template("index_modern.html")
+    return HTMLResponse(content=template.render())
+
+
+@app.get("/classic", response_class=HTMLResponse, summary="传统界面")
+async def classic_home():
+    """传统 Swiss 设计界面（向后兼容）"""
     renderer = get_renderer()
     template = renderer._env.get_template("index.html")
     return HTMLResponse(content=template.render())
@@ -146,7 +161,15 @@ async def home():
 
 @app.get("/batch", response_class=HTMLResponse, summary="批量任务页面")
 async def batch_page():
-    """批量任务管理页面"""
+    """批量任务管理页面 - 现代化 Bento Grid 界面"""
+    renderer = get_renderer()
+    template = renderer._env.get_template("batch_modern.html")
+    return HTMLResponse(content=template.render())
+
+
+@app.get("/batch/classic", response_class=HTMLResponse, summary="批量任务页面（传统）")
+async def batch_page_classic():
+    """批量任务管理页面（传统 Swiss 设计）"""
     renderer = get_renderer()
     template = renderer._env.get_template("batch.html")
     return HTMLResponse(content=template.render())
@@ -154,7 +177,15 @@ async def batch_page():
 
 @app.get("/tasks", response_class=HTMLResponse, summary="所有任务页面")
 async def tasks_page():
-    """所有任务列表页面"""
+    """所有任务列表页面 - 现代化界面"""
+    renderer = get_renderer()
+    template = renderer._env.get_template("tasks_modern.html")
+    return HTMLResponse(content=template.render())
+
+
+@app.get("/tasks/classic", response_class=HTMLResponse, summary="所有任务页面（传统）")
+async def tasks_page_classic():
+    """所有任务列表页面（传统 Swiss 设计）"""
     renderer = get_renderer()
     template = renderer._env.get_template("tasks.html")
     return HTMLResponse(content=template.render())
