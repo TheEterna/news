@@ -1,0 +1,171 @@
+{% extends "base_modern.html" %}
+
+{% block title %}批次历史 - AI 新闻搜集系统{% endblock %}
+
+{% block extra_styles %}
+<style>
+    /* 朴素灰阶，动效收敛 */
+    .history-page .card-hover { transition: all 0.25s ease; }
+    .history-page .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+    .history-page .btn-ghost { color: #0f172a; padding: 8px 14px; border-radius: 999px; border: 1px solid #e5e7eb; background: #fff; transition: all 0.2s ease; }
+    .history-page .btn-ghost:hover { background: #f9fafb; }
+    .history-page .badge { padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .history-page .status-processing { background: #fef3c7; color: #b45309; }
+    .history-page .status-completed { background: #dcfce7; color: #15803d; }
+    .history-page .status-failed { background: #fee2e2; color: #b91c1c; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-page min-h-screen p-4 md:p-8 lg:p-12 pb-24">
+    <!-- 顶部导航 -->
+    <nav class="mb-8 flex items-center justify-between animate-slide-down sticky top-0 z-40 bg-gray-50/90 backdrop-blur border-b border-black/5 px-4 md:px-0 py-4 -mx-4 md:-mx-0">
+        <div class="flex items-center gap-6">
+            <a href="/" class="text-2xl font-extrabold tracking-tight">
+                <span class="gradient-text">News</span><span class="text-gray-400">AI</span>
+            </a>
+            <div class="hidden md:flex items-center gap-1 bg-black/5 rounded-full p-1">
+                <a href="/" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">控制台</a>
+                <a href="/batch" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">批量任务</a>
+                <a href="/news" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">洞察全局</a>
+                <a href="/tasks" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">任务中心</a>
+                <a href="/batch/history" class="px-4 py-2 text-sm font-semibold text-white bg-gray-900 rounded-full">批次历史</a>
+            </div>
+        </div>
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-full">
+            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            <span class="text-xs font-semibold text-green-600">System Online</span>
+        </div>
+    </nav>
+
+    <!-- 头部 -->
+    <header class="mb-10 animate-slide-down" style="animation-delay: 0.05s;">
+        <p class="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-2">Batch History</p>
+        <h1 class="text-4xl md:text-6xl font-bold tracking-tighter text-gray-900">批次历史</h1>
+        <p class="text-gray-500 mt-3 max-w-2xl">按上传批次查看任务与状态，快速定位失败或待审核批次。</p>
+    </header>
+
+    <!-- 统计卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 max-w-6xl">
+        <div class="glass-card rounded-2xl p-6 card-hover">
+            <p class="text-xs font-mono text-gray-400 mb-2">BATCHES</p>
+            <p class="text-4xl font-extrabold text-gray-900" id="statBatches">--</p>
+            <p class="text-sm text-gray-500">批次总数</p>
+        </div>
+        <div class="glass-card rounded-2xl p-6 card-hover">
+            <p class="text-xs font-mono text-gray-400 mb-2">PROCESSING</p>
+            <p class="text-4xl font-extrabold text-gray-900" id="statProcessing">--</p>
+            <p class="text-sm text-gray-500">处理中批次</p>
+        </div>
+        <div class="glass-card rounded-2xl p-6 card-hover">
+            <p class="text-xs font-mono text-gray-400 mb-2">COMPLETED</p>
+            <p class="text-4xl font-extrabold text-gray-900" id="statCompleted">--</p>
+            <p class="text-sm text-gray-500">已完成批次</p>
+        </div>
+    </div>
+
+    <!-- 批次列表 -->
+    <div class="glass-card rounded-3xl p-6 md:p-8 card-hover">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">批次列表</h2>
+                <p class="text-sm text-gray-500 mt-1">按时间倒序展示，每批最多显示前 5 个任务摘要</p>
+            </div>
+            <button class="btn-ghost text-sm" onclick="window.location.href='/batch'">返回批量上传</button>
+        </div>
+        <div id="historyList" class="space-y-4">
+            <div class="text-center text-gray-400 text-sm py-10">正在加载批次历史...</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', loadBatchHistory);
+
+    async function loadBatchHistory() {
+        try {
+            const res = await fetch('/api/v2/batches');
+            const data = await res.json();
+            const batches = data.batches || [];
+            renderStats(batches);
+            renderHistory(batches);
+        } catch (err) {
+            console.error('加载批次历史失败', err);
+            document.getElementById('historyList').innerHTML = `<div class="text-center text-red-500 text-sm py-10">加载失败：${err.message}</div>`;
+        }
+    }
+
+    function renderStats(batches) {
+        const processing = batches.filter(b => b.status === 'processing').length;
+        const completed = batches.filter(b => b.status === 'completed').length;
+        document.getElementById('statBatches').textContent = batches.length;
+        document.getElementById('statProcessing').textContent = processing;
+        document.getElementById('statCompleted').textContent = completed;
+    }
+
+    function renderHistory(batches) {
+        const container = document.getElementById('historyList');
+        if (!batches.length) {
+            container.innerHTML = `<div class="text-center text-gray-400 text-sm py-10">暂无历史批次</div>`;
+            return;
+        }
+
+        container.innerHTML = batches.map(batch => {
+            const created = batch.created_at ? new Date(batch.created_at).toLocaleString() : '—';
+            const total = batch.total_companies || 0;
+            const success = batch.success_count || 0;
+            const failed = batch.failed_count || 0;
+            const tasks = (batch.tasks || []).slice(0, 5);
+            const status = formatStatus(batch.status);
+
+            return `
+                <div class="border border-black/5 rounded-2xl p-5 bg-white/80 gentle-transition hover:border-black/10 hover:bg-white">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-mono text-gray-400">#${batch.id}</span>
+                                <span class="font-semibold text-gray-900">${batch.name || '未命名批次'}</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">${created}</p>
+                        </div>
+                        <span class="badge ${status.class}">${status.label}</span>
+                    </div>
+
+                    <div class="mt-3 flex flex-wrap gap-3 text-xs text-gray-600">
+                        <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">公司 ${total}</span>
+                        <span class="px-3 py-1 rounded-full bg-green-100 text-green-700">成功 ${success}</span>
+                        <span class="px-3 py-1 rounded-full bg-red-100 text-red-600">失败 ${failed}</span>
+                        <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700">任务 ${(batch.tasks || []).length}</span>
+                    </div>
+
+                    ${tasks.length ? `
+                        <div class="mt-4 border-t border-black/5 pt-3 space-y-2">
+                            ${tasks.map(t => `
+                                <div class="flex items-center justify-between text-sm">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-gray-400 font-mono">#${t.id}</span>
+                                        <span class="text-gray-900 font-medium">${t.company_name}</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">${t.status || ''}</span>
+                                </div>
+                            `).join('')}
+                            ${(batch.tasks || []).length > 5 ? `<p class="text-xs text-gray-400">…… 还有 ${(batch.tasks || []).length - 5} 个任务</p>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    function formatStatus(status) {
+        const map = {
+            processing: { label: '处理中', class: 'status-processing' },
+            completed: { label: '已完成', class: 'status-completed' },
+            failed: { label: '失败', class: 'status-failed' }
+        };
+        return map[status] || { label: status || '未知', class: 'bg-gray-100 text-gray-600' };
+    }
+</script>
+{% endblock %}

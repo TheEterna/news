@@ -1,1082 +1,382 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>新闻浏览 - AI 新闻搜集系统</title>
-    <style>
-        /* ========== Swiss Style Design System ========== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --white: #FFFFFF;
-            --light-gray: #F4F4F4;
-            --black: #000000;
-            --swiss-red: #FF3B30;
-            --gray-300: #D1D1D1;
-            --gray-500: #8A8A8A;
-            --gray-700: #4A4A4A;
-            --border-width: 1px;
-        }
-
-        body {
-            font-family: Inter, "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
-            background: var(--white);
-            color: var(--black);
-            line-height: 1.5;
-            font-size: 14px;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* ========== Layout ========== */
-        .layout {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            min-height: 100vh;
-        }
-
-        /* ========== Sidebar ========== */
-        .sidebar {
-            border-right: var(--border-width) solid var(--black);
-            padding: 48px 32px;
-            display: flex;
-            flex-direction: column;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-        }
-
-        .sidebar-brand {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            margin-bottom: 64px;
-        }
-
-        .sidebar-brand a {
-            color: inherit;
-            text-decoration: none;
-        }
-
-        .sidebar-nav { flex: 1; }
-
-        .nav-section { margin-bottom: 48px; }
-
-        .nav-section-title {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--gray-500);
-            margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: var(--border-width) solid var(--gray-300);
-        }
-
-        .nav-item {
-            display: block;
-            padding: 12px 0;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--black);
-            text-decoration: none;
-            border-bottom: var(--border-width) solid var(--light-gray);
-            transition: all 0.1s;
-        }
-
-        .nav-item:hover {
-            padding-left: 8px;
-            border-bottom-color: var(--black);
-        }
-
-        .nav-item.active {
-            font-weight: 700;
-            border-bottom-color: var(--swiss-red);
-            color: var(--swiss-red);
-        }
-
-        .sidebar-footer {
-            font-size: 11px;
-            color: var(--gray-500);
-            padding-top: 24px;
-            border-top: var(--border-width) solid var(--gray-300);
-        }
-
-        /* ========== Main ========== */
-        .main {
-            padding: 48px;
-            background: var(--light-gray);
-        }
-
-        .page-header {
-            margin-bottom: 32px;
-            padding-bottom: 24px;
-            border-bottom: 3px solid var(--black);
-        }
-
-        .page-header h1 {
-            font-size: 48px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            line-height: 1;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-        }
-
-        .page-header-sub {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--gray-700);
-        }
-
-        /* ========== Filter Bar ========== */
-        .filter-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            padding: 24px;
-            background: var(--white);
-            border: var(--border-width) solid var(--black);
-            margin-bottom: 24px;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .filter-label {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--gray-500);
-        }
-
-        .filter-select {
-            min-width: 140px;
-            padding: 10px 14px;
-            font-size: 14px;
-            font-family: inherit;
-            border: 2px solid var(--black);
-            background: var(--white);
-            cursor: pointer;
-            outline: none;
-        }
-
-        .filter-select:focus {
-            border-color: var(--swiss-red);
-        }
-
-        .filter-input {
-            min-width: 200px;
-            padding: 10px 14px;
-            font-size: 14px;
-            font-family: inherit;
-            border: 2px solid var(--black);
-            background: var(--white);
-            outline: none;
-        }
-
-        .filter-input:focus {
-            border-color: var(--swiss-red);
-        }
-
-        .filter-input[type="date"] {
-            min-width: 140px;
-        }
-
-        .filter-btn {
-            padding: 10px 20px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            border: 2px solid var(--black);
-            background: var(--white);
-            cursor: pointer;
-            transition: all 0.1s;
-            align-self: flex-end;
-        }
-
-        .filter-btn:hover {
-            background: var(--black);
-            color: var(--white);
-        }
-
-        .filter-btn.primary {
-            background: var(--swiss-red);
-            border-color: var(--swiss-red);
-            color: var(--white);
-        }
-
-        .filter-btn.primary:hover {
-            background: var(--black);
-            border-color: var(--black);
-        }
-
-        .filter-actions {
-            display: flex;
-            gap: 8px;
-            align-items: flex-end;
-            margin-left: auto;
-        }
-
-        /* ========== Date Range Buttons ========== */
-        .date-range-group {
-            display: flex;
-            gap: 4px;
-        }
-
-        .date-range-btn {
-            padding: 10px 12px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            border: 2px solid var(--black);
-            background: var(--white);
-            cursor: pointer;
-            transition: all 0.1s;
-        }
-
-        .date-range-btn:hover {
-            background: var(--light-gray);
-        }
-
-        .date-range-btn.active {
-            background: var(--black);
-            color: var(--white);
-        }
-
-        /* ========== Stats Bar ========== */
-        .stats-bar {
-            display: flex;
-            gap: 32px;
-            margin-bottom: 24px;
-            padding: 24px;
-            background: var(--white);
-            border: var(--border-width) solid var(--black);
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 36px;
-            font-weight: 700;
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--gray-500);
-            margin-top: 8px;
-        }
-
-        /* ========== Data Grid ========== */
-        .data-grid {
-            background: var(--white);
-            border: var(--border-width) solid var(--black);
-        }
-
-        .data-grid-header {
-            display: grid;
-            grid-template-columns: 60px 1fr 120px 120px 100px 100px 100px;
-            border-bottom: 2px solid var(--black);
-        }
-
-        .data-grid-header-cell {
-            padding: 16px 12px;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            border-right: var(--border-width) solid var(--gray-300);
-        }
-
-        .data-grid-header-cell:last-child {
-            border-right: none;
-        }
-
-        .data-grid-row {
-            display: grid;
-            grid-template-columns: 60px 1fr 120px 120px 100px 100px 100px;
-            border-bottom: var(--border-width) solid var(--gray-300);
-            transition: background 0.1s;
-        }
-
-        .data-grid-row:last-child {
-            border-bottom: none;
-        }
-
-        .data-grid-row:hover {
-            background: var(--light-gray);
-        }
-
-        .data-grid-cell {
-            padding: 16px 12px;
-            font-size: 14px;
-            border-right: var(--border-width) solid var(--gray-300);
-            display: flex;
-            align-items: center;
-        }
-
-        .data-grid-cell:last-child {
-            border-right: none;
-        }
-
-        .cell-id {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--gray-300);
-        }
-
-        .cell-title {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
-        }
-
-        .news-title {
-            font-weight: 600;
-            color: var(--black);
-            text-decoration: none;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .news-title:hover {
-            color: var(--swiss-red);
-        }
-
-        .news-meta {
-            font-size: 11px;
-            color: var(--gray-500);
-        }
-
-        /* ========== Status Tags ========== */
-        .status-tag {
-            display: inline-block;
-            padding: 6px 10px;
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-        }
-
-        .status-tag.pending_review {
-            background: #FFF3CD;
-            border: var(--border-width) solid #856404;
-            color: #856404;
-        }
-
-        .status-tag.approved {
-            background: #D4EDDA;
-            border: var(--border-width) solid #155724;
-            color: #155724;
-        }
-
-        .status-tag.rejected {
-            background: #F8D7DA;
-            border: var(--border-width) solid #721C24;
-            color: #721C24;
-        }
-
-        .status-tag.filtered {
-            background: var(--light-gray);
-            border: var(--border-width) solid var(--gray-500);
-            color: var(--gray-500);
-        }
-
-        /* ========== Category Tags ========== */
-        .category-tag {
-            display: inline-block;
-            padding: 4px 8px;
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            background: var(--light-gray);
-            border: var(--border-width) solid var(--gray-300);
-        }
-
-        .category-tag.product_release,
-        .category-tag.model_release,
-        .category-tag.feature_update {
-            background: #E3F2FD;
-            border-color: #1565C0;
-            color: #1565C0;
-        }
-
-        /* ========== Action Links ========== */
-        .action-link {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--black);
-            text-decoration: none;
-            padding: 6px 12px;
-            border: var(--border-width) solid var(--black);
-            transition: all 0.1s;
-        }
-
-        .action-link:hover {
-            background: var(--black);
-            color: var(--white);
-        }
-
-        /* ========== Pagination ========== */
-        .pagination {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 24px;
-            background: var(--white);
-            border: var(--border-width) solid var(--black);
-            border-top: none;
-        }
-
-        .pagination-info {
-            font-size: 13px;
-            color: var(--gray-500);
-        }
-
-        .pagination-controls {
-            display: flex;
-            gap: 4px;
-        }
-
-        .page-btn {
-            min-width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 700;
-            border: var(--border-width) solid var(--black);
-            background: var(--white);
-            cursor: pointer;
-            transition: all 0.1s;
-            padding: 0 10px;
-        }
-
-        .page-btn:hover:not(:disabled) {
-            background: var(--black);
-            color: var(--white);
-        }
-
-        .page-btn.active {
-            background: var(--swiss-red);
-            border-color: var(--swiss-red);
-            color: var(--white);
-        }
-
-        .page-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        /* ========== Empty State ========== */
-        .empty-state {
-            padding: 64px 32px;
-            text-align: center;
-            border: var(--border-width) dashed var(--gray-300);
-            background: var(--white);
-        }
-
-        .empty-state-title {
-            font-size: 14px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 8px;
-        }
-
-        .empty-state-desc {
-            font-size: 13px;
-            color: var(--gray-500);
-        }
-
-        /* ========== Loading ========== */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .loading-overlay.show {
-            display: flex;
-        }
-
-        .loading-spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid var(--gray-300);
-            border-top-color: var(--swiss-red);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ========== Responsive ========== */
-        @media (max-width: 1200px) {
-            .data-grid-header, .data-grid-row {
-                grid-template-columns: 50px 1fr 100px 100px 80px 80px;
-            }
-            .data-grid-header-cell:nth-child(7),
-            .data-grid-cell:nth-child(7) {
-                display: none;
-            }
-        }
-
-        @media (max-width: 1024px) {
-            .layout { grid-template-columns: 1fr; }
-            .sidebar {
-                border-right: none;
-                border-bottom: var(--border-width) solid var(--black);
-                padding: 24px;
-                height: auto;
-                position: relative;
-            }
-            .sidebar-brand { margin-bottom: 24px; }
-            .page-header h1 { font-size: 36px; }
-            .filter-bar { gap: 12px; }
-        }
-
-        @media (max-width: 768px) {
-            .main { padding: 24px; }
-            .stats-bar { flex-wrap: wrap; gap: 16px; }
-            .data-grid-header { display: none; }
-            .data-grid-row {
-                grid-template-columns: 1fr;
-                padding: 16px;
-            }
-            .data-grid-cell {
-                border-right: none;
-                padding: 8px 0;
-            }
-            .data-grid-cell:first-child { display: none; }
-            .filter-actions { margin-left: 0; width: 100%; }
-        }
-    </style>
-</head>
-<body>
-    <div class="layout">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-brand"><a href="/">News Crawler</a></div>
-
-            <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <div class="nav-section-title">Navigation</div>
-                    <a href="/" class="nav-item">Dashboard</a>
-                    <a href="/batch" class="nav-item">Batch Tasks</a>
-                    <a href="/news" class="nav-item active">News Browser</a>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-section-title">System</div>
-                    <a href="/tasks" class="nav-item">All Tasks</a>
-                </div>
-            </nav>
-
-            <div class="sidebar-footer">
-                AI News Collection System<br>
-                Version 2.0
+{% extends "base_modern.html" %}
+
+{% block title %}洞察全局 | News AI{% endblock %}
+
+{% block extra_styles %}
+<style>
+    /* 提高头部对比度，简化动效 */
+    .news-page .hero-surface {
+        position: relative;
+        color: #0f172a;
+    }
+    .news-page .hero-surface::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.55));
+        pointer-events: none;
+        mix-blend-mode: screen;
+    }
+    .news-page .hero-surface h1,
+    .news-page .hero-surface p,
+    .news-page .hero-surface .hero-total {
+        color: #0f172a;
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+        position: relative;
+        z-index: 1;
+    }
+
+    /* 控制 hover 浮动幅度，避免夸张 */
+    .news-page .card-hover {
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+    }
+    .news-page .card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="news-page min-h-screen p-4 md:p-6 lg:p-8 relative z-10">
+    <!-- 顶部导航 -->
+    <nav class="mb-8 flex items-center justify-between animate-slide-down sticky top-0 z-40 bg-gray-50/90 backdrop-blur border-b border-black/5 px-4 md:px-0 py-4 -mx-4 md:-mx-0">
+        <div class="flex items-center gap-6">
+            <a href="/" class="text-2xl font-extrabold tracking-tight">
+                <span class="gradient-text">News</span><span class="text-gray-400">AI</span>
+            </a>
+            <div class="hidden md:flex items-center gap-1 bg-black/5 rounded-full p-1">
+                <a href="/" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">控制台</a>
+                <a href="/batch" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">批量任务</a>
+                <a href="/news" class="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-full">洞察全局</a>
+                <a href="/tasks" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">任务中心</a>
             </div>
-        </aside>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-xs font-semibold text-green-600">System Online</span>
+            </div>
+        </div>
+    </nav>
 
-        <!-- Main Content -->
-        <main class="main">
-            <header class="page-header">
-                <h1>News Browser</h1>
-                <p class="page-header-sub">浏览和筛选所有已搜集的新闻</p>
-            </header>
+    <!-- Hero Header -->
+    <header class="mb-8 animate-slide-down" style="animation-delay: 0.1s;">
+        <div class="glass-card magnetic-glow rounded-3xl p-8 md:p-12 gradient-hero text-white relative overflow-hidden spring-transition hero-surface">
+            <!-- 装饰光效 -->
+            <div class="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
 
-            <!-- Filter Bar -->
-            <div class="filter-bar">
-                <div class="filter-group">
-                    <label class="filter-label">Company</label>
-                    <select class="filter-select" id="filterCompany">
-                        <option value="">全部公司</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Status</label>
-                    <select class="filter-select" id="filterStatus">
-                        <option value="">全部状态</option>
-                        <option value="pending_review">待审核</option>
-                        <option value="approved">已通过</option>
-                        <option value="rejected">已拒绝</option>
-                        <option value="filtered">已过滤</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Category</label>
-                    <select class="filter-select" id="filterCategory">
-                        <option value="">全部分类</option>
-                        <option value="product_release">产品发布</option>
-                        <option value="model_release">模型发布</option>
-                        <option value="feature_update">功能更新</option>
-                        <option value="interview">访谈</option>
-                        <option value="analysis">分析</option>
-                        <option value="recruitment">招聘</option>
-                        <option value="financial">财务</option>
-                        <option value="duplicate">重复</option>
-                        <option value="other">其他</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Batch</label>
-                    <select class="filter-select" id="filterBatch">
-                        <option value="">全部批次</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Date Range</label>
-                    <div class="date-range-group">
-                        <button type="button" class="date-range-btn" data-range="today">Today</button>
-                        <button type="button" class="date-range-btn" data-range="7d">7D</button>
-                        <button type="button" class="date-range-btn" data-range="30d">30D</button>
+            <div class="relative z-10">
+                <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+                    <div>
+                        <p class="text-sm font-bold text-white/60 tracking-[0.2em] uppercase mb-3">News Browser</p>
+                        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-3">
+                            洞察全局
+                        </h1>
+                        <p class="text-lg text-white/80 max-w-md">
+                            探索、筛选、发现有价值的新闻资讯
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right hidden md:block hero-total">
+                            <p class="text-white/60 text-sm">Total News</p>
+                            <p class="text-3xl font-bold" id="heroTotal">--</p>
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </header>
 
-                <div class="filter-group">
-                    <label class="filter-label">Custom Date</label>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="date" class="filter-input" id="filterDateFrom" placeholder="开始日期">
-                        <input type="date" class="filter-input" id="filterDateTo" placeholder="结束日期">
-                    </div>
-                </div>
-
-                <div class="filter-group" style="flex: 1; min-width: 200px;">
-                    <label class="filter-label">Search Title</label>
-                    <input type="text" class="filter-input" id="filterKeyword" placeholder="输入关键词搜索标题..." style="width: 100%;">
-                </div>
-
-                <div class="filter-actions">
-                    <button type="button" class="filter-btn" id="btnClearFilters">Clear</button>
-                    <button type="button" class="filter-btn primary" id="btnApplyFilters">Search</button>
+    <!-- 筛选工具栏 -->
+    <div class="glass-card rounded-2xl p-4 md:p-6 mb-6 animate-slide-down" style="animation-delay: 0.2s;">
+        <div class="flex flex-col lg:flex-row gap-4">
+            <!-- 搜索框 -->
+            <div class="flex-1">
+                <div class="relative">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input
+                        type="text"
+                        id="searchKeyword"
+                        placeholder="搜索新闻标题..."
+                        class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-white/50 input-modern"
+                    >
                 </div>
             </div>
 
-            <!-- Stats Bar -->
-            <div class="stats-bar" id="statsBar">
-                <div class="stat-item">
-                    <div class="stat-value" id="statTotal">-</div>
-                    <div class="stat-label">Total</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="statPending" style="color: #856404">-</div>
-                    <div class="stat-label">Pending</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="statApproved" style="color: #155724">-</div>
-                    <div class="stat-label">Approved</div>
-                </div>
+            <!-- 时间范围 -->
+            <div class="flex gap-2">
+                <button onclick="setDateRange('today')" class="date-range-btn px-4 py-3 rounded-xl border-2 border-gray-200 hover:border-gray-900 transition-colors text-sm font-medium" data-range="today">今天</button>
+                <button onclick="setDateRange('7d')" class="date-range-btn px-4 py-3 rounded-xl border-2 border-gray-200 hover:border-gray-900 transition-colors text-sm font-medium" data-range="7d">7天</button>
+                <button onclick="setDateRange('30d')" class="date-range-btn px-4 py-3 rounded-xl border-2 border-gray-200 hover:border-gray-900 transition-colors text-sm font-medium" data-range="30d">30天</button>
             </div>
 
-            <!-- News List -->
-            <div class="data-grid" id="newsList">
-                <div class="empty-state">
-                    <div class="empty-state-title">Loading...</div>
-                </div>
+            <!-- 状态筛选 -->
+            <div class="relative">
+                <select id="statusFilter" class="px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-white/50 input-modern appearance-none pr-10">
+                    <option value="">全部状态</option>
+                    <option value="pending_review">待审核</option>
+                    <option value="approved">已通过</option>
+                    <option value="rejected">已拒绝</option>
+                    <option value="filtered">已过滤</option>
+                </select>
+                <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
             </div>
 
-            <!-- Pagination -->
-            <div class="pagination" id="pagination" style="display: none;">
-                <div class="pagination-info" id="paginationInfo">
-                    显示 1-20 条，共 0 条
-                </div>
-                <div class="pagination-controls" id="paginationControls">
-                </div>
-            </div>
-        </main>
+            <!-- 搜索按钮 -->
+            <button onclick="applyFilters()" class="btn-primary px-6 py-3 text-white rounded-xl font-medium">
+                搜索
+            </button>
+        </div>
     </div>
 
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
+    <!-- 新闻列表 -->
+    <div class="glass-card rounded-3xl overflow-hidden animate-slide-down" style="animation-delay: 0.3s;">
+        <!-- 列表内容 -->
+        <div id="newsList" class="divide-y divide-black/5">
+            <!-- Loading State -->
+            <div class="flex flex-col items-center justify-center py-20">
+                <div class="w-12 h-12 border-3 border-gray-300 border-t-gray-900 rounded-full loading-spinner mb-4"></div>
+                <p class="text-gray-500 font-medium">正在加载新闻...</p>
+            </div>
+        </div>
+
+        <!-- 分页 -->
+        <div class="px-6 py-4 bg-black/[0.02] border-t border-black/5 flex items-center justify-between" id="pagination">
+            <p class="text-sm text-gray-500" id="paginationInfo">显示 0 条结果</p>
+            <div class="flex gap-2" id="paginationButtons">
+                <!-- 分页按钮将动态生成 -->
+            </div>
+        </div>
     </div>
 
-    <script>
-        // 状态
-        let currentPage = 1;
-        let pageSize = 20;
-        let totalPages = 1;
-        let currentDateRange = '';
+    <!-- 页脚 -->
+    <footer class="mt-12 text-center text-gray-400 text-sm">
+        <p>&copy; 2025 AI News Collection System. Powered by Intelligence.</p>
+    </footer>
+</div>
+{% endblock %}
 
-        // DOM 元素
-        const filterCompany = document.getElementById('filterCompany');
-        const filterStatus = document.getElementById('filterStatus');
-        const filterCategory = document.getElementById('filterCategory');
-        const filterBatch = document.getElementById('filterBatch');
-        const filterDateFrom = document.getElementById('filterDateFrom');
-        const filterDateTo = document.getElementById('filterDateTo');
-        const filterKeyword = document.getElementById('filterKeyword');
-        const btnApplyFilters = document.getElementById('btnApplyFilters');
-        const btnClearFilters = document.getElementById('btnClearFilters');
-        const dateRangeBtns = document.querySelectorAll('.date-range-btn');
+{% block extra_scripts %}
+<script>
+    let currentPage = 1;
+    let pageSize = 20;
+    let currentFilters = {};
 
-        // 初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            // 从 URL 恢复筛选状态
-            restoreFiltersFromURL();
-            // 加载数据
-            loadNews();
-            // 绑定事件
-            bindEvents();
+    document.addEventListener('DOMContentLoaded', () => {
+        loadNews();
+    });
+
+    function setDateRange(range) {
+        document.querySelectorAll('.date-range-btn').forEach(btn => {
+            btn.classList.remove('bg-gray-900', 'text-white', 'border-gray-900');
+            if (btn.dataset.range === range) {
+                btn.classList.add('bg-gray-900', 'text-white', 'border-gray-900');
+            }
         });
 
-        function bindEvents() {
-            // 搜索按钮
-            btnApplyFilters.addEventListener('click', () => {
-                currentPage = 1;
-                updateURL();
-                loadNews();
+        currentFilters.date_range = range;
+        currentPage = 1;
+        loadNews();
+    }
+
+    function applyFilters() {
+        currentFilters = {
+            keyword: document.getElementById('searchKeyword').value,
+            status: document.getElementById('statusFilter').value,
+            date_range: currentFilters.date_range || ''
+        };
+        currentPage = 1;
+        loadNews();
+    }
+
+    async function loadNews() {
+        try {
+            const params = new URLSearchParams({
+                page: currentPage,
+                page_size: pageSize,
+                ...currentFilters
             });
 
-            // 清除按钮
-            btnClearFilters.addEventListener('click', clearFilters);
+            const response = await fetch(`/api/v2/news/browse?${params}`);
+            const data = await response.json();
 
-            // 回车搜索
-            filterKeyword.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    currentPage = 1;
-                    updateURL();
-                    loadNews();
-                }
-            });
-
-            // 日期范围按钮
-            dateRangeBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const range = btn.dataset.range;
-                    // 切换选中状态
-                    if (currentDateRange === range) {
-                        currentDateRange = '';
-                        btn.classList.remove('active');
-                    } else {
-                        dateRangeBtns.forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        currentDateRange = range;
-                        // 清除自定义日期
-                        filterDateFrom.value = '';
-                        filterDateTo.value = '';
-                    }
-                });
-            });
-
-            // 自定义日期清除预设范围
-            filterDateFrom.addEventListener('change', () => {
-                currentDateRange = '';
-                dateRangeBtns.forEach(b => b.classList.remove('active'));
-            });
-            filterDateTo.addEventListener('change', () => {
-                currentDateRange = '';
-                dateRangeBtns.forEach(b => b.classList.remove('active'));
-            });
-        }
-
-        function clearFilters() {
-            filterCompany.value = '';
-            filterStatus.value = '';
-            filterCategory.value = '';
-            filterBatch.value = '';
-            filterDateFrom.value = '';
-            filterDateTo.value = '';
-            filterKeyword.value = '';
-            currentDateRange = '';
-            dateRangeBtns.forEach(b => b.classList.remove('active'));
-            currentPage = 1;
-            updateURL();
-            loadNews();
-        }
-
-        function buildQueryParams() {
-            const params = new URLSearchParams();
-            params.set('page', currentPage);
-            params.set('page_size', pageSize);
-
-            if (filterCompany.value) params.set('company', filterCompany.value);
-            if (filterStatus.value) params.set('status', filterStatus.value);
-            if (filterCategory.value) params.set('category', filterCategory.value);
-            if (filterBatch.value) params.set('batch_id', filterBatch.value);
-            if (currentDateRange) params.set('date_range', currentDateRange);
-            if (filterDateFrom.value) params.set('date_from', filterDateFrom.value);
-            if (filterDateTo.value) params.set('date_to', filterDateTo.value);
-            if (filterKeyword.value.trim()) params.set('keyword', filterKeyword.value.trim());
-
-            return params;
-        }
-
-        function updateURL() {
-            const params = buildQueryParams();
-            const newURL = `${window.location.pathname}?${params.toString()}`;
-            window.history.replaceState({}, '', newURL);
-        }
-
-        function restoreFiltersFromURL() {
-            const params = new URLSearchParams(window.location.search);
-
-            currentPage = parseInt(params.get('page')) || 1;
-            filterCompany.value = params.get('company') || '';
-            filterStatus.value = params.get('status') || '';
-            filterCategory.value = params.get('category') || '';
-            filterBatch.value = params.get('batch_id') || '';
-            filterDateFrom.value = params.get('date_from') || '';
-            filterDateTo.value = params.get('date_to') || '';
-            filterKeyword.value = params.get('keyword') || '';
-
-            currentDateRange = params.get('date_range') || '';
-            if (currentDateRange) {
-                dateRangeBtns.forEach(btn => {
-                    if (btn.dataset.range === currentDateRange) {
-                        btn.classList.add('active');
-                    }
-                });
+            if (data.success) {
+                renderNewsList(data.data.items);
+                renderPagination(data.data.pagination);
+                updateHeroTotal(data.data.pagination.total);
             }
-        }
-
-        async function loadNews() {
-            const overlay = document.getElementById('loadingOverlay');
-            overlay.classList.add('show');
-
-            try {
-                const params = buildQueryParams();
-                const response = await fetch(`/api/v2/news/browse?${params.toString()}`);
-                const result = await response.json();
-
-                if (result.success) {
-                    const { items, pagination, filters } = result.data;
-
-                    // 更新筛选选项
-                    updateFilterOptions(filters);
-
-                    // 更新统计
-                    updateStats(pagination.total, items);
-
-                    // 渲染列表
-                    renderNewsList(items);
-
-                    // 更新分页
-                    totalPages = pagination.total_pages;
-                    updatePagination(pagination);
-                }
-            } catch (error) {
-                console.error('加载失败:', error);
-                document.getElementById('newsList').innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-title">加载失败</div>
-                        <div class="empty-state-desc">${error.message}</div>
+        } catch (error) {
+            console.error('加载新闻失败:', error);
+            document.getElementById('newsList').innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20">
+                    <div class="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
                     </div>
-                `;
-            } finally {
-                overlay.classList.remove('show');
-            }
-        }
-
-        function updateFilterOptions(filters) {
-            // 更新公司选项（保留当前选中值）
-            const currentCompany = filterCompany.value;
-            filterCompany.innerHTML = '<option value="">全部公司</option>';
-            filters.companies.forEach(company => {
-                const option = document.createElement('option');
-                option.value = company;
-                option.textContent = company;
-                filterCompany.appendChild(option);
-            });
-            filterCompany.value = currentCompany;
-
-            // 更新批次选项（保留当前选中值）
-            const currentBatch = filterBatch.value;
-            filterBatch.innerHTML = '<option value="">全部批次</option>';
-            filters.batches.forEach(batch => {
-                const option = document.createElement('option');
-                option.value = batch.id;
-                option.textContent = batch.name;
-                filterBatch.appendChild(option);
-            });
-            filterBatch.value = currentBatch;
-        }
-
-        function updateStats(total, items) {
-            document.getElementById('statTotal').textContent = total;
-
-            // 计算当前页的状态统计
-            const pending = items.filter(n => n.status === 'pending_review').length;
-            const approved = items.filter(n => n.status === 'approved').length;
-
-            document.getElementById('statPending').textContent = pending;
-            document.getElementById('statApproved').textContent = approved;
-        }
-
-        function renderNewsList(items) {
-            const container = document.getElementById('newsList');
-
-            if (items.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-title">No News Found</div>
-                        <div class="empty-state-desc">没有找到符合条件的新闻</div>
-                    </div>
-                `;
-                document.getElementById('pagination').style.display = 'none';
-                return;
-            }
-
-            const header = `
-                <div class="data-grid-header">
-                    <div class="data-grid-header-cell">ID</div>
-                    <div class="data-grid-header-cell">Title</div>
-                    <div class="data-grid-header-cell">Company</div>
-                    <div class="data-grid-header-cell">Category</div>
-                    <div class="data-grid-header-cell">Status</div>
-                    <div class="data-grid-header-cell">Date</div>
-                    <div class="data-grid-header-cell">Action</div>
+                    <p class="text-gray-900 font-semibold mb-1">加载失败</p>
+                    <p class="text-gray-500 text-sm">${error.message}</p>
                 </div>
             `;
+        }
+    }
 
-            const rows = items.map(news => {
-                const categoryText = {
-                    'product_release': '产品发布',
-                    'model_release': '模型发布',
-                    'feature_update': '功能更新',
-                    'interview': '访谈',
-                    'analysis': '分析',
-                    'recruitment': '招聘',
-                    'financial': '财务',
-                    'duplicate': '重复',
-                    'other': '其他'
-                }[news.ai_category] || news.ai_category || '-';
+    function renderNewsList(newsItems) {
+        const container = document.getElementById('newsList');
 
-                const statusText = {
-                    'pending_review': '待审核',
-                    'approved': '已通过',
-                    'rejected': '已拒绝',
-                    'filtered': '已过滤'
-                }[news.status] || news.status;
+        if (newsItems.length === 0) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20">
+                    <div class="w-16 h-16 rounded-2xl bg-gray-500/10 flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                        </svg>
+                    </div>
+                    <p class="text-gray-900 font-semibold mb-1">暂无新闻</p>
+                    <p class="text-gray-500 text-sm">尝试调整筛选条件</p>
+                </div>
+            `;
+            return;
+        }
 
-                const fetchedAt = news.fetched_at ? new Date(news.fetched_at).toLocaleDateString('zh-CN') : '-';
-                const batchInfo = news.batch_name ? `批次: ${news.batch_name}` : '';
+        container.innerHTML = newsItems.map(news => `
+            <div class="px-6 py-5 hover:bg-black/[0.02] transition-colors card-hover">
+                <div class="flex flex-col md:flex-row md:items-start gap-4">
+                    <!-- 状态标签 -->
+                    <div class="flex-shrink-0">
+                        ${getStatusBadge(news.status)}
+                    </div>
 
-                return `
-                    <div class="data-grid-row">
-                        <div class="data-grid-cell">
-                            <span class="cell-id">${String(news.id).padStart(3, '0')}</span>
-                        </div>
-                        <div class="data-grid-cell cell-title">
-                            <a href="${news.url}" target="_blank" class="news-title" title="${news.title}">${news.title}</a>
-                            <span class="news-meta">${batchInfo}</span>
-                        </div>
-                        <div class="data-grid-cell">
-                            ${news.company_name || '-'}
-                        </div>
-                        <div class="data-grid-cell">
-                            <span class="category-tag ${news.ai_category || ''}">${categoryText}</span>
-                        </div>
-                        <div class="data-grid-cell">
-                            <span class="status-tag ${news.status}">${statusText}</span>
-                        </div>
-                        <div class="data-grid-cell">
-                            ${fetchedAt}
-                        </div>
-                        <div class="data-grid-cell">
-                            <a href="/api/v2/tasks/${news.task_id}/review" class="action-link">View</a>
+                    <!-- 内容 -->
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-bold text-gray-900 mb-2 hover:text-purple-600 transition-colors cursor-pointer">
+                            <a href="${news.url}" target="_blank" rel="noopener noreferrer">${news.title}</a>
+                        </h3>
+
+                        <p class="text-sm text-gray-600 mb-3 line-clamp-2">
+                            ${news.content || '暂无内容摘要'}
+                        </p>
+
+                        <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                            <span class="flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                                ${news.company_name || '未知公司'}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                ${news.published_date || '未知日期'}
+                            </span>
+                            ${news.ai_category ? `
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                    </svg>
+                                    ${news.ai_category}
+                                </span>
+                            ` : ''}
                         </div>
                     </div>
-                `;
-            }).join('');
 
-            container.innerHTML = header + rows;
-            document.getElementById('pagination').style.display = 'flex';
+                    <!-- 操作按钮 -->
+                    <div class="flex-shrink-0 flex gap-2">
+                        <a href="${news.url}" target="_blank" rel="noopener noreferrer"
+                           class="px-3 py-2 bg-white border-2 border-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">
+                            查看原文
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function getStatusBadge(status) {
+        const badges = {
+            pending_review: '<span class="tag-pending px-2 py-1 rounded-full text-xs font-bold uppercase">待审核</span>',
+            approved: '<span class="tag-approved px-2 py-1 rounded-full text-xs font-bold uppercase">已通过</span>',
+            rejected: '<span class="tag-rejected px-2 py-1 rounded-full text-xs font-bold uppercase">已拒绝</span>',
+            filtered: '<span class="tag-filtered px-2 py-1 rounded-full text-xs font-bold uppercase">已过滤</span>'
+        };
+        return badges[status] || '<span class="tag-filtered px-2 py-1 rounded-full text-xs font-bold uppercase">未知</span>';
+    }
+
+    function renderPagination(pagination) {
+        const { page, total, total_pages } = pagination;
+
+        document.getElementById('paginationInfo').textContent = `显示 ${total} 条结果，第 ${page}/${total_pages} 页`;
+
+        const buttonsContainer = document.getElementById('paginationButtons');
+        let buttons = '';
+
+        // 上一页
+        if (page > 1) {
+            buttons += `
+                <button onclick="goToPage(${page - 1})" class="px-3 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+            `;
         }
 
-        function updatePagination(pagination) {
-            const { page, page_size, total, total_pages } = pagination;
+        // 页码
+        const startPage = Math.max(1, page - 2);
+        const endPage = Math.min(total_pages, page + 2);
 
-            // 更新信息
-            const start = (page - 1) * page_size + 1;
-            const end = Math.min(page * page_size, total);
-            document.getElementById('paginationInfo').textContent =
-                `显示 ${start}-${end} 条，共 ${total} 条`;
-
-            // 更新按钮
-            const controls = document.getElementById('paginationControls');
-            let html = '';
-
-            // 上一页
-            html += `<button class="page-btn" onclick="goToPage(${page - 1})" ${page <= 1 ? 'disabled' : ''}>&lt;</button>`;
-
-            // 页码
-            const maxButtons = 5;
-            let startPage = Math.max(1, page - Math.floor(maxButtons / 2));
-            let endPage = Math.min(total_pages, startPage + maxButtons - 1);
-
-            if (endPage - startPage < maxButtons - 1) {
-                startPage = Math.max(1, endPage - maxButtons + 1);
+        if (startPage > 1) {
+            buttons += `<button onclick="goToPage(1)" class="px-3 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">1</button>`;
+            if (startPage > 2) {
+                buttons += `<span class="px-2 py-2 text-gray-400">...</span>`;
             }
-
-            if (startPage > 1) {
-                html += `<button class="page-btn" onclick="goToPage(1)">1</button>`;
-                if (startPage > 2) {
-                    html += `<span style="padding: 0 8px; color: var(--gray-500);">...</span>`;
-                }
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                html += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
-            }
-
-            if (endPage < total_pages) {
-                if (endPage < total_pages - 1) {
-                    html += `<span style="padding: 0 8px; color: var(--gray-500);">...</span>`;
-                }
-                html += `<button class="page-btn" onclick="goToPage(${total_pages})">${total_pages}</button>`;
-            }
-
-            // 下一页
-            html += `<button class="page-btn" onclick="goToPage(${page + 1})" ${page >= total_pages ? 'disabled' : ''}>&gt;</button>`;
-
-            controls.innerHTML = html;
         }
 
-        function goToPage(page) {
-            if (page < 1 || page > totalPages) return;
-            currentPage = page;
-            updateURL();
-            loadNews();
-            // 滚动到顶部
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        for (let i = startPage; i <= endPage; i++) {
+            const isActive = i === page;
+            buttons += `
+                <button onclick="goToPage(${i})" class="px-3 py-2 ${isActive ? 'bg-gray-900 text-white border-gray-900' : 'bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50'} rounded-lg transition-colors">
+                    ${i}
+                </button>
+            `;
         }
-    </script>
-</body>
-</html>
+
+        if (endPage < total_pages) {
+            if (endPage < total_pages - 1) {
+                buttons += `<span class="px-2 py-2 text-gray-400">...</span>`;
+            }
+            buttons += `<button onclick="goToPage(${total_pages})" class="px-3 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">${total_pages}</button>`;
+        }
+
+        // 下一页
+        if (page < total_pages) {
+            buttons += `
+                <button onclick="goToPage(${page + 1})" class="px-3 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            `;
+        }
+
+        buttonsContainer.innerHTML = buttons;
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        loadNews();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateHeroTotal(total) {
+        document.getElementById('heroTotal').textContent = total;
+    }
+</script>
+{% endblock %}

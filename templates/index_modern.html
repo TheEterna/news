@@ -1,0 +1,324 @@
+{% extends "base_modern.html" %}
+
+{% block title %}智能新闻搜集 - AI News Collection{% endblock %}
+
+{% block content %}
+<div class="min-h-screen p-4 md:p-8 lg:p-12 pb-24">
+    <!-- 页面头部 -->
+    <header class="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 animate-slide-down sticky top-0 z-40 bg-gray-50/90 backdrop-blur border-b border-black/5 px-4 md:px-0 py-4 -mx-4 md:-mx-0">
+        <div>
+            <p class="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-2">
+                AI News Collection 2025
+            </p>
+            <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-gray-900">
+                智能新闻
+                <span class="gradient-text">搜集</span>
+            </h1>
+        </div>
+        <div class="hidden md:block text-right">
+            <p class="text-gray-500 text-sm">AI-Powered News Aggregation</p>
+            <p class="text-gray-400 font-mono text-xs mt-1">Version 2.0</p>
+        </div>
+    </header>
+
+    <!-- Bento Grid 布局 -->
+    <div class="bento-grid max-w-7xl mx-auto">
+        
+        <!-- 新闻搜集卡片 - 大卡片 -->
+        <div class="col-span-1 md:col-span-2 lg:col-span-2 row-span-2 glass-card rounded-3xl p-6 md:p-8 gentle-transition hover:scale-[1.02] hover:-translate-y-1 cursor-pointer group">
+            <div class="flex flex-col h-full justify-between">
+                <!-- 卡片头部 -->
+                <div class="flex justify-between items-start mb-6">
+                    <div class="p-3 rounded-2xl bg-gradient-blue-purple text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                    </div>
+                    <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold uppercase tracking-wider">
+                        Active
+                    </span>
+                </div>
+                
+                <!-- 卡片内容 -->
+                <div class="flex-1">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-3 text-gray-900">
+                        开始搜集
+                    </h2>
+                    <p class="text-gray-600 text-sm md:text-base mb-6 max-w-md">
+                        输入公司名称，AI 自动生成多维度关键词，智能搜集并分类相关新闻
+                    </p>
+                    
+                    <!-- 搜索表单 -->
+                    <form id="searchForm" onsubmit="startCollect(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                Company Name
+                            </label>
+                            <input 
+                                type="text" 
+                                id="companyName" 
+                                name="company_name"
+                                placeholder="例如：百度、OpenAI、字节跳动"
+                                required
+                                class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-white/50"
+                            >
+                        </div>
+                        
+                        <!-- 搜索配置 -->
+                        <div class="flex gap-4 items-end">
+                            <div class="flex-1">
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                    Keywords
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="keywordCount" 
+                                    name="keyword_count"
+                                    value="3" 
+                                    min="1" 
+                                    max="10"
+                                    class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors text-center font-bold bg-white/50"
+                                >
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                    News/Keyword
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="newsPerKeyword" 
+                                    name="news_per_keyword"
+                                    value="2" 
+                                    min="1" 
+                                    max="10"
+                                    class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors text-center font-bold bg-white/50"
+                                >
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between pt-2">
+                            <span class="text-sm text-gray-500">
+                                预计搜索: <strong id="estimatedTotal" class="text-gray-900 text-lg">6</strong> 条新闻
+                            </span>
+                            <button 
+                                type="submit" 
+                                id="searchBtn"
+                                class="px-6 py-3 bg-gray-900 text-white rounded-full font-bold hover:bg-gray-800 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+                            >
+                                开始搜集
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M7 7h10v10"></path>
+                                    <path d="M7 17 17 7"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 任务状态卡片 -->
+        <div class="col-span-1 md:col-span-1 row-span-1 glass-card rounded-3xl p-6 gentle-transition hover:scale-[1.02] hover:-translate-y-1">
+            <div class="flex flex-col h-full justify-between">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="p-2 rounded-lg bg-gray-100 text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path>
+                            <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-green-600 font-mono">实时更新</span>
+                </div>
+                
+                <div>
+                    <p class="text-4xl font-bold text-gray-900 mb-1" id="taskCount">0</p>
+                    <p class="text-sm text-gray-500 uppercase tracking-wider font-medium">进行中的任务</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 批量处理卡片 -->
+        <div class="col-span-1 md:col-span-1 row-span-1 glass-card rounded-3xl p-6 gentle-transition hover:scale-[1.02] hover:-translate-y-1 cursor-pointer group"
+             onclick="window.location.href='/batch'">
+            <div class="flex flex-col h-full justify-center items-center text-center gap-4">
+                <div class="p-4 rounded-full bg-gradient-green-blue text-white scale-125 group-hover:scale-150 spring-transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-bold text-sm text-gray-900">批量处理</p>
+                    <p class="text-xs text-gray-500 mt-1">上传 Excel 批量搜集</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 新闻浏览卡片 -->
+        <div class="col-span-1 md:col-span-2 lg:col-span-2 row-span-2 glass-card rounded-3xl p-6 md:p-8 gentle-transition hover:scale-[1.02] hover:-translate-y-1 cursor-pointer group relative overflow-hidden"
+             onclick="window.location.href='/news'">
+            <!-- 背景装饰 -->
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            
+            <div class="relative z-10 flex flex-col h-full justify-between">
+                <div>
+                    <div class="inline-block px-3 py-1 mb-4 rounded-full bg-purple-100 text-purple-700 text-xs font-bold uppercase tracking-wider">
+                        News Center
+                    </div>
+                    <h3 class="text-3xl font-bold mb-2 text-gray-900">新闻中心</h3>
+                    <p class="text-gray-600 mb-6">浏览、筛选和管理所有搜集的新闻</p>
+                </div>
+                
+                <!-- 预览统计 -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="text-center p-4 rounded-xl bg-white/50">
+                        <p class="text-2xl font-bold text-gray-900" id="totalNews">0</p>
+                        <p class="text-xs text-gray-500 mt-1">总新闻数</p>
+                    </div>
+                    <div class="text-center p-4 rounded-xl bg-white/50">
+                        <p class="text-2xl font-bold text-green-600" id="approvedNews">0</p>
+                        <p class="text-xs text-gray-500 mt-1">已通过</p>
+                    </div>
+                    <div class="text-center p-4 rounded-xl bg-white/50">
+                        <p class="text-2xl font-bold text-orange-600" id="pendingNews">0</p>
+                        <p class="text-xs text-gray-500 mt-1">待审核</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex items-center gap-2 text-gray-900 font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                    查看全部
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 7h10v10"></path>
+                        <path d="M7 17 17 7"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 所有任务卡片 -->
+        <div class="col-span-1 md:col-span-2 lg:col-span-2 row-span-1 glass-card rounded-3xl p-6 gentle-transition hover:scale-[1.02] hover:-translate-y-1 cursor-pointer"
+             onclick="window.location.href='/tasks'">
+            <div class="flex items-center justify-between h-full">
+                <div class="flex items-center gap-4">
+                    <div class="p-3 rounded-xl bg-gray-900 text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3h18v18H3zM9 3v18M3 9h18M3 15h18"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">所有任务</h3>
+                        <p class="text-sm text-gray-500">查看和管理所有搜集任务</p>
+                    </div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                    <path d="M7 7h10v10"></path>
+                    <path d="M7 17 17 7"></path>
+                </svg>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="mt-24 text-center text-gray-400 text-sm">
+        <p>&copy; 2025 AI News Collection System. Powered by Intelligence.</p>
+    </footer>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        setupConfigInputs();
+        loadDashboardStats();
+    });
+    
+    // 配置输入监听
+    function setupConfigInputs() {
+        const keywordInput = document.getElementById('keywordCount');
+        const newsInput = document.getElementById('newsPerKeyword');
+        
+        keywordInput.addEventListener('input', updateEstimate);
+        newsInput.addEventListener('input', updateEstimate);
+        
+        updateEstimate();
+    }
+    
+    // 更新预计搜索数量
+    function updateEstimate() {
+        const keywords = parseInt(document.getElementById('keywordCount').value) || 3;
+        const newsPerKw = parseInt(document.getElementById('newsPerKeyword').value) || 2;
+        document.getElementById('estimatedTotal').textContent = keywords * newsPerKw;
+    }
+    
+    // 加载仪表板统计数据
+    async function loadDashboardStats() {
+        try {
+            // 加载任务统计
+            const batchesResponse = await fetch('/api/v2/batches');
+            const batchesData = await batchesResponse.json();
+            
+            const standaloneTasks = batchesData.standalone_tasks || [];
+            const reviewingTasks = standaloneTasks.filter(t => t.status === 'reviewing');
+            
+            document.getElementById('taskCount').textContent = reviewingTasks.length;
+            
+            // 加载新闻统计（简化版，实际可以调用专门的统计接口）
+            // 这里暂时使用占位数据
+            document.getElementById('totalNews').textContent = '—';
+            document.getElementById('approvedNews').textContent = '—';
+            document.getElementById('pendingNews').textContent = '—';
+            
+        } catch (error) {
+            console.error('加载统计数据失败:', error);
+        }
+    }
+    
+    // 开始搜集新闻
+    async function startCollect(event) {
+        event.preventDefault();
+        
+        const companyName = document.getElementById('companyName').value.trim();
+        if (!companyName) return;
+        
+        const keywordCount = parseInt(document.getElementById('keywordCount').value) || 3;
+        const newsPerKeyword = parseInt(document.getElementById('newsPerKeyword').value) || 2;
+        
+        const btn = document.getElementById('searchBtn');
+        btn.disabled = true;
+        
+        LoadingOverlay.show(`正在搜集: ${companyName}`);
+        
+        try {
+            const response = await fetch('/api/v2/news/collect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    company_name: companyName,
+                    keyword_count: keywordCount,
+                    news_per_keyword: newsPerKeyword
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                // 跳转到审核页面
+                window.location.href = `/api/v2/tasks/${data.task_id}/review`;
+            } else {
+                alert('搜集失败: ' + (data.detail || '未知错误'));
+                LoadingOverlay.hide();
+                btn.disabled = false;
+            }
+        } catch (error) {
+            console.error('请求失败:', error);
+            alert('请求失败，请检查网络连接');
+            LoadingOverlay.hide();
+            btn.disabled = false;
+        }
+    }
+</script>
+{% endblock %}

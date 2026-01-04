@@ -1,0 +1,333 @@
+{% extends "base_modern.html" %}
+
+{% block title %}批量任务 - AI 新闻搜集系统{% endblock %}
+
+{% block content %}
+<div class="min-h-screen p-4 md:p-8 lg:p-12 pb-24">
+    <!-- 顶部导航 -->
+    <nav class="mb-8 flex items-center justify-between animate-slide-down sticky top-0 z-40 bg-gray-50/90 backdrop-blur border-b border-black/5 px-4 md:px-0 py-4 -mx-4 md:-mx-0">
+        <div class="flex items-center gap-6">
+            <a href="/" class="text-2xl font-extrabold tracking-tight">
+                <span class="gradient-text">News</span><span class="text-gray-400">AI</span>
+            </a>
+            <div class="hidden md:flex items-center gap-1 bg-black/5 rounded-full p-1">
+                <a href="/" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">控制台</a>
+                <a href="/batch" class="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-full">批量任务</a>
+                <a href="/news" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">洞察全局</a>
+                <a href="/tasks" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">任务中心</a>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-xs font-semibold text-green-600">System Online</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 页面头部 -->
+    <header class="mb-12 animate-slide-down" style="animation-delay: 0.1s;">
+        <p class="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-2">
+            Batch Processing
+        </p>
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-gray-900">
+            批量
+            <span class="gradient-text">任务</span>
+        </h1>
+        <p class="text-gray-500 mt-4 max-w-lg">
+            上传 Excel/CSV 表格，一键批量创建新闻搜集任务，高效处理多公司数据
+        </p>
+    </header>
+
+    <!-- Bento Grid 布局 -->
+    <div class="bento-grid max-w-7xl mx-auto">
+
+        <!-- 上传卡片 - 大卡片 -->
+        <div class="col-span-1 md:col-span-2 lg:col-span-2 row-span-2 glass-card magnetic-glow rounded-3xl p-6 md:p-8 card-hover relative overflow-hidden">
+            <!-- 动态波浪背景 -->
+            <div class="wave-bg"></div>
+
+            <div class="relative z-10 flex flex-col h-full">
+                <!-- 卡片头部 -->
+                <div class="flex justify-between items-start mb-6">
+                    <div class="p-3 rounded-2xl gradient-green-blue text-white neon-glow">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </div>
+                    <span class="px-3 py-1 rounded-full bg-cyan-100 text-cyan-700 text-xs font-bold uppercase tracking-wider badge-glow">
+                        Upload
+                    </span>
+                </div>
+
+                <!-- 上传表单 -->
+                <form id="uploadForm" onsubmit="batchUpload(event)" class="flex-1 flex flex-col">
+                    <h2 class="text-2xl font-bold mb-2 text-gray-900">上传表格</h2>
+                    <p class="text-gray-500 text-sm mb-6">支持 Excel (.xlsx) 和 CSV 格式</p>
+
+                    <!-- 拖拽上传区域 -->
+                    <div class="flex-1 mb-6">
+                        <div id="dropZone" class="relative h-full min-h-[160px] border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center gap-4 gentle-transition hover:border-gray-900 hover:bg-gray-50 cursor-pointer">
+                            <input type="file" id="batchFile" name="file" accept=".xlsx,.xls,.csv" required
+                                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <div id="uploadIcon" class="p-4 rounded-full bg-gray-100 text-gray-400 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </div>
+                            <div id="uploadText" class="text-center">
+                                <p class="font-semibold text-gray-700">点击或拖拽文件到此处</p>
+                                <p class="text-sm text-gray-400 mt-1">第一列为公司名称，第一行为标题行</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 搜索配置 -->
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Keywords</label>
+                            <input type="number" id="keywordCount" name="keyword_count" value="3" min="1" max="10"
+                                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors text-center font-bold bg-white/50 input-modern">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">News/KW</label>
+                            <input type="number" id="newsPerKeyword" name="news_per_keyword" value="2" min="1" max="10"
+                                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors text-center font-bold bg-white/50 input-modern">
+                        </div>
+                        <div class="flex flex-col justify-end">
+                            <p class="text-sm text-gray-500 text-center">
+                                预计 <strong id="estimatedTotal" class="text-gray-900 text-lg">6</strong> 条/公司
+                            </p>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="uploadBtn"
+                            class="btn-primary w-full px-6 py-4 text-white rounded-full font-bold flex items-center justify-center gap-2">
+                        开始批量处理
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M7 7h10v10"></path>
+                            <path d="M7 17 17 7"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="col-span-1 row-span-1 glass-card rounded-3xl p-6 card-hover">
+            <div class="flex flex-col h-full justify-between">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="p-2 rounded-lg bg-purple-100 text-purple-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-gray-400 font-mono">BATCHES</span>
+                </div>
+                <div>
+                    <p class="text-4xl font-bold text-gray-900 mb-1" id="batchCount">0</p>
+                    <p class="text-sm text-gray-500 uppercase tracking-wider font-medium">批次总数</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 待审核卡片 -->
+        <div class="col-span-1 row-span-1 glass-card rounded-3xl p-6 card-hover">
+            <div class="flex flex-col h-full justify-between">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="p-2 rounded-lg bg-orange-100 text-orange-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-orange-500 font-mono">REVIEWING</span>
+                </div>
+                <div>
+                    <p class="text-4xl font-bold text-orange-500 mb-1" id="reviewingCount">0</p>
+                    <p class="text-sm text-gray-500 uppercase tracking-wider font-medium">待审核任务</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 已完成卡片 -->
+        <div class="col-span-1 row-span-1 glass-card rounded-3xl p-6 card-hover">
+            <div class="flex flex-col h-full justify-between">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="p-2 rounded-lg bg-green-100 text-green-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-green-500 font-mono">COMPLETED</span>
+                </div>
+                <div>
+                    <p class="text-4xl font-bold text-green-500 mb-1" id="completedCount">0</p>
+                    <p class="text-sm text-gray-500 uppercase tracking-wider font-medium">已完成任务</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 历史记录卡片 -->
+        <div class="col-span-1 row-span-1 glass-card rounded-3xl p-6 card-hover flex flex-col gap-5 justify-between">
+            <div class="flex items-start gap-3">
+                <div class="p-2 rounded-xl bg-gray-900 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">批次历史</h3>
+                    <p class="text-sm text-gray-500">按上传批次查看任务</p>
+                </div>
+            </div>
+            <button onclick="window.location.href='/batch/history'" class="self-center px-5 py-3 text-base font-semibold text-gray-800 hover:text-gray-900 gentle-transition rounded-full border border-black/5 bg-white shadow-sm">查看完整批次历史</button>
+        </div>
+
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="mt-24 text-center text-gray-400 text-sm">
+        <p>&copy; 2025 AI News Collection System. Powered by Intelligence.</p>
+    </footer>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        setupFileUpload();
+        setupConfigInputs();
+    });
+
+    // 文件上传设置
+    function setupFileUpload() {
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('batchFile');
+        const uploadIcon = document.getElementById('uploadIcon');
+        const uploadText = document.getElementById('uploadText');
+
+        // 拖拽效果
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-gray-900', 'bg-gray-50');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-gray-900', 'bg-gray-50');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-gray-900', 'bg-gray-50');
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+
+        // 文件选择
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+    }
+
+    // 处理文件选择
+    function handleFileSelect(file) {
+        const uploadIcon = document.getElementById('uploadIcon');
+        const uploadText = document.getElementById('uploadText');
+
+        uploadIcon.classList.add('text-green-500', 'bg-green-100');
+        uploadIcon.classList.remove('text-gray-400', 'bg-gray-100');
+        uploadText.innerHTML = `
+            <p class="font-semibold text-green-600">${file.name}</p>
+            <p class="text-sm text-gray-400 mt-1">${(file.size / 1024).toFixed(2)} KB</p>
+        `;
+    }
+
+    // 配置输入监听
+    function setupConfigInputs() {
+        const keywordInput = document.getElementById('keywordCount');
+        const newsInput = document.getElementById('newsPerKeyword');
+
+        keywordInput.addEventListener('input', updateEstimate);
+        newsInput.addEventListener('input', updateEstimate);
+
+        updateEstimate();
+    }
+
+    // 更新预计搜索数量
+    function updateEstimate() {
+        const keywords = parseInt(document.getElementById('keywordCount').value) || 3;
+        const newsPerKw = parseInt(document.getElementById('newsPerKeyword').value) || 2;
+        document.getElementById('estimatedTotal').textContent = keywords * newsPerKw;
+    }
+
+
+  
+    function formatStatus(status) {
+        const map = {
+            processing: { label: '处理中', class: 'bg-orange-100 text-orange-700' },
+            completed: { label: '已完成', class: 'bg-green-100 text-green-700' },
+            failed: { label: '失败', class: 'bg-red-100 text-red-600' }
+        };
+        return map[status] || { label: status || '未知', class: 'bg-gray-100 text-gray-600' };
+    }
+
+    // 批量上传
+    async function batchUpload(event) {
+        event.preventDefault();
+
+        const fileInput = document.getElementById('batchFile');
+        const keywordCount = parseInt(document.getElementById('keywordCount').value) || 3;
+        const newsPerKeyword = parseInt(document.getElementById('newsPerKeyword').value) || 2;
+
+        if (!fileInput.files.length) {
+            alert('请选择文件');
+            return;
+        }
+
+        const btn = document.getElementById('uploadBtn');
+        btn.disabled = true;
+
+        LoadingOverlay.show('正在批量处理...');
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        formData.append('keyword_count', keywordCount);
+        formData.append('news_per_keyword', newsPerKeyword);
+
+        try {
+            const response = await fetch('/api/v2/batch/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(`批量处理完成！成功: ${data.success_count}, 失败: ${data.failed_count}`);
+                window.location.href = `/tasks`;
+            } else {
+                alert('批量处理失败: ' + (data.detail || '未知错误'));
+                LoadingOverlay.hide();
+                btn.disabled = false;
+            }
+        } catch (error) {
+            console.error('请求失败:', error);
+            alert('请求失败，请检查网络连接');
+            LoadingOverlay.hide();
+            btn.disabled = false;
+        }
+    }
+</script>
+{% endblock %}

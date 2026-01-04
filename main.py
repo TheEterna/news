@@ -167,6 +167,14 @@ async def batch_page():
     return HTMLResponse(content=template.render())
 
 
+@app.get("/batch/history", response_class=HTMLResponse, summary="批次历史页面")
+async def batch_history_page():
+    """批量上传历史页面 - 按批次查看任务"""
+    renderer = get_renderer()
+    template = renderer._env.get_template("batch_history.html")
+    return HTMLResponse(content=template.render())
+
+
 @app.get("/batch/classic", response_class=HTMLResponse, summary="批量任务页面（传统）")
 async def batch_page_classic():
     """批量任务管理页面（传统 Swiss 设计）"""

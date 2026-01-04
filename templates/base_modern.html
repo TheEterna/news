@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI 新闻搜集系统 - 智能新闻聚合与分析平台">
+    <meta name="theme-color" content="#111827">
+    <title>{% block title %}AI 新闻搜集系统{% endblock %}</title>
+
+    <!-- 资源预加载 - 提升首屏性能 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+
+    <!-- DNS 预解析 -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+
+    <!-- 关键 CSS 预加载 -->
+    <link rel="preload" href="/static/css/design-system.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" as="style">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts - Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- 设计系统 CSS -->
+    <link rel="stylesheet" href="/static/css/design-system.css">
+
+    <!-- Tailwind Config & Custom Styles -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        },
+                        accent: {
+                            pink: '#FF9A9E',
+                            purple: '#667eea',
+                            green: '#84fab0',
+                            orange: '#fda085',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'slide-down': 'slideDown 0.5s ease-out',
+                        'scale-up': 'scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'spring': 'spring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideDown: {
+                            '0%': { transform: 'translateY(-20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        scaleUp: {
+                            '0%': { transform: 'scale(0.9) translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'scale(1) translateY(0)', opacity: '1' },
+                        },
+                        spring: {
+                            '0%': { transform: 'scale(0.95)' },
+                            '50%': { transform: 'scale(1.02)' },
+                            '100%': { transform: 'scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ========== 现代化设计系统 ========== */
+
+        /* 隐藏滚动条但保持滚动功能 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f2f4f6;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* 噪点纹理背景 */
+        .noise-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Spring 弹簧动画过渡 */
+        .spring-transition {
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .gentle-transition {
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* 渐变文字效果 */
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        /* 渐变背景预设 */
+        .gradient-blue-purple {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .gradient-pink-orange {
+            background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+        }
+
+        .gradient-green-blue {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        }
+
+        .gradient-yellow-orange {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        }
+
+        /* 隐藏滚动条工具类 */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 加载动画 */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-spinner {
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* 响应式网格系统 */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1.5rem;
+            grid-auto-rows: minmax(180px, auto);
+        }
+
+        @media (min-width: 768px) {
+            .bento-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 2rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .bento-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 2rem;
+            }
+        }
+
+        /* 自定义动画效果 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* 文本截断 */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        {% block extra_styles %}{% endblock %}
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans antialiased">
+    <!-- 噪点纹理背景 -->
+    <div class="noise-bg"></div>
+
+    <!-- 主内容区域 -->
+    <div class="relative z-10">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- 加载遮罩层 -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-white/95 backdrop-blur-md z-50 flex items-center justify-center flex-col gap-6">
+        <div class="w-12 h-12 border-4 border-gray-200 border-t-gray-900 rounded-full loading-spinner"></div>
+        <div class="text-sm font-bold tracking-widest uppercase" id="loadingText">Processing</div>
+    </div>
+
+    <!-- 通用 JavaScript 工具 -->
+    <script>
+        // 加载遮罩控制
+        const LoadingOverlay = {
+            show(text = 'Processing') {
+                const overlay = document.getElementById('loadingOverlay');
+                const textEl = document.getElementById('loadingText');
+                if (overlay && textEl) {
+                    textEl.textContent = text;
+                    overlay.classList.remove('hidden');
+                }
+            },
+            hide() {
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                }
+            }
+        };
+
+        // Spring 动画工具
+        const SpringAnimator = {
+            presets: {
+                gentle: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+                spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+            },
+
+            animate(element, properties, duration = 600, easing = 'spring') {
+                if (!element) return;
+
+                const easingFunc = this.presets[easing] || this.presets.spring;
+                element.style.transition = `all ${duration}ms ${easingFunc}`;
+
+                Object.keys(properties).forEach(prop => {
+                    element.style[prop] = properties[prop];
+                });
+            }
+        };
+
+        // 响应式断点管理
+        const ResponsiveManager = {
+            breakpoints: {
+                mobile: '(max-width: 767px)',
+                tablet: '(min-width: 768px) and (max-width: 1023px)',
+                desktop: '(min-width: 1024px)'
+            },
+
+            getCurrentBreakpoint() {
+                if (window.matchMedia(this.breakpoints.mobile).matches) return 'mobile';
+                if (window.matchMedia(this.breakpoints.tablet).matches) return 'tablet';
+                return 'desktop';
+            },
+
+            onBreakpointChange(callback) {
+                Object.values(this.breakpoints).forEach(query => {
+                    const mql = window.matchMedia(query);
+                    mql.addEventListener('change', () => callback(this.getCurrentBreakpoint()));
+                });
+            }
+        };
+
+        // 性能检测和动画降级
+        const PerformanceManager = {
+            isLowPerformance() {
+                return navigator.hardwareConcurrency < 4 || window.devicePixelRatio > 2;
+            },
+
+            getAnimationLevel() {
+                if (this.isLowPerformance()) return 'reduced';
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return 'minimal';
+                return 'full';
+            },
+
+            applyAnimationLevel() {
+                const level = this.getAnimationLevel();
+                document.documentElement.setAttribute('data-animation-level', level);
+
+                if (level !== 'full') {
+                    console.log('动画已降级以优化性能');
+                }
+            }
+        };
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            PerformanceManager.applyAnimationLevel();
+
+            // 记录首屏加载时间
+            if (window.performance) {
+                const loadTime = performance.now();
+                console.log(`页面加载完成: ${Math.round(loadTime)}ms`);
+
+                // 如果加载时间超过 2 秒，记录警告
+                if (loadTime > 2000) {
+                    console.warn('首屏加载时间超过 2 秒，建议优化');
+                }
+            }
+        });
+
+        // 图片懒加载
+        const LazyLoader = {
+            init() {
+                if ('IntersectionObserver' in window) {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                const img = entry.target;
+                                if (img.dataset.src) {
+                                    img.src = img.dataset.src;
+                                    img.classList.add('loaded');
+                                    observer.unobserve(img);
+                                }
+                            }
+                        });
+                    }, { rootMargin: '50px' });
+
+                    document.querySelectorAll('img[data-src]').forEach(img => {
+                        observer.observe(img);
+                    });
+                } else {
+                    // 回退方案：直接加载所有图片
+                    document.querySelectorAll('img[data-src]').forEach(img => {
+                        img.src = img.dataset.src;
+                    });
+                }
+            }
+        };
+
+        // 页面可见性变化时暂停/恢复动画
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                document.documentElement.setAttribute('data-animation-level', 'minimal');
+            } else {
+                PerformanceManager.applyAnimationLevel();
+            }
+        });
+    </script>
+
+    <!-- 设计系统 JavaScript（可选，提供更多功能） -->
+    <script src="/static/js/design-system.js" defer></script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

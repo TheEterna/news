@@ -1,0 +1,291 @@
+{% extends "base_modern.html" %}
+
+{% block title %}任务中心 - AI 新闻搜集系统{% endblock %}
+
+{% block extra_styles %}
+<style>
+    /* 本页使用朴素灰阶配色，禁止蓝紫 */
+    .page-neutral .gradient-text {
+        background-image: linear-gradient(135deg, #111827, #4b5563);
+    }
+    .btn-neutral {
+        background: #111827;
+        color: #fff;
+        border: 1px solid #0f172a;
+        transition: all 0.25s ease;
+    }
+    .btn-neutral:hover {
+        background: #0b1224;
+        transform: translateY(-1px);
+    }
+    .btn-neutral:active {
+        transform: translateY(0);
+        background: #0f172a;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen p-4 md:p-8 lg:p-12 pb-24 page-neutral">
+    <!-- 顶部导航 -->
+    <nav class="mb-8 flex items-center justify-between animate-slide-down sticky top-0 z-40 bg-gray-50/90 backdrop-blur border-b border-black/5 px-4 md:px-0 py-4 -mx-4 md:-mx-0">
+        <div class="flex items-center gap-6">
+            <a href="/" class="text-2xl font-extrabold tracking-tight">
+                <span class="gradient-text">News</span><span class="text-gray-400">AI</span>
+            </a>
+            <div class="hidden md:flex items-center gap-1 bg-black/5 rounded-full p-1">
+                <a href="/" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">控制台</a>
+                <a href="/batch" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">批量任务</a>
+                <a href="/news" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">洞察全局</a>
+                <a href="/tasks" class="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-full">任务中心</a>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-xs font-semibold text-green-600">System Online</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 页面头部 -->
+    <header class="mb-12 animate-slide-down" style="animation-delay: 0.1s;">
+        <p class="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-2">
+            Task Management
+        </p>
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-gray-900">
+            任务
+            <span class="gradient-text">中心</span>
+        </h1>
+        <p class="text-gray-500 mt-4 max-w-lg">
+            查看和管理所有新闻搜集任务，追踪处理进度
+        </p>
+    </header>
+
+    <!-- 统计卡片 Bento Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 max-w-7xl mx-auto animate-slide-down" style="animation-delay: 0.2s;">
+        <div class="glass-card rounded-2xl p-6 card-hover">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                    </svg>
+                </div>
+                <span class="text-xs font-mono text-gray-400">TOTAL</span>
+            </div>
+            <p class="text-4xl font-extrabold text-gray-900 mb-1" id="statTotal">--</p>
+            <p class="text-sm text-gray-500">全部任务</p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 card-hover">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-10 h-10 rounded-xl bg-gray-800 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </div>
+                <span class="text-xs font-mono text-gray-400">COLLECTING</span>
+            </div>
+            <p class="text-4xl font-extrabold text-gray-900 mb-1" id="statCollecting">--</p>
+            <p class="text-sm text-gray-500">搜集中</p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 card-hover">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <span class="text-xs font-mono text-gray-400">REVIEWING</span>
+            </div>
+            <p class="text-4xl font-extrabold text-orange-500 mb-1" id="statReviewing">--</p>
+            <p class="text-sm text-gray-500">待审核</p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 card-hover">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <span class="text-xs font-mono text-gray-400">COMPLETED</span>
+            </div>
+            <p class="text-4xl font-extrabold text-green-500 mb-1" id="statCompleted">--</p>
+            <p class="text-sm text-gray-500">已完成</p>
+        </div>
+    </div>
+
+    <!-- 任务列表 -->
+    <div class="glass-card rounded-3xl overflow-hidden max-w-7xl mx-auto animate-slide-down" style="animation-delay: 0.3s;">
+        <!-- 表头 -->
+        <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-black/[0.02] border-b border-black/5">
+            <div class="col-span-1 text-xs font-bold text-gray-400 uppercase tracking-wider">ID</div>
+            <div class="col-span-3 text-xs font-bold text-gray-400 uppercase tracking-wider">公司名称</div>
+            <div class="col-span-2 text-xs font-bold text-gray-400 uppercase tracking-wider">批次</div>
+            <div class="col-span-2 text-xs font-bold text-gray-400 uppercase tracking-wider">新闻数</div>
+            <div class="col-span-2 text-xs font-bold text-gray-400 uppercase tracking-wider">状态</div>
+            <div class="col-span-2 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">操作</div>
+        </div>
+
+        <!-- 列表内容 -->
+        <div id="taskList" class="divide-y divide-black/5">
+            <!-- Loading State -->
+            <div class="flex flex-col items-center justify-center py-20">
+                <div class="w-12 h-12 border-3 border-gray-300 border-t-gray-900 rounded-full loading-spinner mb-4"></div>
+                <p class="text-gray-500 font-medium">正在加载任务...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="mt-24 text-center text-gray-400 text-sm">
+        <p>&copy; 2025 AI News Collection System. Powered by Intelligence.</p>
+    </footer>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', loadAllTasks);
+
+    async function loadAllTasks() {
+        try {
+            const response = await fetch('/api/v2/tasks');
+            const data = await response.json();
+            const tasks = data.tasks || [];
+
+            updateStats(tasks);
+            renderTaskList(tasks);
+        } catch (error) {
+            console.error('加载任务失败:', error);
+            document.getElementById('taskList').innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20">
+                    <div class="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                    <p class="text-gray-900 font-semibold mb-1">加载失败</p>
+                    <p class="text-gray-500 text-sm">${error.message}</p>
+                </div>
+            `;
+        }
+    }
+
+    function updateStats(tasks) {
+        const total = tasks.length;
+        const collecting = tasks.filter(t => t.status === 'collecting').length;
+        const reviewing = tasks.filter(t => t.status === 'reviewing').length;
+        const completed = tasks.filter(t => t.status === 'completed').length;
+
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statCollecting').textContent = collecting;
+        document.getElementById('statReviewing').textContent = reviewing;
+        document.getElementById('statCompleted').textContent = completed;
+    }
+
+    function renderTaskList(tasks) {
+        const container = document.getElementById('taskList');
+
+        if (tasks.length === 0) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20">
+                    <div class="w-16 h-16 rounded-2xl bg-gray-500/10 flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                    </div>
+                    <p class="text-gray-900 font-semibold mb-1">暂无任务</p>
+                    <p class="text-gray-500 text-sm">开始创建您的第一个新闻搜集任务</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = tasks.map(task => `
+            <div class="md:grid md:grid-cols-12 gap-4 px-6 py-4 hover:bg-black/[0.02] transition-colors card-hover">
+                <!-- Mobile Layout -->
+                <div class="md:hidden flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-mono text-gray-400">#${task.id}</span>
+                        <span class="font-semibold text-gray-900">${task.company_name}</span>
+                    </div>
+                    ${getStatusBadge(task.status)}
+                </div>
+                <div class="md:hidden grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-400">批次:</span>
+                        <span class="ml-2 text-gray-900">${task.batch_id || '-'}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400">新闻数:</span>
+                        <span class="ml-2 text-gray-900">${task.total_fetched || 0}</span>
+                    </div>
+                </div>
+                <div class="md:hidden mt-4 flex justify-end">
+                    ${getActionButtons(task)}
+                </div>
+
+                <!-- Desktop Layout -->
+                <div class="hidden md:block col-span-1 text-sm font-mono text-gray-400">#${task.id}</div>
+                <div class="hidden md:block col-span-3">
+                    <span class="font-semibold text-gray-900">${task.company_name}</span>
+                </div>
+                <div class="hidden md:block col-span-2 text-sm text-gray-600">
+                    ${task.batch_id || '-'}
+                </div>
+                <div class="hidden md:block col-span-2 text-sm text-gray-600">
+                    ${task.total_fetched || 0}
+                </div>
+                <div class="hidden md:block col-span-2">
+                    ${getStatusBadge(task.status)}
+                </div>
+                <div class="hidden md:block col-span-2 text-right">
+                    ${getActionButtons(task)}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function getStatusBadge(status) {
+        const badges = {
+            collecting: '<span class="tag-pending px-2 py-1 rounded-full text-xs font-bold uppercase">搜集中</span>',
+            reviewing: '<span class="tag-pending px-2 py-1 rounded-full text-xs font-bold uppercase">待审核</span>',
+            completed: '<span class="tag-approved px-2 py-1 rounded-full text-xs font-bold uppercase">已完成</span>',
+            failed: '<span class="tag-rejected px-2 py-1 rounded-full text-xs font-bold uppercase">失败</span>'
+        };
+        return badges[status] || '<span class="tag-filtered px-2 py-1 rounded-full text-xs font-bold uppercase">未知</span>';
+    }
+
+    function getActionButtons(task) {
+        let buttons = '';
+
+        if (task.status === 'reviewing') {
+            buttons += `
+                <a href="/api/v2/tasks/${task.id}/review"
+                   class="btn-neutral px-4 py-2 text-white text-sm rounded-full font-medium inline-flex items-center gap-2">
+                    审核
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            `;
+        } else if (task.status === 'completed') {
+            buttons += `
+                <a href="/api/v2/tasks/${task.id}/report"
+                   class="px-4 py-2 bg-white border-2 border-gray-200 text-gray-700 text-sm rounded-full font-medium hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
+                    查看报告
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                </a>
+            `;
+        }
+
+        return buttons;
+    }
+</script>
+{% endblock %}
