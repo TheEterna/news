@@ -18,31 +18,18 @@
 
 {% block content %}
 <div class="history-page min-h-screen p-4 md:p-8 lg:p-12 pb-24">
-    <!-- 顶部导航 -->
-    <nav class="mb-8 flex items-center justify-between animate-slide-down sticky top-0 z-40 bg-gray-50/90 backdrop-blur border-b border-black/5 px-4 md:px-0 py-4 -mx-4 md:-mx-0">
-        <div class="flex items-center gap-6">
-            <a href="/" class="text-2xl font-extrabold tracking-tight">
-                <span class="gradient-text">News</span><span class="text-gray-400">AI</span>
-            </a>
-            <div class="hidden md:flex items-center gap-1 bg-black/5 rounded-full p-1">
-                <a href="/" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">控制台</a>
-                <a href="/batch" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">批量任务</a>
-                <a href="/news" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">洞察全局</a>
-                <a href="/tasks" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">任务中心</a>
-                <a href="/batch/history" class="px-4 py-2 text-sm font-semibold text-white bg-gray-900 rounded-full">批次历史</a>
-            </div>
-        </div>
-        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-full">
-            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-            <span class="text-xs font-semibold text-green-600">System Online</span>
-        </div>
-    </nav>
-
     <!-- 头部 -->
-    <header class="mb-10 animate-slide-down" style="animation-delay: 0.05s;">
-        <p class="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-2">Batch History</p>
-        <h1 class="text-4xl md:text-6xl font-bold tracking-tighter text-gray-900">批次历史</h1>
-        <p class="text-gray-500 mt-3 max-w-2xl">按上传批次查看任务与状态，快速定位失败或待审核批次。</p>
+    <header class="mb-12 animate-slide-down" style="animation-delay: 0.1s;">
+        <p class="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-2">
+            Batch History
+        </p>
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-gray-900">
+            批次
+            <span class="gradient-text">历史</span>
+        </h1>
+        <p class="text-gray-500 mt-4 max-w-lg">
+            按上传批次查看任务与状态，快速定位失败或待审核批次。
+        </p>
     </header>
 
     <!-- 统计卡片 -->
@@ -137,7 +124,7 @@
                         <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">公司 ${total}</span>
                         <span class="px-3 py-1 rounded-full bg-green-100 text-green-700">成功 ${success}</span>
                         <span class="px-3 py-1 rounded-full bg-red-100 text-red-600">失败 ${failed}</span>
-                        <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700">任务 ${(batch.tasks || []).length}</span>
+                        <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700">任务 ${(batch.tasks || []).length}</span>
                     </div>
 
                     ${tasks.length ? `

@@ -5,20 +5,17 @@
 {% block content %}
 <div class="min-h-screen p-4 md:p-8 lg:p-12 pb-24">
     <!-- 页面头部 -->
-    <header class="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 animate-slide-down sticky top-0 z-40 bg-gray-50/90 backdrop-blur border-b border-black/5 px-4 md:px-0 py-4 -mx-4 md:-mx-0">
-        <div>
-            <p class="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-2">
-                AI News Collection 2025
-            </p>
-            <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-gray-900">
-                智能新闻
-                <span class="gradient-text">搜集</span>
-            </h1>
-        </div>
-        <div class="hidden md:block text-right">
-            <p class="text-gray-500 text-sm">AI-Powered News Aggregation</p>
-            <p class="text-gray-400 font-mono text-xs mt-1">Version 2.0</p>
-        </div>
+    <header class="mb-12 animate-slide-down" style="animation-delay: 0.1s;">
+        <p class="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-2">
+            AI News Collection 2025
+        </p>
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-gray-900">
+            智能新闻
+            <span class="gradient-text">搜集</span>
+        </h1>
+        <p class="text-gray-500 mt-4 max-w-lg">
+            输入公司名称，AI 自动生成多维度关键词，智能搜集并分类相关新闻。
+        </p>
     </header>
 
     <!-- Bento Grid 布局 -->
@@ -29,7 +26,7 @@
             <div class="flex flex-col h-full justify-between">
                 <!-- 卡片头部 -->
                 <div class="flex justify-between items-start mb-6">
-                    <div class="p-3 rounded-2xl bg-gradient-blue-purple text-white">
+                    <div class="p-3 rounded-2xl bg-gradient-warm text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.35-4.35"></path>
@@ -142,8 +139,8 @@
         <div class="col-span-1 md:col-span-1 row-span-1 glass-card rounded-3xl p-6 gentle-transition hover:scale-[1.02] hover:-translate-y-1 cursor-pointer group"
              onclick="window.location.href='/batch'">
             <div class="flex flex-col h-full justify-center items-center text-center gap-4">
-                <div class="p-4 rounded-full bg-gradient-green-blue text-white scale-125 group-hover:scale-150 spring-transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="p-2 rounded-2xl bg-white text-amber-800 shadow-md border border-black/5 scale-125 group-hover:scale-150 spring-transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="17 8 12 3 7 8"></polyline>
                         <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -160,11 +157,11 @@
         <div class="col-span-1 md:col-span-2 lg:col-span-2 row-span-2 glass-card rounded-3xl p-6 md:p-8 gentle-transition hover:scale-[1.02] hover:-translate-y-1 cursor-pointer group relative overflow-hidden"
              onclick="window.location.href='/news'">
             <!-- 背景装饰 -->
-            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-amber-300/15 via-orange-300/15 to-amber-400/15 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             
             <div class="relative z-10 flex flex-col h-full justify-between">
                 <div>
-                    <div class="inline-block px-3 py-1 mb-4 rounded-full bg-purple-100 text-purple-700 text-xs font-bold uppercase tracking-wider">
+                    <div class="inline-block px-3 py-1 mb-4 rounded-full bg-amber-100 text-amber-700 text-xs font-bold uppercase tracking-wider">
                         News Center
                     </div>
                     <h3 class="text-3xl font-bold mb-2 text-gray-900">新闻中心</h3>
@@ -263,18 +260,44 @@
             
             const standaloneTasks = batchesData.standalone_tasks || [];
             const reviewingTasks = standaloneTasks.filter(t => t.status === 'reviewing');
-            
             document.getElementById('taskCount').textContent = reviewingTasks.length;
-            
-            // 加载新闻统计（简化版，实际可以调用专门的统计接口）
-            // 这里暂时使用占位数据
+
+            // 加载新闻统计（复用 browse 接口的分页 total）
+            const [totalNews, approvedNews, pendingNews] = await Promise.all([
+                fetchNewsCount(),
+                fetchNewsCount('approved'),
+                fetchNewsCount('pending_review')
+            ]);
+
+            document.getElementById('totalNews').textContent = totalNews;
+            document.getElementById('approvedNews').textContent = approvedNews;
+            document.getElementById('pendingNews').textContent = pendingNews;
+        } catch (error) {
+            console.error('加载统计数据失败:', error);
             document.getElementById('totalNews').textContent = '—';
             document.getElementById('approvedNews').textContent = '—';
             document.getElementById('pendingNews').textContent = '—';
-            
-        } catch (error) {
-            console.error('加载统计数据失败:', error);
         }
+    }
+
+    // 通过新闻浏览接口获取统计总数（仅取分页 total，page_size=10 避免大数据量）
+    async function fetchNewsCount(statusValue = '') {
+        // page_size 最小限制为 10（接口约束），只取 pagination.total
+        const params = new URLSearchParams({
+            page: 1,
+            page_size: 10
+        });
+
+        if (statusValue) {
+            params.set('status', statusValue);
+        }
+
+        const resp = await fetch(`/api/v2/news/browse?${params.toString()}`);
+        const data = await resp.json();
+        if (data && data.success && data.data && data.data.pagination) {
+            return data.data.pagination.total || 0;
+        }
+        return 0;
     }
     
     // 开始搜集新闻

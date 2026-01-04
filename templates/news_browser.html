@@ -39,54 +39,18 @@
 
 {% block content %}
 <div class="news-page min-h-screen p-4 md:p-6 lg:p-8 relative z-10">
-    <!-- 顶部导航 -->
-    <nav class="mb-8 flex items-center justify-between animate-slide-down sticky top-0 z-40 bg-gray-50/90 backdrop-blur border-b border-black/5 px-4 md:px-0 py-4 -mx-4 md:-mx-0">
-        <div class="flex items-center gap-6">
-            <a href="/" class="text-2xl font-extrabold tracking-tight">
-                <span class="gradient-text">News</span><span class="text-gray-400">AI</span>
-            </a>
-            <div class="hidden md:flex items-center gap-1 bg-black/5 rounded-full p-1">
-                <a href="/" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">控制台</a>
-                <a href="/batch" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">批量任务</a>
-                <a href="/news" class="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-full">洞察全局</a>
-                <a href="/tasks" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">任务中心</a>
-            </div>
-        </div>
-        <div class="flex items-center gap-3">
-            <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-full">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                <span class="text-xs font-semibold text-green-600">System Online</span>
-            </div>
-        </div>
-    </nav>
-
     <!-- Hero Header -->
-    <header class="mb-8 animate-slide-down" style="animation-delay: 0.1s;">
-        <div class="glass-card magnetic-glow rounded-3xl p-8 md:p-12 gradient-hero text-white relative overflow-hidden spring-transition hero-surface">
-            <!-- 装饰光效 -->
-            <div class="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-            <div class="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-
-            <div class="relative z-10">
-                <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-                    <div>
-                        <p class="text-sm font-bold text-white/60 tracking-[0.2em] uppercase mb-3">News Browser</p>
-                        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-3">
-                            洞察全局
-                        </h1>
-                        <p class="text-lg text-white/80 max-w-md">
-                            探索、筛选、发现有价值的新闻资讯
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <div class="text-right hidden md:block hero-total">
-                            <p class="text-white/60 text-sm">Total News</p>
-                            <p class="text-3xl font-bold" id="heroTotal">--</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <header class="mb-12 animate-slide-down" style="animation-delay: 0.1s;">
+        <p class="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-2">
+            News Browser
+        </p>
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-gray-900">
+            洞察
+            <span class="gradient-text">全局</span>
+        </h1>
+        <p class="text-gray-500 mt-4 max-w-lg">
+            探索、筛选、发现有价值的新闻资讯，全面掌握行业动态。
+        </p>
     </header>
 
     <!-- 筛选工具栏 -->
@@ -255,7 +219,7 @@
 
                     <!-- 内容 -->
                     <div class="flex-1 min-w-0">
-                        <h3 class="text-lg font-bold text-gray-900 mb-2 hover:text-purple-600 transition-colors cursor-pointer">
+                        <h3 class="text-lg font-bold text-gray-900 mb-2 hover:text-gray-900 transition-colors cursor-pointer">
                             <a href="${news.url}" target="_blank" rel="noopener noreferrer">${news.title}</a>
                         </h3>
 
@@ -376,7 +340,10 @@
     }
 
     function updateHeroTotal(total) {
-        document.getElementById('heroTotal').textContent = total;
+        const el = document.getElementById('heroTotal');
+        if (el) {
+            el.textContent = total;
+        }
     }
 </script>
 {% endblock %}

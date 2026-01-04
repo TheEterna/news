@@ -4,27 +4,6 @@
 
 {% block content %}
 <div class="min-h-screen p-4 md:p-8 lg:p-12 pb-24">
-    <!-- 顶部导航 -->
-    <nav class="mb-8 flex items-center justify-between animate-slide-down sticky top-0 z-40 bg-gray-50/90 backdrop-blur border-b border-black/5 px-4 md:px-0 py-4 -mx-4 md:-mx-0">
-        <div class="flex items-center gap-6">
-            <a href="/" class="text-2xl font-extrabold tracking-tight">
-                <span class="gradient-text">News</span><span class="text-gray-400">AI</span>
-            </a>
-            <div class="hidden md:flex items-center gap-1 bg-black/5 rounded-full p-1">
-                <a href="/" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">控制台</a>
-                <a href="/batch" class="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-full">批量任务</a>
-                <a href="/news" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">洞察全局</a>
-                <a href="/tasks" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-full gentle-transition">任务中心</a>
-            </div>
-        </div>
-        <div class="flex items-center gap-3">
-            <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-full">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                <span class="text-xs font-semibold text-green-600">System Online</span>
-            </div>
-        </div>
-    </nav>
-
     <!-- 页面头部 -->
     <header class="mb-12 animate-slide-down" style="animation-delay: 0.1s;">
         <p class="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-2">
@@ -106,7 +85,7 @@
                     </div>
 
                     <button type="submit" id="uploadBtn"
-                            class="btn-primary w-full px-6 py-4 text-white rounded-full font-bold flex items-center justify-center gap-2">
+                            class="w-full px-6 py-4 rounded-full font-bold flex items-center justify-center gap-2 text-white bg-gray-900 hover:bg-gray-800 active:scale-95 transition-all shadow-lg shadow-black/10">
                         开始批量处理
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M7 7h10v10"></path>
@@ -121,7 +100,7 @@
         <div class="col-span-1 row-span-1 glass-card rounded-3xl p-6 card-hover">
             <div class="flex flex-col h-full justify-between">
                 <div class="flex justify-between items-center mb-4">
-                    <div class="p-2 rounded-lg bg-purple-100 text-purple-700">
+                    <div class="p-2 rounded-lg bg-amber-100 text-amber-700">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                         </svg>
@@ -174,9 +153,9 @@
         </div>
 
         <!-- 历史记录卡片 -->
-        <div class="col-span-1 row-span-1 glass-card rounded-3xl p-6 card-hover flex flex-col gap-5 justify-between">
+        <div class="col-span-1 row-span-1 glass-card rounded-3xl p-6 card-hover flex flex-col gap-4 justify-between">
             <div class="flex items-start gap-3">
-                <div class="p-2 rounded-xl bg-gray-900 text-white">
+                <div class="p-3 rounded-xl bg-gray-900 text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
                         <polyline points="12 6 12 12 16 14"></polyline>
@@ -187,7 +166,7 @@
                     <p class="text-sm text-gray-500">按上传批次查看任务</p>
                 </div>
             </div>
-            <button onclick="window.location.href='/batch/history'" class="self-center px-5 py-3 text-base font-semibold text-gray-800 hover:text-gray-900 gentle-transition rounded-full border border-black/5 bg-white shadow-sm">查看完整批次历史</button>
+            <button onclick="window.location.href='/batch/history'" class="self-end text-xs font-semibold text-gray-500 hover:text-gray-900 gentle-transition">查看完整批次历史</button>
         </div>
 
     </div>
@@ -201,10 +180,33 @@
 
 {% block extra_scripts %}
 <script>
+    // 页面加载时初始化
     document.addEventListener('DOMContentLoaded', () => {
         setupFileUpload();
         setupConfigInputs();
+        loadBatchStats();
     });
+
+    // 加载批次统计
+    async function loadBatchStats() {
+        try {
+            const response = await fetch('/api/v2/batches');
+            const data = await response.json();
+
+            const batches = data.batches || [];
+            const standaloneTasks = data.standalone_tasks || [];
+
+            document.getElementById('batchCount').textContent = batches.length;
+
+            const reviewingTasks = standaloneTasks.filter(t => t.status === 'reviewing');
+            const completedTasks = standaloneTasks.filter(t => t.status === 'completed');
+
+            document.getElementById('reviewingCount').textContent = reviewingTasks.length;
+            document.getElementById('completedCount').textContent = completedTasks.length;
+        } catch (error) {
+            console.error('加载统计失败:', error);
+        }
+    }
 
     // 文件上传设置
     function setupFileUpload() {
