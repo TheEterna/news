@@ -155,3 +155,55 @@ curl -X POST http://localhost:8000/api/v2/news/collect \
 
 - `search_tasks` - 搜索任务（company_name, status, keywords_used...）
 - `news_items` - 新闻条目（task_id, title, url, ai_category, status, summary...）
+
+
+---
+
+## UI 现代化升级 (v2.0)
+
+系统界面已从传统 Swiss 设计升级为现代化 Bento Grid 布局。
+
+### 设计系统特性
+
+- **Bento Grid 布局**：灵活的网格系统，支持不同尺寸卡片
+- **玻璃拟态效果**：半透明背景 + 模糊效果
+- **Spring 动画**：弹簧物理动画，提升交互体验
+- **响应式设计**：移动端/平板/桌面三档适配
+- **性能优化**：GPU 加速、懒加载、动画降级
+
+### 页面路由
+
+| 路由 | 模板 | 说明 |
+|------|------|------|
+| `/` | `index_modern.html` | 现代化控制台 |
+| `/batch` | `batch_modern.html` | 批量任务（拖拽上传） |
+| `/tasks` | `tasks_modern.html` | 任务中心 |
+| `/news` | `news_browser.html` | 新闻浏览 |
+| `/classic` | `index.html` | 传统界面（向后兼容） |
+| `/batch/classic` | `batch.html` | 传统批量任务 |
+| `/tasks/classic` | `tasks.html` | 传统任务列表 |
+
+### 静态资源
+
+```
+static/
+├── css/
+│   └── design-system.css    # 设计系统样式
+└── js/
+    ├── design-system.js     # 动画控制器、Toast 通知
+    └── bento-grid.js        # Bento Grid 组件
+```
+
+### 主题系统
+
+支持浅色/深色主题切换（通过 `data-theme` 属性）：
+```html
+<html data-theme="light">  <!-- 或 "dark" -->
+```
+
+### 性能优化
+
+- 资源预加载（preconnect, preload）
+- 图片懒加载（IntersectionObserver）
+- 动画性能检测与降级
+- 页面可见性变化时暂停动画
